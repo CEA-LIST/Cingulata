@@ -19,4 +19,4 @@ In the meantime, you may want to look at some of our group publications which ta
 * S. Carpov, P. Dubrulle, R. Sirdey, "Armadillo: a compilation chain for privacy preserving applications", Proceedings of the 10th ACM Symposium on Information, Computer and Communications Security (3rd International Workshop on Security in Cloud Computing), pp. 13-19, 2015 ([Cryptology ePrint version](https://eprint.iacr.org/2014/988)).
 
 Until then,
-![Stay tuned!](deco/stay-tuned.png)
+![Stay tuned!](deco/cingulata_snow.gif)
