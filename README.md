@@ -10,7 +10,7 @@ In the meantime, you may want to look at some of our group publications which ta
 
 * S. Canard, S. Carpov, D. Nokam Kuate and R. Sirdey, "Running compression algorithms in the encrypted domain: a case-study on the homomorphic execution of RLE", Proceedings of Privacy, Security and Trust, 2017 ([Cryptology ePrint version](https://eprint.iacr.org/2017/392)).
 
-* S. Carpov, S. Aubry and R. Sirdey, "A multi-start heuristic for multiplicative depth minimization of boolean circuits", Proceedings of the 28th International Workshop on Combinatorial Algorithms, 2017 ([Cryptology ePrint version](https://eprint.iacr.org/2017/483)).
+* S. Carpov, P. Aubry and R. Sirdey, "A multi-start heuristic for multiplicative depth minimization of boolean circuits", Proceedings of the 28th International Workshop on Combinatorial Algorithms, 2017 ([Cryptology ePrint version](https://eprint.iacr.org/2017/483)).
 
 * S. Carpov, T.-H. Nguyen, R. Sirdey, G. Constantino and F. Martinelli, "Practical privacy-preserving medical diagnosis using homomorphic encryption", Proceedings of the 9th IEEE Conference on Cloud Computing, pp. 593-599, 2016 ([dx.doi.org/10.1109/CLOUD.2016.0084](http://dx.doi.org/10.1109/CLOUD.2016.0084)).
 
