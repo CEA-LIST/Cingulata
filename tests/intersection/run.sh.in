@@ -1,0 +1,93 @@
+#!/bin/bash
+
+#
+#    (C) Copyright 2017 CEA LIST. All Rights Reserved.
+#    Contributor(s): Cingulata team (formerly Armadillo team)
+#
+#    This software is governed by the CeCILL-C license under French law and
+#    abiding by the rules of distribution of free software.  You can  use,
+#    modify and/ or redistribute the software under the terms of the CeCILL-C
+#    license as circulated by CEA, CNRS and INRIA at the following URL
+#    "http://www.cecill.info".
+#
+#    As a counterpart to the access to the source code and  rights to copy,
+#    modify and redistribute granted by the license, users are provided only
+#    with a limited warranty  and the software's author,  the holder of the
+#    economic rights,  and the successive licensors  have only  limited
+#    liability.
+#
+#    The fact that you are presently reading this means that you have had
+#    knowledge of the CeCILL-C license and that you accept its terms.
+#
+
+
+CURR_DIR=$PWD
+FILE=intersection
+
+APPS_DIR=$CURR_DIR/../../apps/
+
+mkdir -p input
+rm -f input/*.ct
+
+mkdir -p output
+rm -f output/*.ct
+
+
+FIRST_LIST_SIZE=@FIRST_LIST_SIZE@ # We enable to modify C++ program and shell script in one time, with CLI. In makefile, I replace  CFLAGS by local_CFLAGS and then intialize it with local_CFLAGS = $(CFLAGS).
+SECOND_LIST_SIZE=@SECOND_LIST_SIZE@
+
+
+# Convert an IPv4 adress to its decimal equivalent.
+ipv4dec () 
+{
+	declare -i a b c d;
+	IFS=. read a b c d <<<"$1";
+	echo "$(((a<<24)+(b<<16)+(c<<8)+d))";
+    #echo $((a * 256 ** 3 + b * 256 ** 2 + c * 256 + d)) # dont use return statement (exit status (a value between 0 and 255, 0 meaning "success")
+}
+
+#Convert decimal number < 2^32 to an IPv4
+dec2ipv4()
+{ 
+          declare -i a=$((~(-1<<8))) b=$1; 
+          set -- "$((b>>24&a))" "$((b>>16&a))" "$((b>>8&a))" "$((b&a))";
+          local IFS=.;
+          echo "$*";
+}
+
+
+# Generate keys
+echo "FHE key generation"
+$APPS_DIR/generate_keys
+
+echo "Input encryption"
+NR_THREADS=$(nproc)
+
+
+#en traitant des Integer32 
+
+$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 32 --msb-first --prefix input/i_ --idx-places 0 $(head -$FIRST_LIST_SIZE plaintext/ipv4.dat | while read IP; do ipv4dec $IP; done  | xargs | sed "s/ ---- /\n---- /g") $(head -$SECOND_LIST_SIZE plaintext/ipv4-2.dat | while read IP; do ipv4dec $IP; done  | xargs | sed "s/ ---- /\n---- /g")`
+
+echo "Homomorphic execution..."
+time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS  #-v 
+ 
+echo "Output decryption"
+OUT_FILES=`ls -v output/*`
+
+$APPS_DIR/helper --from-bin --file --bit-cnt 32 --msb-first `$APPS_DIR/decrypt --secret-key fhe_key.sk $OUT_FILES` 
+
+counter=0
+truncate -s 0 intersection #to empty a file
+while read -r line
+do
+	if  [ $line -ne 0 ]
+	then 
+		dec2ipv4 $line | tee -a intersection
+		counter=$((counter+1))
+	fi
+done < plaintext/encoded_result
+if  [ $counter -eq 0 ]; then echo "The two sets have no common IPs."; else echo "The two sets have" $counter "common IPs."; fi
+
+ls -l --human-readable output/m_0.ct
+echo -n "#circuit inputs = ";ls input | wc -l
+echo -n "#circuit outputs = ";ls output | wc -l

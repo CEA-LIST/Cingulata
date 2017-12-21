@@ -1,0 +1,8 @@
+find_path(PUGIXML_INCLUDE_DIR pugixml.hpp)
+find_library(PUGIXML_LIBRARIES NAMES pugixml)
+
+include(FindPackageHandleStandardArgs)
+
+find_package_handle_standard_args(PUGIXM DEFAULT_MSG PUGIXML_INCLUDE_DIR PUGIXML_LIBRARIES)
+
+mark_as_advanced(PUGIXML_INCLUDE_DIR PUGIXML_LIBRARIES)

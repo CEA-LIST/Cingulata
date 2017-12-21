@@ -1,0 +1,18 @@
+GATE AND 1 Y = ( A * B );
+  PIN * NONINV 0 0 1 0 1 0
+
+GATE OR 1 Y = ( A + B );
+  PIN * NONINV 0 0 1 0 1 0
+
+GATE XOR 0 Y = ( (!A * B) + (A * !B) );
+  PIN * NONINV 0 0 0 0 0 0
+
+GATE NOT 0 Y = !A;
+  PIN * NONINV 0 0 0 0 0 0
+
+GATE BUF 0 Y = A;
+  PIN * NONINV 0 0 0 0 0 0
+
+GATE zero	0	O=CONST0;
+
+GATE one	0	1=CONST1;
