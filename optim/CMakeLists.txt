@@ -16,7 +16,7 @@ ExternalProject_Get_Property(abc SOURCE_DIR)
 
 set(ABC_PATH ${BINARY_DIR})
 set(ABC_SRC_PATH ${SOURCE_DIR})
-configure_file("abc_optimize.bash.in" "abc_optimize.bash" @ONLY)
+configure_file("abc_optimize.py.in" "abc_optimize.py" @ONLY)
 
 configure_file("lib_red.genlib" "lib_red.genlib" COPYONLY)
 configure_file("graph_info.py" "graph_info.py" COPYONLY)

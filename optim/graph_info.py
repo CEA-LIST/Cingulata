@@ -71,7 +71,7 @@ def printAddGateCount():
     print (cnt)
 
 def printGateCount():
-  print ('\n'.join(  map(lambda k,v: k + ': '+ str(v)),nodeCountPerType.iteritems()))
+  print ('\n'.join(map(lambda e: e[0] + ': '+ str(e[1]), nodeCountPerType.items())))
 
 def printInputCount():
   print (len(utils.getInputNodes(circuit)))

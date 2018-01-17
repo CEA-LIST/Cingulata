@@ -22,7 +22,7 @@ add_custom_command(OUTPUT ${BLIF_NAME}
   DEPENDS ${GEN_NAME}) 
 
 add_custom_command(OUTPUT ${BLOP_NAME}
-  COMMAND bash ../../optim/abc_optimize.bash -i ${BLIF_NAME} -o ${BLOP_NAME} > /dev/null
+  COMMAND python3 ../../optim/abc_optimize.py -i ${BLIF_NAME} -o ${BLOP_NAME} -v > /dev/null
   DEPENDS abc ${BLIF_NAME})
 
 

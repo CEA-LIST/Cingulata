@@ -22,7 +22,7 @@ add_custom_command(OUTPUT ${BLIF_NAME}
   DEPENDS ${GEN_NAME}) 
 
 add_custom_command(OUTPUT ${BLOP_NAME}
-  COMMAND bash ../../optim/abc_optimize.bash -i ${BLIF_NAME} -o ${BLOP_NAME} -c "map\;unmap" > /dev/null # ';' cmake special char
+  COMMAND python3 ../../optim/abc_optimize.py -i ${BLIF_NAME} -o ${BLOP_NAME} -c ';' -v # no optimization
   DEPENDS abc ${BLIF_NAME})
 
 

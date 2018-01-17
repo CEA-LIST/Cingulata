@@ -1,0 +1,111 @@
+#
+#    (C) Copyright 2017 CEA LIST. All Rights Reserved.
+#    Contributor(s): Cingulata team (formerly Armadillo team)
+#
+#    This software is governed by the CeCILL-C license under French law and
+#    abiding by the rules of distribution of free software.  You can  use,
+#    modify and/ or redistribute the software under the terms of the CeCILL-C
+#    license as circulated by CEA, CNRS and INRIA at the following URL
+#    "http://www.cecill.info".
+#
+#    As a counterpart to the access to the source code and  rights to copy,
+#    modify and redistribute granted by the license, users are provided only
+#    with a limited warranty  and the software's author,  the holder of the
+#    economic rights,  and the successive licensors  have only  limited
+#    liability.
+#
+#    The fact that you are presently reading this means that you have had
+#    knowledge of the CeCILL-C license and that you accept its terms.
+#
+#
+
+import sys
+import argparse
+import shutil
+import os
+import subprocess
+import utils
+
+# Set ABC path
+ABC_PATH='@ABC_PATH@'
+ABC_SRC_PATH='@ABC_SRC_PATH@'
+ABC_LIB_PATH='{}/lib_red.genlib'.format(os.path.dirname(os.path.realpath(__file__)))
+
+DEFAULT_OPTIM_CMDS = [
+  '',
+  'resyn2',
+  'resyn2rs',
+  'recadd3;resyn2rs',
+]
+
+def build_opt_cmd(cmd, input_file, output_file, lib_file=ABC_LIB_PATH):
+  cmd_prefix = 'r {};r {}'.format(lib_file, input_file)
+  cmd_suffix = 'write_blif {}'.format(output_file) 
+
+  cmd = ';' + cmd + ';map;unmap'
+  cmd = cmd.replace(';',';ps;')   #add verbose instructions
+  cmd += ';'
+
+  return cmd_prefix + cmd + cmd_suffix
+
+def abc_init():
+  shutil.copyfile('{}/abc.rc'.format(ABC_SRC_PATH), 'abc.rc')
+
+def abc_end():
+  os.remove('abc.rc')
+
+def abc_exec_opt_cmd(cmd, verbose=False):
+  exec_cmd = list()
+  exec_cmd.append('{}/abc'.format(ABC_PATH))
+  exec_cmd.append('-c')
+  exec_cmd.append(cmd)
+  return_code = subprocess.call(exec_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+
+if __name__ == '__main__':
+  parser = argparse.ArgumentParser(description='Optimize BLIF circuit using ABC')
+  parser.add_argument('-i', type=str, dest='input_file', help='input BLIF file')
+  parser.add_argument('-o', type=str, dest='output_file', help='output BLIF file')
+  parser.add_argument('-c', type=str, dest='opt_cmd', help='ABC optimization commandmake ')
+  parser.add_argument('-v', action="store_true", default=False, dest="verbose")
+  args = parser.parse_args()
+
+  #optimization commands
+  optim_cmds = DEFAULT_OPTIM_CMDS
+  if args.opt_cmd:
+    optim_cmds = [args.opt_cmd]
+
+  #execute optimization commands
+  abc_init()
+
+  min_mult_depth = None
+  for k,cmd in enumerate(optim_cmds):
+    if args.verbose:
+      print('Executing optimization command "{}"'.format(cmd))
+
+    temp_output_file = '{}.{}'.format(k, args.output_file)
+    cmd_full = build_opt_cmd(cmd, input_file=args.input_file, 
+      output_file=temp_output_file)
+    abc_exec_opt_cmd(cmd_full, verbose=args.verbose)
+
+    if (os.path.isfile(temp_output_file)):
+      circuit = utils.readBlifFile(temp_output_file)
+      mult_depth = max(utils.getMultiplicativeDepths(circuit).values())
+
+      if args.verbose:
+        print('\tmultiplicative depth {}'.format(mult_depth), end='')
+
+      #smaller multiplicative depth obtained? keep circuit as output
+      if min_mult_depth is None or min_mult_depth > mult_depth:
+        min_mult_depth = mult_depth
+        shutil.copyfile(temp_output_file, args.output_file)
+        if args.verbose:
+          print(' *', end='')
+
+      if args.verbose:
+        print('')
+
+      os.remove(temp_output_file)
+    else:
+      print('\t!!! something went wrong !!!', file=sys.stderr)
+
+  abc_end()

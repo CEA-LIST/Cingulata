@@ -73,10 +73,10 @@ def getMultiplicativeDepths(G, const_inps = ['i_0', 'i_1']):
   return depth
 
 def getInputNodes(G):
-  return filter(lambda n: n.startswith('i_'), G.nodes_iter())
+  return list(filter(lambda n: n.startswith('i_'), G.nodes_iter()))
 
 def getOutputNodes(G):
-  return filter(lambda n: n.startswith('m_'), G.nodes_iter())
+  return list(filter(lambda n: n.startswith('m_'), G.nodes_iter()))
 
 truthTable2GateType = {
   '0': 'const_0',
@@ -89,19 +89,19 @@ truthTable2GateType = {
   '1 1': 'buf'}
 
 def getNodeCountPerType(G):
-  nodes = filter(lambda n: 'truth_table' in G.node[n], G.nodes_iter())
+  nodes = list(filter(lambda n: 'truth_table' in G.node[n], G.nodes_iter()))
 
-  clearCipherNodes = filter(lambda n: 'clear_cipher_exec' in G.node[n], nodes)
   cipherNodes = filter(lambda n: 'clear_cipher_exec' not in G.node[n], nodes)
+  clearCipherNodes = filter(lambda n: 'clear_cipher_exec' in G.node[n], nodes)
 
-  nodeTypes = map(lambda n: truthTable2GateType[G.node[n]['truth_table']], cipherNodes)
-  nodeTypes += map(lambda n: truthTable2GateType[G.node[n]['truth_table']] + '_cc', clearCipherNodes)
+  nodeTypes = list(map(lambda n: truthTable2GateType[G.node[n]['truth_table']], cipherNodes))
+  nodeTypes += list(map(lambda n: truthTable2GateType[G.node[n]['truth_table']] + '_cc', clearCipherNodes))
 
-  clearCipherExecNodes = map(lambda n: G.node[n]['truth_table'], nodes)
+  clearCipherExecNodes = list(map(lambda n: G.node[n]['truth_table'], nodes))
 
   nodeCount = dict()
   for nodeType in set(nodeTypes):
-    nodeCount[nodeType] = len(filter(lambda nt: nodeType == nt, nodeTypes))
+    nodeCount[nodeType] = len(list(filter(lambda nt: nodeType == nt, nodeTypes)))
 
   return nodeCount
 
