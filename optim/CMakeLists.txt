@@ -6,9 +6,10 @@ ExternalProject_Add(
     abc
     HG_REPOSITORY https://bitbucket.org/alanmi/abc
     HG_TAG 3414d13
-		UPDATE_COMMAND ""
-		PREFIX ${CMAKE_CURRENT_BINARY_DIR}/abc
-		INSTALL_COMMAND ""
+    UPDATE_COMMAND ""
+    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/abc
+    INSTALL_COMMAND ""
+    CMAKE_ARGS "-DREADLINE_FOUND=FALSE"
 )
 
 ExternalProject_Get_Property(abc BINARY_DIR)
