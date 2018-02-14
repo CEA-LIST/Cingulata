@@ -99,8 +99,8 @@ class _ParametersGenerator:
     self.t = params['pt_base'] # Maximum plaintext coefficient
     self.L = params['mult_depth'] # Circuit multiplicative depth
     self.k = params['relin_k']
-    self.cyclotomic_poly_order = params['cyclotomic_poly_order']
-    self.ring_degree_log2 = int(np.log2(self.cyclotomic_poly_order)) - 1 
+    self.cyclotomic_poly_index = params['cyclotomic_poly_index']
+    self.poly_degree_log2 = int(np.log2(self.cyclotomic_poly_index)) - 1 
     
     mpm.mp.prec = 128
     self.comp_init_params()
@@ -210,10 +210,10 @@ class _ParametersGenerator:
     return log2_modulo_lb
 
   def comp_all_params_given_degree(self):
-    log2_modulo_lb = self.comp_log2_modulo_lb_given_degree(self.ring_degree_log2)
+    log2_modulo_lb = self.comp_log2_modulo_lb_given_degree(self.poly_degree_log2)
     self.log2_q = mpm.ceil(log2_modulo_lb)
     #print self.log2_q
-    log2_sigma_lb = self.comp_log2_sigma_lb_given_modulo_degree(self.log2_q, self.ring_degree_log2)
+    log2_sigma_lb = self.comp_log2_sigma_lb_given_modulo_degree(self.log2_q, self.poly_degree_log2)
     self.sigma = mpm.power(2, log2_sigma_lb)
     self.B = self._comp_B(self._beta, self.sigma)
 
@@ -251,8 +251,8 @@ class _ParametersGenerator:
     tempStr = tempStr.replace("@FHE_PARAM_LOG2_Q@", "{0}".format(int(self.log2_q)))
     tempStr = tempStr.replace("@FHE_PARAM_LOG2_P@", "{0}".format(int(self.log2_p)))
     tempStr = tempStr.replace("@FHE_PARAM_LOG2_PQ@", "{0}".format(int(self.log2_pq)))
-    tempStr = tempStr.replace("@FHE_PARAM_LOG2_D@", "{0}".format(int(self.ring_degree_log2)))
-    tempStr = tempStr.replace("@FHE_PARAM_D@", "{0}".format(int(2 ** self.ring_degree_log2)))
+    tempStr = tempStr.replace("@FHE_PARAM_LOG2_D@", "{0}".format(int(self.poly_degree_log2)))
+    tempStr = tempStr.replace("@FHE_PARAM_D@", "{0}".format(int(2 ** self.poly_degree_log2)))
     tempStr = tempStr.replace("@FHE_PARAM_SIGMA_STR@", "{0}".format(self.out_mpf_C_str(self.sigma)))
     tempStr = tempStr.replace("@FHE_PARAM_B_STR@", "{0}".format(self.out_mpf_C_str(self.B)))
     tempStr = tempStr.replace("@FHE_PARAM_SIGMA_K_STR@", "{0}".format(self.out_mpf_C_str(self.sigma_k)))
@@ -319,9 +319,9 @@ class _ParametersGenerator:
     pr = doc.createElement("polynomial_ring")
     mp = doc.createElement("cyclotomic_polynomial")
 
-    #write cyclotomic polynomial order
-    on = doc.createElement("order")
-    on.appendChild(doc.createTextNode(str(int(2 * 2 ** self.ring_degree_log2))))
+    #write cyclotomic polynomial index
+    on = doc.createElement("index")
+    on.appendChild(doc.createTextNode(str(int(2 * 2 ** self.poly_degree_log2))))
     mp.appendChild(on)
     
     pr.appendChild(mp)
@@ -427,7 +427,7 @@ groupArgs.add_argument('--relin_k', help='Parameter k for the relinearization', 
 groupArgs.add_argument('--eps_exp', help='Epsilon exponent', default = -64, type = int)
 
 groupPoly = parser.add_argument_group("polynomial ring quotient", "cyclotomic polynomial Phi_m(x) parameters, for the moment only m=2^n polynomials are supported")
-groupPoly.add_argument('--cyclotomic_poly_order', help='Cyclotomic polynomial order, m', default = 2**10, type = int)
+groupPoly.add_argument('--cyclotomic_poly_index', help='Cyclotomic polynomial index, m', default = 2**10, type = int)
 
 groupOut = parser.add_argument_group("output")
 groupOut.add_argument('--output_xml', help='Output parameters file', default = "fhe_params.xml", type=str)

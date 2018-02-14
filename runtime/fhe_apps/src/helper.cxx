@@ -61,7 +61,7 @@ Options parseArgs(int argc, char** argv) {
       ("suffix", po::value<string>(&options.FileSuffix)->default_value(".ct"), "File suffix")
       ("start-idx", po::value<int>(&options.FileStartIdx)->default_value(2), "File index start value")
       ("idx-places", po::value<unsigned int>(&options.IdxPlaces)->default_value(0), "File index places")
-      ("file", po::bool_switch(&options.File)->default_value(false), "Write result in plaintext/encoded_resul(only if from-bin option is true)")
+      ("file", po::bool_switch(&options.File)->default_value(false), "Write result in plaintext/encoded_result (only if from-bin option is true)")
       ("help,h", "produce help message")
   ;
 

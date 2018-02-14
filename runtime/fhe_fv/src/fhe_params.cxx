@@ -153,9 +153,9 @@ void parseParamsPr(xml_node node) {
   node1 = node.child("cyclotomic_polynomial");
   if (not node1.empty() and not node1.child("coeffs").empty()) {
     parseParamsPolyCoeffs(node1.child("coeffs"), FheParams::PolyRingModulo);
-  } else if (not node1.child("order").empty()) {
-    unsigned int order = node1.child("order").text().as_uint();
-    arith_cyclotomic_polynomial(FheParams::PolyRingModulo, order);
+  } else if (not node1.child("index").empty()) {
+    unsigned int index = node1.child("index").text().as_uint();
+    arith_cyclotomic_polynomial(FheParams::PolyRingModulo, index);
   } else {
     cerr << "Error parsing XML params file: " <<
       "no ring modulo polynomial specified" << endl;
