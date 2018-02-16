@@ -133,7 +133,7 @@ void Scheduler::executeOperFinished(const Scheduler::Operation& oper) {
       }
     }
   }
-  executedCnt++;    
+  executedCnt++;
 }
 
 bool Scheduler::schedFinished() {
