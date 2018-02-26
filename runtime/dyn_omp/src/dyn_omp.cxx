@@ -283,7 +283,7 @@ int main(int argc, char **argv)
   /* Create scheduler */
   Scheduler* sched = new Scheduler(circuit, priority);
 
-  function<void ()> doWork = [homExec, sched, &circuit]() {
+  function<void ()> doWork = [homExec, sched]() {
     Scheduler::Operation oper;
     do {
       oper = sched->next();
