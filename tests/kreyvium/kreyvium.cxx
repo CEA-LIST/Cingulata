@@ -134,6 +134,6 @@ int main()
 {
   readKeyAndRunKreyvium();
 
-  FINALIZE_CIRCUIT("kreyvium.blif");  
+  FINALIZE_CIRCUIT(blif_name);  
 }
 

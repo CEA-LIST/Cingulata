@@ -9,14 +9,14 @@ set(SRCS
 set(NB_CHARS 6)
 set(LIST_SIZE 10)
 
-add_compile_options(-Wall -std=c++11 -Dnb_chars=${NB_CHARS} -Dlist_size=${LIST_SIZE})
+set(BLIF_NAME ${TEST_NAME}.blif)
+set(BLOP_NAME ${TEST_NAME}-opt.blif)
+
+add_compile_options(-Wall -std=c++11 -Dnb_chars=${NB_CHARS} -Dlist_size=${LIST_SIZE} -Dblif_name="${BLIF_NAME}")
 
 set(GEN_NAME ${TEST_NAME}-gen)
 
 add_executable(${GEN_NAME} ${SRCS}) 
-
-set(BLIF_NAME ${TEST_NAME}.blif)
-set(BLOP_NAME ${TEST_NAME}-opt.blif)
 
 target_link_libraries(${GEN_NAME} generator)
 

@@ -94,6 +94,6 @@ int main()
 		cout << risk[i];
 	}
 	
-	FINALIZE_CIRCUIT("cardio.blif");
+	FINALIZE_CIRCUIT(blif_name);
 }
 

@@ -39,6 +39,6 @@ int main()
 
 	cout<<c;
 	
-	FINALIZE_CIRCUIT("hello.blif");
+	FINALIZE_CIRCUIT(blif_name);
 }
 

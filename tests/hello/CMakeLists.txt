@@ -6,7 +6,10 @@ set(SRCS
     ${TEST_NAME}.cxx
     )
 
-add_compile_options(-Wall -std=c++11)
+set(BLIF_NAME ${TEST_NAME}.blif)
+set(BLOP_NAME ${TEST_NAME}-opt.blif)
+
+add_compile_options(-Wall -std=c++11 -Dblif_name="${BLIF_NAME}")
 
 set(GEN_NAME ${TEST_NAME}-gen)
 

@@ -179,6 +179,6 @@ int main()
 		cout<<out;
 	}
 	
-  	FINALIZE_CIRCUIT("flip.blif");
+  	FINALIZE_CIRCUIT(blif_name);
 }
 

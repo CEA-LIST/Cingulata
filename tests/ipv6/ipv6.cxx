@@ -52,6 +52,6 @@ int main() {
            ((IP1[6] == IP2[6]) * (IP1[7] == IP2[7])));
 
 
-  FINALIZE_CIRCUIT("ipv6.blif");
+  FINALIZE_CIRCUIT(blif_name);
 
 }

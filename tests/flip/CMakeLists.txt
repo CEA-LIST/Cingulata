@@ -5,15 +5,15 @@ set(TEST_NAME flip)
 set(SRCS 
     ${TEST_NAME}.cxx
     )
+    
+set(BLIF_NAME ${TEST_NAME}.blif)
+set(BLOP_NAME ${TEST_NAME}-opt.blif)
 
-add_compile_options(-Wall -std=c++11)
+add_compile_options(-Wall -std=c++11 -Dblif_name="${BLIF_NAME}")
 
 set(GEN_NAME ${TEST_NAME}-gen)
 
 add_executable(${GEN_NAME} ${SRCS}) 
-
-set(BLIF_NAME ${TEST_NAME}.blif)
-set(BLOP_NAME ${TEST_NAME}-opt.blif)
 
 target_link_libraries(${GEN_NAME} generator)
 

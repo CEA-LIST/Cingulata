@@ -54,6 +54,6 @@ int main() {
 
   cout << answer;
 
-  FINALIZE_CIRCUIT("membership.blif");
+  FINALIZE_CIRCUIT(blif_name);
 
 }

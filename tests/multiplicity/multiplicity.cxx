@@ -48,6 +48,6 @@ int main() {
 
   cout << answer;
 
-  FINALIZE_CIRCUIT("multiplicity.blif");
+  FINALIZE_CIRCUIT(blif_name);
 
 }

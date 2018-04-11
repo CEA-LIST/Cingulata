@@ -65,5 +65,5 @@ int main() {
   
   cout << answer;
 
-  FINALIZE_CIRCUIT("ASCII.blif");
+  FINALIZE_CIRCUIT(blif_name);
 }

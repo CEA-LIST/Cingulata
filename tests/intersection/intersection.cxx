@@ -70,6 +70,6 @@ int main() {
     cout << select(are_equal[i], first_list[i], not_member);
   }
 
-	FINALIZE_CIRCUIT("intersection.blif");
+	FINALIZE_CIRCUIT(blif_name);
 
 }

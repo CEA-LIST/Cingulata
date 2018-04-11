@@ -347,7 +347,7 @@ void test_sorting(){
 		cout << y[i];// << endl;
 	}
 
-	FINALIZE_CIRCUIT("sorting.blif");
+	FINALIZE_CIRCUIT(blif_name);
 }
 
 int main()

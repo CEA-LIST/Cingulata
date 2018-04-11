@@ -121,6 +121,6 @@ void readKeyAndRunTrivium(void)
 int main() {
   readKeyAndRunTrivium();
   
-  FINALIZE_CIRCUIT("trivium.blif");
+  FINALIZE_CIRCUIT(blif_name);
 }
 

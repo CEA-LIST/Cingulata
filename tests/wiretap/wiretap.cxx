@@ -44,6 +44,6 @@ int main()
 
 	cout<<r;
 	
-	FINALIZE_CIRCUIT("wiretap.blif");
+	FINALIZE_CIRCUIT(blif_name);
 }
 

@@ -41,6 +41,6 @@ int main() {
   // equality test
   cout << (IP1 == IP2);
 
-  FINALIZE_CIRCUIT("ipv4.blif");
+  FINALIZE_CIRCUIT(blif_name);
 
 }
