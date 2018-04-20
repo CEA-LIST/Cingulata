@@ -78,9 +78,7 @@ void Scheduler::initScheduler() {
 
 Scheduler::Operation Scheduler::popFinishedQueue() {
   unique_lock<mutex> lck(finishedQueueMtx);
-  while (finishedQueue.empty()) {
-    finishedQueueCond.wait(lck);
-  }
+  finishedQueueCond.wait(lck, [this]{return !this->finishedQueue.empty();});
   Scheduler::Operation oper = finishedQueue.front();
   finishedQueue.pop();
   return oper;
