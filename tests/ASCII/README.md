@@ -9,9 +9,9 @@ ASCII directory contains two shell scripts:
 For both, the homomorphic circuit searches if a string (of characters) belongs to a list of strings. The test is case-sensitive. The answer is 1 (= true) or 0 (= false).  Each string is represented by a fixed number *nb_chars* of type Integer8. A variable of this type serves to store an encryption of an 8 bit integer. 
 
 * In *search_fixed_length.sh*, each string must have a fixed length equal to *nb_chars*.
-* In *search_max_length.sh*, each string can have any length. The search is exact up to the maximal lenght *nb_chars*.  
-  * If the lenght is less than *nb_chars*, a zero padding is operated to obtain *nb_chars* Integer8. 
-  * If the lenght is more than *nb_chars*, a truncation is operated to keep only the first *nb_chars* Integer8. In other words, the search is operated on the truncated string not on the whole one. It permits to say two strings begins with the same *nb_chars* characters or not.
+* In *search_max_length.sh*, each string can have any length. The search is exact up to the maximal length *nb_chars*.  
+  * If the length is less than *nb_chars*, a zero padding is operated to obtain *nb_chars* Integer8. 
+  * If the length is more than *nb_chars*, a truncation is operated to keep only the first *nb_chars* Integer8. In other words, the search is operated on the truncated string not on the whole one. It permits to say two strings begins with the same *nb_chars* characters or not.
 
 ## Requirements
 * Each character has to be encoded in [ASCII](http://www.asciitable.com/).
@@ -29,7 +29,7 @@ For both, the homomorphic circuit searches if a string (of characters) belongs t
 
 * The list used for search_fixed_length.sh* is in the file *plaintext/countries6*.
 * The list used for search_max_length.sh* is in the file *plaintext/countries*.
-* In *search_fixed_length.sh*, the user has to give a request word of lenght *nb_chars*. 
+* In *search_fixed_length.sh*, the user has to give a request word of length *nb_chars*. 
 
 ```sh
 $ ./search_fixed_length.sh France
