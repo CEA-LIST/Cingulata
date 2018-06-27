@@ -40,7 +40,7 @@ class KeyGen {
 
   public:
     void generateKeys();
-    void writeKeys(const std::string& fileNamePrefix, const bool binary = true);
+    void writeKeys(const std::string& fileNamePrefix, const rwBase binary = BIN);
 };
 
 #endif

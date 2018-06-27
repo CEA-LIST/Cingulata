@@ -46,7 +46,25 @@ struct Options {
   unsigned int nrThreads;
   vector< pair<string, vector<unsigned int> > > OutputFilesMessages;
   bool verbose;
+	rwBase base;
 };
+
+std::istream& operator>>(std::istream& is, rwBase& base)
+{
+	string tmp;
+	is >> tmp;	
+
+	if (tmp == "BIN") 
+		base = BIN;			
+
+	if (tmp == "B64") 
+		base = B64;
+
+	if (tmp == "B62") 
+		base = B62;			
+	
+	return is;
+}	
 
 /**
  * @brief Parses output files and messages from tokenized command line string
@@ -122,7 +140,8 @@ Options parseArgs(int argc, char** argv) {
       ("threads", po::value<unsigned int>(&options.nrThreads)->default_value(1), "Number of parallel execution threads")
       ("help,h", "produce help message")
       ("verbose,v", po::bool_switch(&options.verbose)->default_value(false), "enable verbosity")
-  ;
+  		("rw-base", po::value<rwBase>(&options.base)->default_value(BIN), "choose a base for encoding ciphertexts")
+		;
 
   po::options_description hidden("Hidden");
   hidden.add_options()
@@ -189,6 +208,7 @@ Options parseArgs(int argc, char** argv) {
       }
     }
 
+	
     /* Fill options.OutputFilesMessages from positional arguments */
     parseMessages(msgs_tokens, options.OutputFilesMessages);
 
@@ -258,7 +278,7 @@ int main(int argc, char **argv) {
   }
 
   KeysShare keys;
-  keys.readPublicKey(options.PublicKeyFile);
+  keys.readPublicKey(options.PublicKeyFile, options.base);
 
   #pragma omp parallel for num_threads(options.nrThreads)
   for (unsigned int i = 0; i < options.OutputFilesMessages.size(); ++i) {
@@ -279,9 +299,9 @@ int main(int argc, char **argv) {
     PolyRing pTxtPoly(msgs);
 
     if (options.clear) {
-      EncDec::EncryptPoly(pTxtPoly).write(out_fn);
+      EncDec::EncryptPoly(pTxtPoly).write(out_fn, options.base);
     } else {
-      EncDec::EncryptPoly(pTxtPoly, *keys.PublicKey).write(out_fn);
+      EncDec::EncryptPoly(pTxtPoly, *keys.PublicKey).write(out_fn, options.base);
     }
   }
 

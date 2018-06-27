@@ -84,15 +84,15 @@ void HomomorphicExecutor::Copy(CipherText*& ct, const CipherText* const ct_cpy) 
 void HomomorphicExecutor::Read(CipherText*& ct, const string& fn) {
   steady_clock::time_point start = steady_clock::now();
 
-  ct->read(fn);
+  ct->read(fn, base);
 
   updateMeasures(start, "READ");
 }
 
 void HomomorphicExecutor::Write(CipherText*& ct, const string& fn) {
   steady_clock::time_point start = steady_clock::now();
-  
-  ct->write(fn, not stringOutput);
+ 
+ 	ct->write(fn, base);
 
   updateMeasures(start, "WRITE");
 }
@@ -156,17 +156,17 @@ void HomomorphicExecutor::ExecuteOR(
 
 HomomorphicExecutor::HomomorphicExecutor(const Circuit& circuit_p,
           const string& evalKeyFile, const string& publicKeyFile, 
-          const bool verbose_p, const bool stringOutput_p):
-    circuit(circuit_p), verbose(verbose_p), stringOutput(stringOutput_p)
+          const bool verbose_p, const rwBase base_p):
+    circuit(circuit_p), verbose(verbose_p), base(base_p)
 {
   allocatedCnt = 0;
 
   /* Read evaluation key and public key files */
   keys = new KeysShare();
-  keys->readEvalKey(evalKeyFile);
-  keys->readPublicKey(publicKeyFile);
-  
-  /* Initialize execution metrics data structures */
+  keys->readEvalKey(evalKeyFile, base);
+  keys->readPublicKey(publicKeyFile, base);
+
+	/* Initialize execution metrics data structures */
   const string operNames[] = {"READ", "WRITE", "XOR", "AND", "OR", "NOT", "COPY"};
   for (const string &operName : operNames) {
     execMtx[operName] = new mutex();

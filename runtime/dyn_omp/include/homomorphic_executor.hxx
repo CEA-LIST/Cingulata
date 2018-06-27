@@ -61,7 +61,7 @@ class HomomorphicExecutor {
 
     std::string inpsDir = "input/";
     std::string outsDir = "output/";
-    bool stringOutput;
+		rwBase base;
 
   private:
     /**
@@ -140,10 +140,11 @@ class HomomorphicExecutor {
      * @param[in] publicKeyFile public key file name
      * @param[in] verbose_p verbose execution
      * @param[in] stringOutput write outputs in string format
+		 * @param[in] base for output encoding
      */
     HomomorphicExecutor(const Circuit& circuit,
               const std::string& evalKeyFile, const std::string& publicKeyFile,
-              const bool verbose_p, const bool stringOutput);
+              const bool verbose_p, const rwBase base);
 
     /**
      * @brief Destructs homomorphic executor object
