@@ -142,7 +142,9 @@ class SlicedInteger
     SlicedInteger operator*(const BitType &) const;
 
     BitType operator<(const SlicedInteger &) const;
+    BitType operator<=(const SlicedInteger &) const;
     BitType operator>(const SlicedInteger &) const;
+    BitType operator>=(const SlicedInteger &) const;
     BitType operator==(const SlicedInteger &) const;
     BitType operator!=(const SlicedInteger &) const;
     
@@ -674,6 +676,19 @@ BitType SlicedInteger<BitType,IntType>::operator<
 
 /* see declaration above */
 template <typename BitType, typename IntType>
+BitType SlicedInteger<BitType,IntType>::operator<=
+  (const SlicedInteger &operand_i) const
+{
+  /* the least significant bit is 1 if this value is lesser than or equals to the other */
+  BitType lesser_eq_v;
+
+  /* optimized method with circuit depth log(l)+1*/
+  lesser_eq_v = !is_greater((*this).digits_m, operand_i.digits_m, 0, 8*sizeof(IntType));
+  return lesser_eq_v;
+}
+
+/* see declaration above */
+template <typename BitType, typename IntType>
 BitType SlicedInteger<BitType,IntType>::operator>
   (const SlicedInteger &operand_i) const
 {
@@ -684,6 +699,19 @@ BitType SlicedInteger<BitType,IntType>::operator>
   greater_v = is_greater((*this).digits_m, operand_i.digits_m, 0, 8*sizeof(IntType));
     
   return greater_v;
+}
+
+/* see declaration above */
+template <typename BitType, typename IntType>
+BitType SlicedInteger<BitType,IntType>::operator>=
+  (const SlicedInteger &operand_i) const
+{
+  /* the least significant bit is 1 if this value is greater than or equals to the other */
+  BitType greater_eq_v;
+
+  /* optimized method with circuit depth log(l)+1*/
+  greater_eq_v = !is_greater(operand_i.digits_m, (*this).digits_m, 0, 8*sizeof(IntType));
+  return greater_eq_v;
 }
 
 
