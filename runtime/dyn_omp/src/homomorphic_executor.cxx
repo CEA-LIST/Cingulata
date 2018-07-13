@@ -154,14 +154,19 @@ void HomomorphicExecutor::ExecuteOR(
   updateMeasures(start, "OR");
 }
 
-HomomorphicExecutor::HomomorphicExecutor(const Circuit& circuit_p,
-          const string& evalKeyFile, const string& publicKeyFile, 
-          const bool verbose_p, const rwBase base_p):
-    circuit(circuit_p), verbose(verbose_p), base(base_p)
+void HomomorphicExecutor::init(const Circuit& circuit_p,
+              const std::string& evalKeyFile, const std::string& publicKeyFile,
+              const bool verbose_p, const rwBase base_p, const bool outToFile,
+							const std::map<std::string, CipherText>& ct_in)
 {
-  allocatedCnt = 0;
-
-  /* Read evaluation key and public key files */
+	circuit = Circuit(circuit_p);
+	verbose = verbose_p;
+	base = base_p;
+	OutputToFile = outToFile;
+	
+	allocatedCnt = 0;
+  
+	/* Read evaluation key and public key files */
   keys = new KeysShare();
   keys->readEvalKey(evalKeyFile, base);
   keys->readPublicKey(publicKeyFile, base);
@@ -174,15 +179,45 @@ HomomorphicExecutor::HomomorphicExecutor(const Circuit& circuit_p,
     execCnt[operName] = 0;
   }
 
+	/* Define constant ciphertexts */
+  ct_const_0 = new CipherText(EncDec::Encrypt(0));
+  ct_const_1 = new CipherText(EncDec::Encrypt(1));
+
   /* For each circuit gate create a corresponding ciphertext pointer */
   Circuit::vertex_iterator vi, vi_end;
   for (tie(vi,vi_end) = vertices(circuit); vi != vi_end; vi++) {
     cipherTxts[*vi] = nullptr;
-  }
+		if(circuit[*vi].type == GateType::INPUT) {
+			if (ct_in.find(circuit[*vi].id) != ct_in.end()) 
+				cipherTxts[*vi] = new CipherText(ct_in.at(circuit[*vi].id));
+			else {
+				cipherTxts[*vi] = new CipherText();
+      	Read(cipherTxts[*vi], inpsDir + circuit[*vi].id + ".ct");
+			}	
+		}
+	}	
+}	
 
-  /* Define constant ciphertexts */
-  ct_const_0 = new CipherText(EncDec::Encrypt(0));
-  ct_const_1 = new CipherText(EncDec::Encrypt(1));
+HomomorphicExecutor::HomomorphicExecutor(const Circuit& circuit_p,
+          const string& evalKeyFile, const string& publicKeyFile, 
+          const bool verbose_p, const rwBase base_p, const bool outToFile,
+					const map<string, CipherText>& ct_in)
+{
+	init(circuit_p, evalKeyFile, publicKeyFile, verbose_p, base_p, outToFile, ct_in);
+}
+
+HomomorphicExecutor::HomomorphicExecutor(const Circuit& circuit_p,
+          const string& evalKeyFile, const string& publicKeyFile, 
+          const bool verbose_p, const rwBase base_p, const bool outToFile,
+					const vector<CipherText>& ct_in)
+{
+	map<string, CipherText> ct_tmp;
+	for (unsigned int i = 0; i < ct_in.size(); i++) {
+		string s = "i_" + to_string(i + 2);
+		ct_tmp.emplace(s, ct_in[i]);
+	}
+	
+	init(circuit_p, evalKeyFile, publicKeyFile, verbose_p, base_p, outToFile, ct_tmp);
 }
 
 HomomorphicExecutor::~HomomorphicExecutor() {
@@ -202,9 +237,12 @@ HomomorphicExecutor::~HomomorphicExecutor() {
 }
 
 void HomomorphicExecutor::DeleteGateData(const Circuit::vertex_descriptor idx) {
-  delete cipherTxts[idx];
-  cipherTxts[idx] = nullptr;
-  allocatedCnt--;
+  GateProperties gate = circuit[idx];
+	if (!gate.isOutput) {
+		delete cipherTxts[idx];
+  	cipherTxts[idx] = nullptr;
+  	allocatedCnt--;
+	}
 }
 
 void HomomorphicExecutor::ExecuteGate(const Circuit::vertex_descriptor idx) {
@@ -224,12 +262,11 @@ void HomomorphicExecutor::ExecuteGate(const Circuit::vertex_descriptor idx) {
   if (verbose) {
     printGateInfo(gate, pred1, pred2);
   }
-
-  /* Execute gate operation homomorphically */
+  
+	/* Execute gate operation homomorphically */
   switch (gate.type) {
-      case GateType::INPUT:
-        cipherTxts[idx] = new CipherText();
-        Read(cipherTxts[idx], inpsDir + gate.id + ".ct");
+      case GateType::INPUT:	 			
+				//cout << "[HEXECUTOR:INPUT] gate index: "<< idx << "\t gate identifier: " << gate.id << endl; 
         break;
       case GateType::XOR:
         ExecuteXOR(cipherTxts[idx], cipherTxts[pred1], cipherTxts[pred2]);
@@ -263,9 +300,21 @@ void HomomorphicExecutor::ExecuteGate(const Circuit::vertex_descriptor idx) {
   
   /* If gate is output write its value */
   if (gate.isOutput) {
-    Write(cipherTxts[idx], outsDir + gate.id + ".ct");
-  }
+		if (OutputToFile)
+    	Write(cipherTxts[idx], outsDir + gate.id + ".ct");
+			//cout << "[HEXECUTOR:OUTPUT] gate index: "<< idx << "\t gate identifier: " << gate.id << endl;
+	}
 }
+
+void HomomorphicExecutor::GetOutputCiphertext(Circuit& circuit, map<string, CipherText*>& ct_out)
+{
+  Circuit::vertex_iterator vi, vi_end;
+  for (tie(vi,vi_end) = vertices(circuit); vi != vi_end; vi++) {
+		if (circuit[*vi].isOutput) {
+			ct_out.emplace(circuit[*vi].id, new CipherText(*cipherTxts[*vi]));
+		}	
+	}	
+}	
 
 void HomomorphicExecutor::printExecTime() {
   cout << "READ time " << execTime["READ"] << " seconds, #execs " << execCnt["READ"] << endl;

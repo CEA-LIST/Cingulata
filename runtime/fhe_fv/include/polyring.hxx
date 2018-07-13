@@ -297,33 +297,33 @@ public:
 	 * @brief convert a random string into a string encoded in Base64
 	 * @param in is the string to be encoded in base64
 	 */
-	std::string encodeInBase64(const std::string& in);
+	static std::string encodeInBase64(const std::string& in);
 
 	/**
 	 * @brief decode a string encoded in Base64
 	 * @param in is the string to be decoded
 	 */
-	std::string decodeFromBase64(const std::string& in);
+	static std::string decodeFromBase64(const std::string& in);
 
 	/**
 	 * @brief encode fmpz_poly_t element in a Base64 string
 	 */
-	std::string encodeInBase64(const fmpz_poly_t& p);
+	static std::string encodeInBase64(const fmpz_poly_t& p);
 
 	/**
 	 * @brief get fmpz_poly_t element from a Base64 string
 	 */
-	void decodeFromBase64(const std::string& s, fmpz_poly_t& p);
+	static void decodeFromBase64(const std::string& s, fmpz_poly_t& p);
 
 	/**
 	 * @brief encode a polynomial ring element in a Base64 string
 	 */
-	std::string encodeInBase64(const PolyRing& prElem);
+	static std::string encodeInBase64(const PolyRing& prElem);
 
 	/**
 	 * @brief recover a polynomial ring element from a Base64 string
 	 */
-	void decodeFromBase64(const std::string& s, PolyRing& prElem);
+	static void decodeFromBase64(const std::string& s, PolyRing& prElem);
  	
 	/** @brief write a PolyRing element to a file stream
  	*/

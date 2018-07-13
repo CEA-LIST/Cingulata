@@ -189,3 +189,17 @@ void UpdateCircuitWithClearInputs(Circuit& circuit, const unordered_map<string, 
     }
   }
 }
+
+void UpdateCircuitWithClearInputs(Circuit& circuit, unsigned int offset, const std::vector<unsigned int>& clearInps)
+{
+	if (clearInps.size() == 0) return;
+	
+	unordered_map<string, bool> ci;
+
+	for (unsigned int i = 0; i < clearInps.size(); i++) {
+		string s = "i_" + to_string(i + offset + 2);
+		ci.insert(make_pair(s , bool(clearInps[i])));
+  }	
+	
+	UpdateCircuitWithClearInputs(circuit, ci);
+}	
