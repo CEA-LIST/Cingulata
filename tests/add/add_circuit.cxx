@@ -34,11 +34,11 @@ int main()
 
 	cin>>a;
 	cin>>b;
-	
+
 	c=a+b;
 
 	cout<<c;
-	
+
 	FINALIZE_CIRCUIT(blif_name);
 }
 

@@ -61,9 +61,9 @@ class HomomorphicExecutor {
 
     std::string inpsDir = "input/";
     std::string outsDir = "output/";
-		rwBase base;
-		
-		bool OutputToFile = true;
+    rwBase base;
+
+    bool OutputToFile = true;
 
   private:
     /**
@@ -82,12 +82,12 @@ class HomomorphicExecutor {
      * @brief Allocates a new ciphertext
      */
     void Allocate(CipherText*& ct);
-    
+
     /**
      * @brief Copies a ciphertext
      */
     void Copy(CipherText*& ct, const CipherText* const ct_cpy);
-    
+
     /**
      * @brief Reads ciphertext \c ct from file \c fn
      */
@@ -132,39 +132,50 @@ class HomomorphicExecutor {
       CipherText *&ct_res,
       const CipherText* const ct_n1,
       const CipherText* const ct_n2);
-		
-		/**
-		 * @brief init function for HomomorphicExecutor constructors
-		 *
-		 */
-		void init(const Circuit& circuit,
+
+    /**
+     * @brief init function for HomomorphicExecutor constructors
+     *
+     */
+    void init(const Circuit& circuit,
               const std::string& evalKeyFile, const std::string& publicKeyFile,
               const bool verbose_p, const rwBase base = BIN, const bool outToFile = true,
-							const std::map<std::string, CipherText>& ct_in = std::map<std::string, CipherText>());
+              const std::map<std::string, CipherText>& ct_in = std::map<std::string, CipherText>());
 
-	  public:
+    public:
     /**
      * @brief Builds a homomorphic executor object
-     * 
+     *
      * @param[in] circuit boolean circuit to execute homomorphically
      * @param[in] evalKeyFile evaluation key file name
      * @param[in] publicKeyFile public key file name
      * @param[in] verbose_p verbose execution
-		 * @param[in] base for output encoding
-		 * @param[in] outToFile write output ciphertexts to .ct files 
-		 * @param[in] ct_in input ciphertexts for the circuit
+     * @param[in] base for output encoding
+     * @param[in] outToFile write output ciphertexts to .ct files
+     * @param[in] ct_in input ciphertexts for the circuit
      */
     HomomorphicExecutor(const Circuit& circuit,
               const std::string& evalKeyFile, const std::string& publicKeyFile,
               const bool verbose_p, const rwBase base = BIN, const bool outToFile = true,
-							const std::map<std::string, CipherText>& ct_in = std::map<std::string, CipherText>());
-		
-		HomomorphicExecutor(const Circuit& circuit_p,
-          		const std::string& evalKeyFile, const std::string& publicKeyFile, 
-          		const bool verbose_p, const rwBase base_p, const bool outToFile,
-							const std::vector<CipherText>& ct_in);
+              const std::map<std::string, CipherText>& ct_in = std::map<std::string, CipherText>());
 
-		/** 
+    /**
+     * @brief Builds a homomorphic executor object
+     *
+     * @param[in] circuit boolean circuit to execute homomorphically
+     * @param[in] evalKeyFile evaluation key file name
+     * @param[in] publicKeyFile public key file name
+     * @param[in] verbose_p verbose execution
+     * @param[in] base for output encoding
+     * @param[in] outToFile write output ciphertexts to .ct files
+     * @param[in] ct_in input ciphertexts for the circuit
+     */
+    HomomorphicExecutor(const Circuit& circuit_p,
+              const std::string& evalKeyFile, const std::string& publicKeyFile,
+              const bool verbose_p, const rwBase base_p, const bool outToFile,
+              const std::vector<CipherText>& ct_in);
+
+    /**
      * @brief Destructs homomorphic executor object
      */
     ~HomomorphicExecutor();
@@ -178,13 +189,13 @@ class HomomorphicExecutor {
      * @brief Executes gate \c idx
      */
     void ExecuteGate(const Circuit::vertex_descriptor idx);
-		
-		/**
-		 * @brief Recovers the encrypted outputs of the circuit evaluation 
-		 */
-		void GetOutputCiphertext(Circuit& circuit, std::map<std::string, CipherText*>& ct_out);
 
-	  /**
+    /**
+     * @brief Recovers the encrypted outputs of the circuit evaluation
+     */
+    void GetOutputCiphertext(Circuit& circuit, std::map<std::string, CipherText*>& ct_out);
+
+    /**
      * @brief Prints logged information about execution
      */
     void printExecTime();

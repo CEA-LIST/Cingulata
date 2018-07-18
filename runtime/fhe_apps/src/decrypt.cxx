@@ -43,25 +43,8 @@ struct Options {
   unsigned  int nrThreads;
   vector<string> InputFiles;
   bool verbose;
-	rwBase base;
+	string base;
 };
-
-std::istream& operator>>(std::istream& is, rwBase& base)
-{
-	string tmp;
-	is >> tmp;	
-
-	if (tmp == "BIN") 
-		base = BIN;			
-
-	if (tmp == "B64") 
-		base = B64;
-
-	if (tmp == "B62") 
-		base = B62;			
-	
-	return is;
-}
 
 Options parseArgs(int argc, char** argv) {
   Options options;
@@ -78,7 +61,7 @@ Options parseArgs(int argc, char** argv) {
       ("threads", po::value<unsigned  int>(&options.nrThreads)->default_value(1), "Number of parallel execution threads")
       ("help,h", "produce help message")
       ("verbose,v", po::bool_switch(&options.verbose)->default_value(false), "enable verbosity")
-			("rw-base", po::value<rwBase>(&options.base)->default_value(BIN), "choose a base for encoding ciphertexts")
+			("rw-base", po::value<string>(&options.base)->default_value("BIN"), "choose a base for encoding ciphertexts")
   ;
 
   po::options_description hidden("Hidden");
@@ -111,9 +94,9 @@ Options parseArgs(int argc, char** argv) {
       cout << config << endl;
       exit(0);
     }
-    
+
     po::notify(vm);
-	
+
 	} catch (po::error& e) {
     cerr << "ERROR: " << e.what() << endl;
     cerr << config << endl;
@@ -157,15 +140,17 @@ int main(int argc, char **argv) {
     }
   }
 
+  rwBase base = FheParams::getBaseFromString(options.base);
+
   KeysAll keys;
-  keys.readSecretKey(options.SecretKeyFile.c_str(), options.base);
-	
+  keys.readSecretKey(options.SecretKeyFile.c_str(), base);
+
 	#pragma omp parallel for ordered num_threads(options.nrThreads)
   for (unsigned int i = 0; i < options.InputFiles.size(); i++) {
     string fileName = options.InputFiles[i];
 
     CipherText ct;
-    ct.read(fileName.c_str(), options.base);
+    ct.read(fileName.c_str(), base);
 
     PolyRing pTxtPoly = EncDec::DecryptPoly(ct, *keys.SecretKey);
     unsigned int noise;
@@ -200,7 +185,7 @@ int main(int argc, char **argv) {
           cout << " ";
       }
       if (options.verbose) {
-        cout << "]";  
+        cout << "]";
       }
       cout << endl;
     }

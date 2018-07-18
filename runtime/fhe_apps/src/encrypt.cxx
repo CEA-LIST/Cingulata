@@ -46,32 +46,15 @@ struct Options {
   unsigned int nrThreads;
   vector< pair<string, vector<unsigned int> > > OutputFilesMessages;
   bool verbose;
-	rwBase base;
+	string base;
 };
-
-std::istream& operator>>(std::istream& is, rwBase& base)
-{
-	string tmp;
-	is >> tmp;	
-
-	if (tmp == "BIN") 
-		base = BIN;			
-
-	if (tmp == "B64") 
-		base = B64;
-
-	if (tmp == "B62") 
-		base = B62;			
-	
-	return is;
-}	
 
 /**
  * @brief Parses output files and messages from tokenized command line string
  * @details This methods takes tokenized command line arguments and groups them
  *  into pairs of "file name" and "messages".
- *  Messages split by space are polynomial coefficients. 
- * 
+ *  Messages split by space are polynomial coefficients.
+ *
  * @param msgs_tokens tokenized command line
  * @param outputFilesMessages Output sfile and messages pairs
  */
@@ -115,7 +98,7 @@ void parseMessages(const vector<string>& msgs_tokens, vector< pair<string, vecto
 
     vector<string> coef_msgs;
     ba::split(coef_msgs, msgs, ba::is_space(), ba::token_compress_on);
-    
+
     vector<unsigned int> coefs;
     for (const string& msg: coef_msgs) {
       coefs.push_back(boost::lexical_cast<unsigned int>(msg));
@@ -140,7 +123,7 @@ Options parseArgs(int argc, char** argv) {
       ("threads", po::value<unsigned int>(&options.nrThreads)->default_value(1), "Number of parallel execution threads")
       ("help,h", "produce help message")
       ("verbose,v", po::bool_switch(&options.verbose)->default_value(false), "enable verbosity")
-  		("rw-base", po::value<rwBase>(&options.base)->default_value(BIN), "choose a base for encoding ciphertexts")
+  		("rw-base", po::value<string>(&options.base)->default_value("BIN"), "choose a base for encoding ciphertexts")
 		;
 
   po::options_description hidden("Hidden");
@@ -176,12 +159,12 @@ Options parseArgs(int argc, char** argv) {
            << argv[0] << " [options] f0.ct 0 f1.ct 1 f2.ct 0\n";
       cout << "\tExample 2 - encrypt several messages into a ciphertext using"
               " coefficient packing:\n\t" << argv[0] <<
-              " [options] f0.ct 0 f1.ct 1 0 1 f2.ct 1 1\n"; 
+              " [options] f0.ct 0 f1.ct 1 0 1 f2.ct 1 1\n";
 
       cout << config << endl;
       exit(0);
     }
-    
+
     po::notify(vm);
 
     if (vm.count("public-key") == 0) {
@@ -208,7 +191,7 @@ Options parseArgs(int argc, char** argv) {
       }
     }
 
-	
+
     /* Fill options.OutputFilesMessages from positional arguments */
     parseMessages(msgs_tokens, options.OutputFilesMessages);
 
@@ -277,8 +260,10 @@ int main(int argc, char **argv) {
     }
   }
 
+  rwBase base = FheParams::getBaseFromString(options.base);
+
   KeysShare keys;
-  keys.readPublicKey(options.PublicKeyFile, options.base);
+  keys.readPublicKey(options.PublicKeyFile, base);
 
   #pragma omp parallel for num_threads(options.nrThreads)
   for (unsigned int i = 0; i < options.OutputFilesMessages.size(); ++i) {
@@ -299,9 +284,9 @@ int main(int argc, char **argv) {
     PolyRing pTxtPoly(msgs);
 
     if (options.clear) {
-      EncDec::EncryptPoly(pTxtPoly).write(out_fn, options.base);
+      EncDec::EncryptPoly(pTxtPoly).write(out_fn, base);
     } else {
-      EncDec::EncryptPoly(pTxtPoly, *keys.PublicKey).write(out_fn, options.base);
+      EncDec::EncryptPoly(pTxtPoly, *keys.PublicKey).write(out_fn, base);
     }
   }
 

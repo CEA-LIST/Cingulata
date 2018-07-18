@@ -28,6 +28,12 @@
 #include <flint/fmpz.h>
 #include <flint/fmpz_poly.h>
 
+enum rwBase {
+  BIN,
+  B64,
+  B62
+};
+
 class FheParams {
   public:
     /** @brief Plaintext polynomial coefficient modulo
@@ -111,12 +117,16 @@ class FheParams {
      */
     static bool isPowerOfTwoCyclotomicPolynomial(fmpz_poly_t poly);
 
+    /** @brief Get rwBase from input string
+    */
+    static rwBase getBaseFromString(std::string &base);
+
   protected:
 
     /** @brief Hide constructor
      */
     FheParams() {}
-  
+
     /** @brief Initialize FHE parameters class
      *
      *  A "static" class constructor/destructor

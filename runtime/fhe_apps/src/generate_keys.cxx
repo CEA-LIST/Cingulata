@@ -35,36 +35,19 @@ namespace po = boost::program_options;
 struct Options {
   string FheParamsFile;
   string KeyFilePrefix;
-	rwBase base;
+	string base;
 };
-
-std::istream& operator>>(std::istream& is, rwBase& base)
-{
-	string tmp;
-	is >> tmp;	
-
-	if (tmp == "BIN") 
-		base = BIN;			
-
-	if (tmp == "B64") 
-		base = B64;
-
-	if (tmp == "B62") 
-		base = B62;			
-	
-	return is;
-}
 
 Options parseArgs(int argc, char** argv) {
   Options options;
   string prefix;
-  
+
   po::options_description config("Options");
   config.add_options()
       ("fhe-params", po::value<string>(&options.FheParamsFile)->default_value("fhe_params.xml"), "FHE parameters file")
       ("key-file-prefix", po::value<string>(&options.KeyFilePrefix)->default_value("fhe_key"), "Prefix for key files")
       ("help,h", "produce help message")
-			("rw-base", po::value<rwBase>(&options.base)->default_value(BIN), "choose a base for encoding ciphertexts")
+			("rw-base", po::value<string>(&options.base)->default_value("BIN"), "choose a base for encoding ciphertexts")
   ;
 
   try {
@@ -78,16 +61,16 @@ Options parseArgs(int argc, char** argv) {
       cout << "Generate homomorphic cryptosystem keychain file(s)" << endl;
       cout << config << endl;
       exit(0);
-    }    
-    
+    }
+
     po::notify(vm);
   } catch (po::error& e) {
     cerr << "ERROR: " << e.what() << endl;
-    cerr << config << endl; 
+    cerr << config << endl;
     exit(-1);
   } catch (...) {
     cerr << "Something went wrong!!!" << endl;
-    cerr << config << endl; 
+    cerr << config << endl;
     exit(-1);
   }
 
@@ -104,6 +87,8 @@ int main(int argc, char** argv) {
   KeyGen keygen;
 
   keygen.generateKeys();
-	
-  keygen.writeKeys(options.KeyFilePrefix, options.base);
+
+  rwBase base = FheParams::getBaseFromString(options.base);
+
+  keygen.writeKeys(options.KeyFilePrefix, base);
 }

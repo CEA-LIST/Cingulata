@@ -272,7 +272,7 @@ void PolyRing::write(FILE* const stream, const rwBase binary) {
  		for (unsigned int i = 0; i < length(); i++) {
  	  	PolyRing::write_fmpz(stream, getCoeff(i), binary);
  		}
-	
+
 		fmpz_clear(d);
 	}
 }
@@ -297,7 +297,7 @@ PolyRing::PolyRing(const char* prStr) {
 	fmpz_poly_init2(this->polyData, FheParams::D);
 	/* add a test on prStr number of coefficients */
 	fmpz_poly_set_str(this->polyData, prStr);
-}	
+}
 
 /** @brief See header for a description
  */
@@ -315,21 +315,21 @@ string PolyRing::encodeInBase64(const string& in)
 		out[2] = ((in[i+1] & 0x0f) << 2) ^ ((in[i+2] & 0xc0) >> 6);
 		out[3] = in[i+2] & 0x3f;
  		for (int j = 0; j < 4; j++)
-			s += base64_chars[out[j]]; 
-	}	
-	if ((in.size() % 3) == 1) {	
+			s += base64_chars[out[j]];
+	}
+	if ((in.size() % 3) == 1) {
 		out[0] = (in[len] & 0xfc) >> 2;
 		out[1] = (in[len] & 0x03) << 4 ;
-		out[2] = out[3] = base64_chars[64];	
+		out[2] = out[3] = base64_chars[64];
 		for (int j = 0; j < 2; j++)
 			s += base64_chars[out[j]];
 		s = s + out[2] + out[3];
-	}	
+	}
 	else if((in.size() % 3) == 2) {
 		out[0] = (in[len] & 0xfc) >> 2;
 		out[1] = ((in[len] & 0x03) << 4) ^ ((in[len+1] & 0xf0) >> 4);
 		out[2] = (in[len+1] & 0x0f) << 2;
-		out[3] = base64_chars[64];	
+		out[3] = base64_chars[64];
 		for (int j = 0; j < 3; j++)
 			s += base64_chars[out[j]];
 		s+= out[3];
@@ -358,8 +358,8 @@ string PolyRing::decodeFromBase64(const string& in)
 		out[2] = ((tmp[2] & 0x03) << 6) ^ tmp[3];
 		for (int j = 0; j < 3; j++)
 			s += out[j];
-	}	
-	
+	}
+
 	if (in[in.size()-2] == base64_chars[64]) {
 		tmp[0] = base64_chars.find(in[len]);
 		tmp[1] = base64_chars.find(in[len+1]);
@@ -373,7 +373,7 @@ string PolyRing::decodeFromBase64(const string& in)
 		s = s + out[0] + out[1];
 	}
 
-	return s;	
+	return s;
 }
 
  /** @brief See header for a description
@@ -409,7 +409,7 @@ void PolyRing::decodeFromBase64(const string& s, PolyRing& prElem)
 void PolyRing::writeInBase64(FILE* const stream, PolyRing& prElem)
 {
 	fprintf(stream, "%s\n", PolyRing::encodeInBase64(prElem).c_str());
-}	
+}
 
 /** @brief See header for a description
  */
@@ -419,4 +419,4 @@ void PolyRing::readFromBase64(FILE* const stream, PolyRing& prElem)
   fscanf(stream, "%ms", &buff);
 	PolyRing::decodeFromBase64(string(buff), prElem);
   free(buff);
-}	
+}

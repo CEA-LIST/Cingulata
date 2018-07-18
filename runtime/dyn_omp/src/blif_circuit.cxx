@@ -198,7 +198,7 @@ void UpdateCircuitWithClearInputs(Circuit& circuit, unsigned int offset, const s
 
 	for (unsigned int i = 0; i < clearInps.size(); i++) {
 		string s = "i_" + to_string(i + offset + 2);
-		ci.insert(make_pair(s , bool(clearInps[i])));
+		ci.emplace(s , bool(clearInps[i]));
   }	
 	
 	UpdateCircuitWithClearInputs(circuit, ci);

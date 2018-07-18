@@ -39,25 +39,8 @@ struct Options {
   string EvalKeyFile;
   string FheParamsFile;
   vector<string> FileNames;
-	rwBase base;
+	string base;
 };
-
-std::istream& operator>>(std::istream& is, rwBase& base)
-{
-	string tmp;
-	is >> tmp;	
-
-	if (tmp == "BIN") 
-		base = BIN;			
-
-	if (tmp == "B64") 
-		base = B64;
-
-	if (tmp == "B62") 
-		base = B62;			
-	
-	return is;
-}
 
 Options parseArgs(int argc, char** argv) {
   Options options;
@@ -66,8 +49,8 @@ Options parseArgs(int argc, char** argv) {
   config.add_options()
       ("fhe-params", po::value<string>(&options.FheParamsFile)->default_value("fhe_params.xml"), "FHE parameters file")
       ("eval-key", po::value<string>(&options.EvalKeyFile)->default_value("fhe_key.evk"), "Eval key file")
-      ("help,h", "produce help message")  		
-			("rw-base", po::value<rwBase>(&options.base)->default_value(BIN), "choose a base for encoding ciphertexts")
+      ("help,h", "produce help message")
+			("rw-base", po::value<string>(&options.base)->default_value("BIN"), "choose a base for encoding ciphertexts")
   ;
 
   po::options_description hidden("Hidden");
@@ -100,7 +83,7 @@ Options parseArgs(int argc, char** argv) {
     }
 
     po::notify(vm);
-    
+
     if (options.FileNames.size() == 0) {
       cerr << "Please specify the output file!" << endl;
       cerr << config << endl;
@@ -128,17 +111,19 @@ int main(int argc, char **argv) {
 
   FheParams::readXml(options.FheParamsFile.c_str());
 
+  rwBase base = FheParams::getBaseFromString(options.base);
+
   KeysShare keys;
-  keys.readEvalKey(options.EvalKeyFile, options.base);
+  keys.readEvalKey(options.EvalKeyFile, base);
 
   CipherText ct_res;
-  ct_res.read(options.FileNames[0], options.base);
+  ct_res.read(options.FileNames[0], base);
 
   for (unsigned int i = 1; i < options.FileNames.size() - 1; i++) {
     string fileName = options.FileNames[i];
 
     CipherText ct;
-    ct.read(fileName, options.base);
+    ct.read(fileName, base);
 
     PolyRing poly_x;
     poly_x.setCoeffUi(i, 1);
@@ -148,7 +133,7 @@ int main(int argc, char **argv) {
     CipherText::add(ct_res, ct);
   }
 
-  	ct_res.write(options.FileNames.back(), options.base);
+  	ct_res.write(options.FileNames.back(), base);
 
   return 0;
 }
