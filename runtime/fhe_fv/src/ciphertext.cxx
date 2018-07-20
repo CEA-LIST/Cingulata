@@ -219,27 +219,41 @@ void CipherText::multiply_by_poly(CipherText& ct1, const PolyRing& p2) {
 
 /** @brief See header for a description
  */
-void CipherText::read(FILE* const stream, const bool binary) {
-  fmpz_t size_fmpz;
-  fmpz_init(size_fmpz);
+void CipherText::read(FILE* const stream, const rwBase binary) {
+ 	if (binary == B64) {
+		char* buff;
+  	fscanf(stream, "%ms", &buff);
+  	int size = atoi(buff);
+		free(buff);
+		if (size) {
+ 			this->resize(size);
+			for (unsigned int i = 0; i < this->size(); i++) {
+    		dataPoly[i]->read(stream, binary);
+			}
+		}
+		/* add an error message when size is 0 */
+	}
+	else {
+		fmpz_t size_fmpz;
+  	fmpz_init(size_fmpz);
 
-  PolyRing::read_fmpz(size_fmpz, stream, binary);
-  unsigned int size = fmpz_get_ui(size_fmpz);
+  	PolyRing::read_fmpz(size_fmpz, stream, binary);
+  	unsigned int size = fmpz_get_ui(size_fmpz);
 
-  this->resize(size);
-  for (unsigned int i = 0; i < this->size(); i++) {
-    dataPoly[i]->read(stream, binary);
-  }
+  	this->resize(size);
+  	for (unsigned int i = 0; i < this->size(); i++) {
+    	dataPoly[i]->read(stream, binary);
+  	}
 
-  fmpz_clear(size_fmpz);
+  	fmpz_clear(size_fmpz);
+	}	
 }
 
 /** @brief See header for a description
  */
-void CipherText::read(const string& inFileName, const bool binary) {
+void CipherText::read(const string& inFileName, const rwBase binary) {
   FILE* stream;
-
-  stream = fopen(inFileName.c_str(), binary ? "rb" : "r");
+  stream = fopen(inFileName.c_str(), (binary == BIN) ? "rb" : "r");
   if (stream == NULL) {
     cerr << "ERROR: Ciphertext::read cannot open file '" << inFileName << "'" << endl;
     exit(-1);
@@ -251,25 +265,35 @@ void CipherText::read(const string& inFileName, const bool binary) {
 
 /** @brief See header for a description
  */
-void CipherText::write(FILE* const stream, const bool binary) const {
-  fmpz_t size;
-  fmpz_init_set_ui(size, this->size());
+void CipherText::write(FILE* const stream, const rwBase binary) const {
+	if (binary == B64) {
+ 		stringstream ss;
+		ss << this->size();
+		string s = ss.str();
+		fprintf(stream, "%s\n", s.c_str());
+		for (unsigned int i = 0; i < this->size(); i++) 
+    		dataPoly[i]->write(stream, binary);
+	}
+	else {
+		fmpz_t size;
+  	fmpz_init_set_ui(size, this->size());
   
-  PolyRing::write_fmpz(stream, size, binary);
-  
-  for (unsigned int i = 0; i < this->size(); i++) {
-    dataPoly[i]->write(stream, binary);
-  }  
+ 	 	PolyRing::write_fmpz(stream, size, binary);
+ 	 
+  	for (unsigned int i = 0; i < this->size(); i++) {
+    	dataPoly[i]->write(stream, binary);
+  	}  
 
-  fmpz_clear(size);
+  	fmpz_clear(size);
+	}
 }
 
 /** @brief See header for a description
  */
-void CipherText::write(const string& outFileName, const bool binary) const {
+void CipherText::write(const string& outFileName, const rwBase binary) const {
   FILE* stream;
 
-  stream = fopen(outFileName.c_str(), binary ? "wb" : "w");
+  stream = fopen(outFileName.c_str(), (binary == BIN) ? "wb" : "w");
   write(stream, binary);
   fclose(stream);
 }

@@ -31,6 +31,7 @@
 #include <assert.h>
 #include <string>
 #include <vector>
+#include <sstream>
 #include <flint/fmpz.h>
 
 class CipherText {
@@ -178,25 +179,25 @@ public:
    *
    *  @param in_stream FILE pointer from which to read
    */
-  void read(FILE* const in_stream, const bool binary = true);
+  void read(FILE* const in_stream, const rwBase binary = BIN);
 
   /** @brief Read ciphertext from a file
    *
    *  @param inFileName name of the file from which to read
    */
-  void read(const std::string& inFileName, const bool binary = true);
+  void read(const std::string& inFileName, const rwBase binary = BIN);
   
   /** @brief Write ciphertext to an output stream
    *
    *  @param out_stream FILE pointer to which to write
    */
-  void write(FILE* const out_stream, const bool binary = true) const;    
+  void write(FILE* const out_stream, const rwBase binary = BIN) const;    
   
   /** @brief Write ciphertext to a file
    *
    *  @param outFileName file name to which to write
    */
-  void write(const std::string& outFileName, const bool binary = true) const;
+  void write(const std::string& outFileName, const rwBase binary = BIN) const;
 };
 
 #endif

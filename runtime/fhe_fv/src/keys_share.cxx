@@ -36,7 +36,7 @@ KeysShare::~KeysShare() {
 
 /** @brief See header for a description
  */
-void KeysShare::readPublicKey(FILE* const stream, const bool binary) {
+void KeysShare::readPublicKey(FILE* const stream, const rwBase binary) {
   if (PublicKey != NULL) {
     delete PublicKey;
   }
@@ -47,10 +47,10 @@ void KeysShare::readPublicKey(FILE* const stream, const bool binary) {
 
 /** @brief See header for a description
  */
-void KeysShare::readPublicKey(const string& fileName, const bool binary) {
+void KeysShare::readPublicKey(const string& fileName, const rwBase binary) {
   FILE* stream;
 
-  stream = fopen(fileName.c_str(), binary ? "rb" : "r");
+  stream = fopen(fileName.c_str(), (binary == BIN) ? "rb" : "r");
 
   if (stream == NULL) {
     cout << "Cannot open public key file: '" << fileName << "'" << endl;
@@ -63,21 +63,21 @@ void KeysShare::readPublicKey(const string& fileName, const bool binary) {
 
 /** @brief See header for a description
  */
-void KeysShare::readEvalKey(FILE* const stream, const bool binary) {
+void KeysShare::readEvalKey(FILE* const stream, const rwBase binary) {
   if (EvalKey != NULL) {
     delete PublicKey;
   }
   
   EvalKey = new CipherText();
-  EvalKey->read(stream);
+  EvalKey->read(stream, binary);
 }
 
 /** @brief See header for a description
  */
-void KeysShare::readEvalKey(const string& fileName, const bool binary) {
+void KeysShare::readEvalKey(const string& fileName, const rwBase binary) {
   FILE* stream;
 
-  stream = fopen(fileName.c_str(), binary ? "rb" : "r");
+  stream = fopen(fileName.c_str(), (binary == BIN) ? "rb" : "r");
 
   if (stream == NULL) {
     cout << "Cannot open evaluation key file: '" << fileName << "'" << endl;
@@ -90,14 +90,14 @@ void KeysShare::readEvalKey(const string& fileName, const bool binary) {
 
 /** @brief See header for a description
  */
-void KeysShare::readKeys(const string& fileNamePrefix, const bool binary) {
+void KeysShare::readKeys(const string& fileNamePrefix, const rwBase binary) {
   readPublicKey(fileNamePrefix + ".pk", binary);
   readEvalKey(fileNamePrefix + ".evk", binary);
 }
 
 /** @brief See header for a description
  */
-void KeysShare::writePublicKey(FILE* const stream, const bool binary) {
+void KeysShare::writePublicKey(FILE* const stream, const rwBase binary) {
   if (PublicKey != NULL) {
     PublicKey->write(stream, binary);
   }
@@ -105,7 +105,7 @@ void KeysShare::writePublicKey(FILE* const stream, const bool binary) {
 
 /** @brief See header for a description
  */
-void KeysShare::writeEvalKey(FILE* const stream, const bool binary) {
+void KeysShare::writeEvalKey(FILE* const stream, const rwBase binary) {
   if (EvalKey != NULL) {
     EvalKey->write(stream, binary);
   }
@@ -113,14 +113,14 @@ void KeysShare::writeEvalKey(FILE* const stream, const bool binary) {
 
 /** @brief See header for a description
  */
-void KeysShare::writeKeys(const string& fileNamePrefix, const bool binary) {
+void KeysShare::writeKeys(const string& fileNamePrefix, const rwBase binary) {
   FILE* stream;
 
-  stream = fopen((fileNamePrefix + ".pk").c_str(), binary ? "wb" : "w");
+  stream = fopen((fileNamePrefix + ".pk").c_str(), (binary == BIN) ? "wb" : "w");
   writePublicKey(stream, binary);
   fclose(stream);
 
-  stream = fopen((fileNamePrefix + ".evk").c_str(), binary ? "wb" : "w");
+  stream = fopen((fileNamePrefix + ".evk").c_str(), (binary == BIN) ? "wb" : "w");
   writeEvalKey(stream, binary);
   fclose(stream);
 }

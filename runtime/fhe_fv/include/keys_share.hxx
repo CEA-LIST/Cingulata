@@ -25,6 +25,7 @@
 #ifndef __KEYS_SHARE_HXX__
 #define __KEYS_SHARE_HXX__
 
+#include "polyring.hxx"
 #include "ciphertext.hxx"
 
 #include <string>
@@ -53,49 +54,49 @@ class KeysShare {
      *
      *  @param in_io input stream from which read the key
      */
-    void readPublicKey(FILE* const stream, const bool binary = true);
+    void readPublicKey(FILE* const stream, const rwBase binary = BIN);
 
     /** @brief Read public key from a file
      *
      *  @param fileName input file name from which read the key
      */
-    void readPublicKey(const std::string& fileName, const bool binary = true);
+    void readPublicKey(const std::string& fileName, const rwBase binary = BIN);
 
     /** @brief Read evaluation key from an input stream
      *
      *  @param in_io input stream from which read the key
      */
-    void readEvalKey(FILE* const stream, const bool binary = true);
+    void readEvalKey(FILE* const stream, const rwBase binary = BIN);
 
     /** @brief Read evaluation key from a file
      *
      *  @param fileName input file name from which read the key
      */
-    void readEvalKey(const std::string& fileName, const bool binary = true);
+    void readEvalKey(const std::string& fileName, const rwBase binary = BIN);
 
     /** @brief Read all keys from files with a given prefix
      *
      *  @param fileNamePrefix prefix of files names containing keys
      */
-    void readKeys(const std::string& fileNamePrefix, const bool binary = true);
+    void readKeys(const std::string& fileNamePrefix, const rwBase binary = BIN);
   
     /** @brief Write public key from an input stream
      *
      *  @param out_io output stream to which write the key
      */
-    void writePublicKey(FILE* const stream, const bool binary = true);
+    void writePublicKey(FILE* const stream, const rwBase binary = BIN);
 
     /** @brief Write evaluation key from an input stream
      *
      *  @param out_io output stream to which write the key
      */
-    void writeEvalKey(FILE* const stream, const bool binary = true);
+    void writeEvalKey(FILE* const stream, const rwBase binary = BIN);
 
     /** @brief Write all keys to files with a given prefix
      *
      *  @param fileNamePrefix prefix of files names containing keys
      */
-    void writeKeys(const std::string& fileNamePrefix, const bool binary = true);
+    void writeKeys(const std::string& fileNamePrefix, const rwBase binary = BIN);
 };
 
 #endif

@@ -105,6 +105,6 @@ void KeyGen::generateKeys() {
   generateEvalKey();
 }
 
-void KeyGen::writeKeys(const string& fileNamePrefix, const bool binary) {
+void KeyGen::writeKeys(const string& fileNamePrefix, const rwBase binary) {
   keysAll.writeKeys(fileNamePrefix, binary);
 }

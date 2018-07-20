@@ -59,7 +59,7 @@ struct Options {
   string ClearInputsFile;
   int nrThreads;
   bool verbose;
-  bool stringOutput;
+	rwBase base;
   PriorityType priority = PriorityType::Topological;
 
   static PriorityType parsePriority(const string& token) {
@@ -123,6 +123,23 @@ ostream& operator<<(ostream& out, PriorityType& priority)
   return out;
 }
 
+std::istream& operator>>(std::istream& is, rwBase& base)
+{
+	string tmp;
+	is >> tmp;	
+
+	if (tmp == "BIN") 
+		base = BIN;			
+
+	if (tmp == "B64") 
+		base = B64;
+
+	if (tmp == "B62") 
+		base = B62;			
+	
+	return is;
+}
+
 Options parseArgs(int argc, char** argv) {
   Options options;
   vector<string> outputFileMessagePairs;
@@ -134,13 +151,13 @@ Options parseArgs(int argc, char** argv) {
       ("fhe-params", po::value<string>(&options.FheParamsFile)->default_value("fhe_params.xml"), "FHE parameters")
       ("public-key", po::value<string>(&options.PublicKeyFile)->default_value("fhe_key.pk"), "public key")
       ("eval-key", po::value<string>(&options.EvalKeyFile)->default_value("fhe_key.evk"), "evaluation key")
-      ("strout", po::bool_switch(&options.stringOutput)->default_value(false), "output ciphertexts in string format")
       ("clear-inps", po::value<string>(&options.ClearInputsFile)->default_value(""), "clear inputs file")
       ("threads", po::value<int>(&options.nrThreads)->default_value(1), "number of parallel execution threads")
       ("priority", po::value<PriorityType>(&options.priority), priorityHelp.c_str())
       ("help,h", "produce help message")
       ("verbose,v", po::bool_switch(&options.verbose)->default_value(false), "enable verbosity")
-  ;
+    	("rw-base", po::value<rwBase>(&options.base)->default_value(BIN), "choose a base for encoding ciphertexts")
+		;
 
   po::options_description hidden("Hidden");
   hidden.add_options()
@@ -249,7 +266,7 @@ int main(int argc, char **argv)
 
   /* Create homomorphic execution environment */
   HomomorphicExecutor* homExec = new HomomorphicExecutor(circuit,
-      options.EvalKeyFile, options.PublicKeyFile, options.verbose, options.stringOutput);
+      options.EvalKeyFile, options.PublicKeyFile, options.verbose, options.base);
 
   /* Create priority object in function of cmd line parameter */
   Priority* priority = nullptr;

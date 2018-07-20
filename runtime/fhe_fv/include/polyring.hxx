@@ -31,8 +31,10 @@
 #include <flint/fmpz_poly.h>
 #include <iostream>
 #include <vector>
+#include <stdint.h>
 
 #include "fhe_params.hxx"
+
 
 /** @brief Polynomial quotient ring class.
  *
@@ -43,6 +45,7 @@ private:
   /** @brief Polynomial with coefficients mod N
    */
   fmpz_poly_t polyData;
+  static std::string base64_chars;
 
 protected:
 
@@ -243,13 +246,13 @@ public:
    *
    *  @param in_stream FILE pointer from which to read
    */
-  void read(FILE* const in_stream, const bool binary = true);
+  void read(FILE* const in_stream, const rwBase binary = BIN);
 
   /** @brief Write polynomial to an output stream (binary format)
    *
    *  @param out_stream FILE pointer to which to write
    */
-  void write(FILE* const out_stream, const bool binary = true) const;
+  void write(FILE* const out_stream, const rwBase binary = BIN);
 
   /** @brief Write printer-friendly version of polynomial to an output stream
    *
@@ -263,21 +266,68 @@ public:
 
   /**
    * @brief write an fmpz to a file
-   * 
+   *
    * @param d fmpz number to write
    * @param stream file descriptor to write to
    * @param binary write in binary or string form
    */
-  static void write_fmpz(FILE* const stream, fmpz_t d, const bool binary);
-  
+  static void write_fmpz(FILE* const stream, fmpz_t d, const rwBase binary);
+
   /**
    * @brief read an fmpz from a file
-   * 
+   *
    * @param d fmpz number to read
    * @param stream file descriptor to read from
    * @param binary read in binary or string form
    */
-  static void read_fmpz(fmpz_t d, FILE* const stream, const bool binary);
+  static void read_fmpz(fmpz_t d, FILE* const stream, const rwBase binary);
+
+  /**
+   * @brief Build a polynomial ring element from fmpz_poly_t string
+   * @param prStr corresponds to an fmpz_poly_t
+   */
+  PolyRing(const char* prStr);
+
+  /**
+   * @brief convert a random string into a string encoded in Base64
+   * @param in is the string to be encoded in base64
+   */
+  static std::string encodeInBase64(const std::string& in);
+
+  /**
+   * @brief decode a string encoded in Base64
+   * @param in is the string to be decoded
+   */
+  static std::string decodeFromBase64(const std::string& in);
+
+  /**
+   * @brief encode fmpz_poly_t element in a Base64 string
+   */
+  static std::string encodeInBase64(const fmpz_poly_t& p);
+
+  /**
+   * @brief get fmpz_poly_t element from a Base64 string
+   */
+  static void decodeFromBase64(const std::string& s, fmpz_poly_t& p);
+
+  /**
+   * @brief encode a polynomial ring element in a Base64 string
+   */
+  static std::string encodeInBase64(const PolyRing& prElem);
+
+  /**
+   * @brief recover a polynomial ring element from a Base64 string
+   */
+  static void decodeFromBase64(const std::string& s, PolyRing& prElem);
+
+  /** @brief write a PolyRing element to a file stream
+  */
+  static void writeInBase64(FILE* const stream, PolyRing& prElem);
+
+  /** @brief read a PolyRinr element from a file stream
+  */
+  static void readFromBase64(FILE* const stream, PolyRing& prElem);
+
 };
 
 #endif

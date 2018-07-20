@@ -87,4 +87,13 @@ Circuit ReadBlifFile(const std::string& fn);
  */
 void UpdateCircuitWithClearInputs(Circuit& circuit, const std::unordered_map<std::string, bool>& clearInps);
 
+/**
+ * @brief Updates circuit with plain-text inputs
+ * 
+ * @param circuit to update
+ * @offset defines the index of the clearInps
+ * @param clearInps contain binary inputs for the circuit
+ */
+void UpdateCircuitWithClearInputs(Circuit& circuit, unsigned int offset, const std::vector<unsigned int>& clearInps);
+
 #endif

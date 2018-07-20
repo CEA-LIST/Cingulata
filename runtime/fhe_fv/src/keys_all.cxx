@@ -32,7 +32,7 @@ KeysAll::~KeysAll() {
 
 /** @brief See header for a description
  */
-void KeysAll::readSecretKey(FILE* const stream, const bool binary) {
+void KeysAll::readSecretKey(FILE* const stream, const rwBase binary) {
   if (SecretKey != NULL) {
     delete SecretKey;
   }
@@ -43,10 +43,10 @@ void KeysAll::readSecretKey(FILE* const stream, const bool binary) {
 
 /** @brief See header for a description
  */
-void KeysAll::readSecretKey(const string& fileName, const bool binary) {
+void KeysAll::readSecretKey(const string& fileName, const rwBase binary) {
   FILE* stream;
 
-  stream = fopen(fileName.c_str(), binary ? "rb" : "r");
+  stream = fopen(fileName.c_str(), (binary == BIN) ? "rb" : "r");
 
   if (stream == NULL) {
     cerr << "Cannot open secret key file: '" << fileName << "'" << endl;
@@ -59,7 +59,7 @@ void KeysAll::readSecretKey(const string& fileName, const bool binary) {
 
 /** @brief See header for a description
  */
-void KeysAll::writeSecretKey(FILE* const stream, const bool binary) {
+void KeysAll::writeSecretKey(FILE* const stream, const rwBase binary) {
   if (SecretKey != NULL) {
     SecretKey->write(stream, binary);
   }
@@ -67,7 +67,7 @@ void KeysAll::writeSecretKey(FILE* const stream, const bool binary) {
 
 /** @brief See header for a description
  */
-void KeysAll::readKeys(const string& fileNamePrefix, const bool binary) {
+void KeysAll::readKeys(const string& fileNamePrefix, const rwBase binary) {
   readSecretKey(fileNamePrefix + ".sk", binary);
 
   KeysShare::readKeys(fileNamePrefix, binary);
@@ -75,10 +75,10 @@ void KeysAll::readKeys(const string& fileNamePrefix, const bool binary) {
 
 /** @brief See header for a description
  */
-void KeysAll::writeKeys(const string& fileNamePrefix, const bool binary) {
+void KeysAll::writeKeys(const string& fileNamePrefix, const rwBase binary) {
   FILE* stream;
 
-  stream = fopen((fileNamePrefix + ".sk").c_str(), binary ? "wb" : "w");
+  stream = fopen((fileNamePrefix + ".sk").c_str(), (binary == BIN) ? "wb" : "w");
   writeSecretKey(stream, binary);
   fclose(stream);
 

@@ -39,7 +39,7 @@ struct Options {
   string EvalKeyFile;
   string FheParamsFile;
   vector<string> FileNames;
-  bool stringOutput;
+	string base;
 };
 
 Options parseArgs(int argc, char** argv) {
@@ -49,8 +49,8 @@ Options parseArgs(int argc, char** argv) {
   config.add_options()
       ("fhe-params", po::value<string>(&options.FheParamsFile)->default_value("fhe_params.xml"), "FHE parameters file")
       ("eval-key", po::value<string>(&options.EvalKeyFile)->default_value("fhe_key.evk"), "Eval key file")
-      ("strout", po::bool_switch(&options.stringOutput)->default_value(false), "enable ciphertext string output")
       ("help,h", "produce help message")
+			("rw-base", po::value<string>(&options.base)->default_value("BIN"), "choose a base for encoding ciphertexts")
   ;
 
   po::options_description hidden("Hidden");
@@ -83,7 +83,7 @@ Options parseArgs(int argc, char** argv) {
     }
 
     po::notify(vm);
-    
+
     if (options.FileNames.size() == 0) {
       cerr << "Please specify the output file!" << endl;
       cerr << config << endl;
@@ -111,17 +111,19 @@ int main(int argc, char **argv) {
 
   FheParams::readXml(options.FheParamsFile.c_str());
 
+  rwBase base = FheParams::getBaseFromString(options.base);
+
   KeysShare keys;
-  keys.readEvalKey(options.EvalKeyFile);
+  keys.readEvalKey(options.EvalKeyFile, base);
 
   CipherText ct_res;
-  ct_res.read(options.FileNames[0]);
+  ct_res.read(options.FileNames[0], base);
 
   for (unsigned int i = 1; i < options.FileNames.size() - 1; i++) {
     string fileName = options.FileNames[i];
 
     CipherText ct;
-    ct.read(fileName);
+    ct.read(fileName, base);
 
     PolyRing poly_x;
     poly_x.setCoeffUi(i, 1);
@@ -131,7 +133,7 @@ int main(int argc, char **argv) {
     CipherText::add(ct_res, ct);
   }
 
-  ct_res.write(options.FileNames.back(), not options.stringOutput);
+  	ct_res.write(options.FileNames.back(), base);
 
   return 0;
 }

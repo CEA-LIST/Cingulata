@@ -35,19 +35,19 @@ namespace po = boost::program_options;
 struct Options {
   string FheParamsFile;
   string KeyFilePrefix;
-  bool strOutput;
+	string base;
 };
 
 Options parseArgs(int argc, char** argv) {
   Options options;
   string prefix;
-  
+
   po::options_description config("Options");
   config.add_options()
       ("fhe-params", po::value<string>(&options.FheParamsFile)->default_value("fhe_params.xml"), "FHE parameters file")
       ("key-file-prefix", po::value<string>(&options.KeyFilePrefix)->default_value("fhe_key"), "Prefix for key files")
-      ("strout", po::bool_switch(&options.strOutput)->default_value(false), "Write keys in string format also")
       ("help,h", "produce help message")
+			("rw-base", po::value<string>(&options.base)->default_value("BIN"), "choose a base for encoding ciphertexts")
   ;
 
   try {
@@ -61,16 +61,16 @@ Options parseArgs(int argc, char** argv) {
       cout << "Generate homomorphic cryptosystem keychain file(s)" << endl;
       cout << config << endl;
       exit(0);
-    }    
-    
+    }
+
     po::notify(vm);
   } catch (po::error& e) {
     cerr << "ERROR: " << e.what() << endl;
-    cerr << config << endl; 
+    cerr << config << endl;
     exit(-1);
   } catch (...) {
     cerr << "Something went wrong!!!" << endl;
-    cerr << config << endl; 
+    cerr << config << endl;
     exit(-1);
   }
 
@@ -88,8 +88,7 @@ int main(int argc, char** argv) {
 
   keygen.generateKeys();
 
-  keygen.writeKeys(options.KeyFilePrefix);
-  if (options.strOutput) {
-    keygen.writeKeys(options.KeyFilePrefix + "_str", false);
-  }
+  rwBase base = FheParams::getBaseFromString(options.base);
+
+  keygen.writeKeys(options.KeyFilePrefix, base);
 }

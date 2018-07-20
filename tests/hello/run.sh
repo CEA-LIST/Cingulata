@@ -34,19 +34,19 @@ rm -f output/*.ct
 
 # Generate keys
 echo "FHE key generation"
-$APPS_DIR/generate_keys
+$APPS_DIR/generate_keys --rw-base B64 
 
 echo "Input encryption"
 NR_THREADS=1
 
-$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i_ --idx-places 0 5 3`
+$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS --rw-base B64 `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i_ --idx-places 0 5 3`
 
 echo "Homomorphic execution..."
-time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS # -v 
+time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS --rw-base B64 # -v 
 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`
-$APPS_DIR/helper --from-bin --bit-cnt 8 --msb-first `$APPS_DIR/decrypt --secret-key fhe_key.sk $OUT_FILES`
+$APPS_DIR/helper --from-bin --bit-cnt 8 --msb-first `$APPS_DIR/decrypt --secret-key fhe_key.sk --rw-base B64 $OUT_FILES`
 
 
 
