@@ -256,7 +256,7 @@ void sort_opt(Integer8 *x, Integer8 *y, unsigned int N){
 				
 				printf("z \n");cout << z <<endl;*/
 				
-				free(bi);
+				delete[] bi;
 		}
 		
 		//cout<<endl;
