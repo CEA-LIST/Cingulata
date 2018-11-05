@@ -47,7 +47,7 @@ namespace cingulata
      * @brief Verify if object handle points to an object
      */
     bool is_empty() const {
-      return (bool)*this;
+      return not (bool)*this;
     }
 
     /**

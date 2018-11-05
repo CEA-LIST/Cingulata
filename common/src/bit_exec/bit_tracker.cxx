@@ -25,22 +25,15 @@ enum class BitTrackerInternal::GateType : uint8_t {
   ORNY,
   ORYN,
   XOR,
-  XNOR
+  XNOR,
+  MUX
 };
 
 class BitTrackerInternal::Node {
 public:
-  Node() {}
-
-  Node(NodeType type_p, GateType gate_type_p)
-  :
-    type(type_p), gate_type(gate_type_p)
-  {}
-
-  Node(NodeType type_p, const string& name_p)
-  :
-    type(type_p), name(name_p)
-  {}
+  Node() {
+    inps.reserve(2);
+  }
 
   bool is_input() const { return static_cast<uint8_t>(type) & static_cast<uint8_t>(NodeType::INPUT); }
 
@@ -59,8 +52,7 @@ public:
   NodeType type = NodeType::UNKNOWN;
   GateType gate_type = GateType::UNKNOWN;
 
-  ObjHandleT<Node> inp1;
-  ObjHandleT<Node> inp2;
+  vector<ObjHandleT<Node>> inps;
 
   string name;
 };
@@ -75,12 +67,11 @@ void BitTracker::reset() {
   gates.clear();
 }
 
-ObjHandle BitTracker::add_gate(BTI::GateType gate_type, const ObjHandle& inp1, const ObjHandle& inp2) {
+ObjHandle BitTracker::add_gate(BTI::GateType gate_type, const initializer_list<ObjHandleT<BTI::Node>> inps_p) {
   ObjHandleT<BTI::Node> hdl = new_handle();
   hdl->type = BTI::NodeType::GATE;
   hdl->gate_type = gate_type;
-  hdl->inp1 = (ObjHandleT<BTI::Node>)inp1;
-  hdl->inp2 = (ObjHandleT<BTI::Node>)inp2;
+  hdl->inps.assign(inps_p);
   gates.push_back(hdl);
   return hdl;
 }
@@ -93,10 +84,10 @@ ObjHandle BitTracker::add_input(const string& name) {
   return hdl;
 }
 
-void BitTracker::make_output(const ObjHandle& inp, const std::string& name) {
-  ObjHandleT<BTI::Node> hdl = (ObjHandleT<BTI::Node>)inp;
+void BitTracker::make_output(const ObjHandleT<BTI::Node>& inp, const std::string& name) {
+  ObjHandleT<BTI::Node> hdl = inp;
   if (hdl->is_input() or hdl->is_output()) {
-    hdl = (ObjHandleT<BTI::Node>)add_gate(BTI::GateType::BUF, hdl);
+    hdl = (ObjHandleT<BTI::Node>)add_gate(BTI::GateType::BUF, {hdl});
   }
   hdl->type = static_cast<BTI::NodeType>(static_cast<uint8_t>(hdl->type) | static_cast<uint8_t>(BTI::NodeType::OUTPUT));
   hdl->name = name;
@@ -126,11 +117,11 @@ void BitTracker::write(const ObjHandle& hdl, const std::string& name) {
 
 #define DEFINE_1_INP_OPER(OP_NAME, GATE_TYPE) \
 ObjHandle BitTracker::OP_NAME(const ObjHandle& lhs) { \
-  return add_gate(BTI::GateType::GATE_TYPE, lhs); \
+  return add_gate(BTI::GateType::GATE_TYPE, {lhs}); \
 }
 #define DEFINE_2_INP_OPER(OP_NAME, GATE_TYPE) \
 ObjHandle BitTracker::OP_NAME(const ObjHandle& lhs, const ObjHandle& rhs) { \
-  return add_gate(BTI::GateType::GATE_TYPE, lhs, rhs); \
+  return add_gate(BTI::GateType::GATE_TYPE, {lhs, rhs}); \
 }
 
 DEFINE_1_INP_OPER(op_not, NOT);
@@ -144,6 +135,10 @@ DEFINE_2_INP_OPER(op_nor, NOR);
 DEFINE_2_INP_OPER(op_oryn, ORYN);
 DEFINE_2_INP_OPER(op_orny, ORNY);
 DEFINE_2_INP_OPER(op_xnor, XNOR);
+
+ObjHandle BitTracker::op_mux(const ObjHandle& cond, const ObjHandle& in1, const ObjHandle& in2) {
+  return add_gate(BTI::GateType::MUX, {cond, in1, in2});
+}
 
 void* BitTracker::new_obj() {
   return new BTI::Node();
@@ -178,10 +173,11 @@ void BitTracker::export_blif(ostream& stream, const string& model_name) {
     if (node->name.empty()) node->name = "n" + to_string(cnt++);
 
     stream << ".gate " << node->gate_type_str();
-    if (node->inp1)
-      stream << " A=" << node->inp1->name;
-    if (node->inp2)
-      stream << " B=" << node->inp2->name;
+    char inp_name = 'A';
+    for (const auto& inp: node->inps) {
+      stream << " " << inp_name << "=" << inp->name;
+      inp_name++;
+    }
     stream << " Y=" << node->name << endl;
   }
 

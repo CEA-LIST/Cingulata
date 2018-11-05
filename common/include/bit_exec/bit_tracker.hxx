@@ -49,8 +49,8 @@ namespace cingulata
     ObjHandle   op_orny     (const ObjHandle& in1, const ObjHandle& in2)    override;
     ObjHandle   op_xnor     (const ObjHandle& in1, const ObjHandle& in2)    override;
 
-    // ObjHandle   op_mux      (const ObjHandle& cond,
-    //                           const ObjHandle& in1, const ObjHandle& in2)   override;
+    ObjHandle   op_mux      (const ObjHandle& cond,
+                              const ObjHandle& in1, const ObjHandle& in2)   override;
 
     void        export_blif (std::ostream& stream, const std::string& model_name = "CIRCUIT");
 
@@ -59,10 +59,9 @@ namespace cingulata
     void        del_obj     (void * obj_ptr)                                  override;
 
     ObjHandle   add_gate    (BTI::GateType gate_type,
-                              const ObjHandle& in1 = ObjHandle(),
-                              const ObjHandle& in2 = ObjHandle());
+                              const std::initializer_list<ObjHandleT<BTI::Node>> inps_p);
     ObjHandle   add_input   (const std::string& name = "");
-    void        make_output (const ObjHandle& hdl, const std::string& name = "");
+    void        make_output (const ObjHandleT<BTI::Node>& hdl, const std::string& name = "");
 
     std::vector<ObjHandleT<BTI::Node>>  inputs;
     std::vector<ObjHandleT<BTI::Node>>  gates;

@@ -6,10 +6,10 @@ using namespace cingulata;
 int main() {
   std::shared_ptr<IBitExec> be(new BitTracker());
 
-  auto zero = be->encode(0);
-  auto one = be->encrypt(1);
-  auto inp2 = be->encrypt(1);
-  auto a = be->op_mux(zero, one, inp2);
+  auto zero = be->encode();
+  auto one = be->encrypt();
+  auto inp2 = be->encrypt();
+  auto a = be->op_and(one, inp2);
   be->write(a, "a");
   be->write(a, "b");
   be->write(inp2, "c");
