@@ -52,7 +52,8 @@ namespace cingulata
     ObjHandle   op_mux      (const ObjHandle& cond,
                               const ObjHandle& in1, const ObjHandle& in2)   override;
 
-    void        export_blif (std::ostream& stream, const std::string& model_name = "CIRCUIT");
+    void        export_blif (std::ostream& stream,
+                              const std::string& model_name = "CIRCUIT");
 
   protected:
     void*       new_obj     ()                                                override;

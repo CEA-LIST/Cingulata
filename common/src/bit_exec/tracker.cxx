@@ -3,13 +3,12 @@
 using namespace std;
 using namespace cingulata;
 
-// namespace BTI = cingulata::BitTrackerInternal;
-
 enum class BitTrackerInternal::NodeType : uint8_t {
-  UNKNOWN = 0,
-  INPUT  =  1<<0,
-  GATE   =  1<<1,
-  OUTPUT =  1<<2
+  UNKNOWN        = 0,
+  INPUT       = 1<<0,
+  OUTPUT      = 1<<1,
+  LOGIC_GATE  = 1<<2,
+  LIB_GATE    = 1<<3
 };
 
 enum class BitTrackerInternal::GateType : uint8_t {
@@ -37,7 +36,9 @@ public:
 
   bool is_input() const { return static_cast<uint8_t>(type) & static_cast<uint8_t>(NodeType::INPUT); }
 
-  bool is_gate() const { return static_cast<uint8_t>(type) & static_cast<uint8_t>(NodeType::GATE); }
+  bool is_logic_gate() const { return static_cast<uint8_t>(type) & static_cast<uint8_t>(NodeType::LOGIC_GATE); }
+
+  bool is_lib_gate() const { return static_cast<uint8_t>(type) & static_cast<uint8_t>(NodeType::LIB_GATE); }
 
   bool is_output() const { return static_cast<uint8_t>(type) & static_cast<uint8_t>(NodeType::OUTPUT); }
 
@@ -49,12 +50,59 @@ public:
     return GateType2Str[(uint8_t)gate_type];
   }
 
+  const char* gate_cover_str() const {
+    static const char* gate_cover[] = {
+      "UNKNOWN", //UNKNOWN
+      "0 1", //NOT
+      "1 1", //BUF
+      "11 1", //AND
+      "11 0", //NAND
+      "01 1", //ANDNY
+      "10 1", //ANDYN
+      "00 0", //OR
+      "00 1", //NOR
+      "10 0", //ORNY
+      "01 0", //ORYN
+      "01 1\n10 1", //XOR
+      "00 1\n11 1" //XNOR
+    };
+    return gate_cover[(uint8_t)gate_type];
+  }
+
+  void to_blif(ostream& stream) {
+    if (is_logic_gate()) {
+      to_blif_logic(stream);
+    }
+    else if (is_lib_gate()) {
+      to_blif_lib(stream);
+    }
+  }
+
   NodeType type = NodeType::UNKNOWN;
   GateType gate_type = GateType::UNKNOWN;
 
   vector<ObjHandleT<Node>> inps;
 
   string name;
+
+private:
+  void to_blif_logic(ostream& stream) {
+    stream << ".names ";
+    for (const auto& inp: inps) {
+      stream << inp->name << " ";
+    }
+    stream << name << endl;
+    stream << gate_cover_str() << endl;
+  }
+  void to_blif_lib(ostream& stream) {
+    stream << ".gate " << gate_type_str();
+    char inp_name = 'A';
+    for (const auto& inp: inps) {
+      stream << " " << inp_name << "=" << inp->name;
+      inp_name++;
+    }
+    stream << " Y=" << name << endl;
+  }
 };
 
 BitTracker::~BitTracker() {
@@ -69,7 +117,7 @@ void BitTracker::reset() {
 
 ObjHandle BitTracker::add_gate(BTI::GateType gate_type, const initializer_list<ObjHandleT<BTI::Node>> inps_p) {
   ObjHandleT<BTI::Node> hdl = new_handle();
-  hdl->type = BTI::NodeType::GATE;
+  hdl->type = BTI::NodeType::LOGIC_GATE;
   hdl->gate_type = gate_type;
   hdl->inps.assign(inps_p);
   gates.push_back(hdl);
@@ -171,14 +219,7 @@ void BitTracker::export_blif(ostream& stream, const string& model_name) {
   cnt = 0;
   for (ObjHandleT<BTI::Node>& node: gates) {
     if (node->name.empty()) node->name = "n" + to_string(cnt++);
-
-    stream << ".gate " << node->gate_type_str();
-    char inp_name = 'A';
-    for (const auto& inp: node->inps) {
-      stream << " " << inp_name << "=" << inp->name;
-      inp_name++;
-    }
-    stream << " Y=" << node->name << endl;
+    node->to_blif(stream);
   }
 
   stream << ".end" << endl;
