@@ -28,7 +28,14 @@ namespace cingulata
     virtual ~IBitExec() = default;
 
     /**
-     * @brief Reset the internal state of current \c IBitExec object,
+     * @brief Initialize executor
+     *  This method initializes internal state of executor.
+     *  It should be overloaded in child-classes with state.
+     */
+    virtual void        init        () {}
+
+    /**
+     * @brief Reset the internal state of executor,
      *  if it has one
      */
     virtual void        reset       () {}

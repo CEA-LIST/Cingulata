@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.0)
 
 set(SRCS
     bit_exec/interface.cxx
-    bit_exec/bit_tracker.cxx
+    bit_exec/tracker.cxx
     )
 
 include_directories(${INCLUDE_DIR})
