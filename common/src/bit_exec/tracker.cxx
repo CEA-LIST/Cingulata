@@ -13,6 +13,8 @@ enum class BitTrackerInternal::NodeType : uint8_t {
 
 enum class BitTrackerInternal::GateType : uint8_t {
   UNKNOWN = 0,
+  ZERO,
+  ONE,
   NOT,
   BUF,
   AND,
@@ -45,6 +47,7 @@ public:
   const char* gate_type_str() const {
     static const char* GateType2Str[] = {
       "UNKNOWN",
+      "ZERO","ONE",
       "NOT","BUF",
       "AND","NAND","ANDNY","ANDYN","OR","NOR","ORNY","ORYN","XOR","XNOR"};
     return GateType2Str[(uint8_t)gate_type];
@@ -53,6 +56,8 @@ public:
   const char* gate_cover_str() const {
     static const char* gate_cover[] = {
       "UNKNOWN", //UNKNOWN
+      "0", //ZERO
+      "1", //ONE
       "0 1", //NOT
       "1 1", //BUF
       "11 1", //AND
@@ -143,7 +148,11 @@ void BitTracker::make_output(const ObjHandleT<BTI::Node>& inp, const std::string
 }
 
 ObjHandle BitTracker::encode(const IBitExec::bit_plain_t pt_val) {
-  return add_input();
+  if (pt_val == 0) {
+    return add_gate(BTI::GateType::ZERO, {});
+  } else {
+    return add_gate(BTI::GateType::ONE, {});
+  }
 }
 
 ObjHandle BitTracker::encrypt(const IBitExec::bit_plain_t pt_val) {
