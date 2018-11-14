@@ -5,6 +5,7 @@ set(SRCS
     bit_exec/interface.cxx
     bit_exec/tracker.cxx
     ci_bit.cxx
+    ci_int.cxx
     )
 
 include_directories(${INCLUDE_DIR})
