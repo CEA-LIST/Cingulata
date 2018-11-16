@@ -1,5 +1,5 @@
-#ifndef INT_OP_SIZE
-#define INT_OP_SIZE
+#ifndef INT_OP_GEN_SIZE
+#define INT_OP_GEN_SIZE
 
 #include "int_op_gen/interface.hxx"
 
