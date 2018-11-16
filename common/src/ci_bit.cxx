@@ -1,14 +1,85 @@
 #include "ci_bit.hxx"
 
+#include <cassert>
+
 using namespace std;
 using namespace cingulata;
 
-std::shared_ptr<IBitExec> CiBit::m_bit_exec;
+
+IBitExec *const CiBit::bit_exec() {
+  assert(m_bit_exec);
+  return m_bit_exec;
+}
+
+void CiBit::set_bit_exec(IBitExec *const p_bit_exec) {
+  m_bit_exec = p_bit_exec;
+}
+
+IBitExec* CiBit::m_bit_exec = nullptr;
 uint CiBit::unique_name_cnt = 0;
+
+const CiBit CiBit::zero(0);
+const CiBit CiBit::one(1);
+
+CiBit::CiBit(const bit_plain_t pt_val_p)
+:
+  pt_val(pt_val_p)
+{
+}
+
+CiBit::CiBit(const CiBit& other) {
+  copy(other);
+}
+
+CiBit::CiBit(CiBit&& other) {
+  move(other);
+}
+
+CiBit& CiBit::operator=(const CiBit& other) {
+  if (this != &other)
+    copy(other);
+  return *this;
+}
+
+CiBit& CiBit::operator=(CiBit&& other) {
+  if (this != &other)
+    move(other);
+  return *this;
+}
+
+std::string CiBit::get_name(const std::string& prefix) {
+  if (name.empty())
+    name = prefix + std::to_string(unique_name_cnt++);
+  return name;
+}
+
+CiBit& CiBit::set_name(const std::string& name_p) {
+  name = name_p;
+  return *this;
+}
+
+CiBit& CiBit::clr_name() {
+  name.clear();
+  return *this;
+}
+
+CiBit::bit_plain_t CiBit::get_val() const {
+  return pt_val;
+}
+
+CiBit& CiBit::set_val(const bit_plain_t pt_val_p) {
+  clear_obj_handle();
+  pt_val = pt_val_p & 1;
+  return *this;
+}
 
 CiBit& CiBit::read() {
   obj_hdl = m_bit_exec->read(get_name("i_"));
   return *this;
+}
+
+CiBit& CiBit::read(const std::string name_p) {
+  return set_name(name_p).read();
 }
 
 CiBit& CiBit::write() {
@@ -16,6 +87,10 @@ CiBit& CiBit::write() {
     obj_hdl = m_bit_exec->encode(get_val());
   m_bit_exec->write(obj_hdl, get_name("o_"));
   return *this;
+}
+
+CiBit& CiBit::write(const std::string name_p) {
+  return set_name(name_p).write();
 }
 
 CiBit& CiBit::encrypt() {
@@ -27,6 +102,10 @@ CiBit::bit_plain_t CiBit::decrypt() {
   if (not is_plain())
     set_val(m_bit_exec->decrypt(obj_hdl));
   return get_val();
+}
+
+bool CiBit::is_plain() const {
+  return obj_hdl.is_empty();
 }
 
 CiBit& CiBit::op_not() {
@@ -87,6 +166,30 @@ DEFINE_OPER(op_xor  ,   op_xor  ,   set_val(0));
 DEFINE_OPER(op_xnor ,   op_xnor ,   set_val(1));
 
 
+CiBit& CiBit::operator +=(const CiBit& rhs) {
+  return op_xor(rhs);
+}
+
+CiBit& CiBit::operator -=(const CiBit& rhs) {
+  return op_xor(rhs);
+}
+
+CiBit& CiBit::operator *=(const CiBit& rhs) {
+  return op_and(rhs);
+}
+
+CiBit& CiBit::operator &=(const CiBit& rhs) {
+  return op_and(rhs);
+}
+
+CiBit& CiBit::operator |=(const CiBit& rhs) {
+  return op_or(rhs);
+}
+
+CiBit& CiBit::operator ^=(const CiBit& rhs) {
+  return op_xor(rhs);
+}
+
 void CiBit::clear_obj_handle() {
   if (not is_plain())
     obj_hdl = ObjHandle();
@@ -106,21 +209,71 @@ void CiBit::move(const CiBit& other) {
   name = std::move(other.name);
 }
 
+CiBit::bit_plain_t CiBit::negate(const bit_plain_t pt_val_p) {
+  return 1^pt_val_p;
+}
 
-CiBit cingulata::operator +   (CiBit lhs, const CiBit& rhs) { return lhs += rhs; }
-CiBit cingulata::operator -   (CiBit lhs, const CiBit& rhs) { return lhs -= rhs; }
-CiBit cingulata::operator *   (CiBit lhs, const CiBit& rhs) { return lhs *= rhs; }
-CiBit cingulata::operator ^   (CiBit lhs, const CiBit& rhs) { return lhs ^= rhs; }
-CiBit cingulata::operator &   (CiBit lhs, const CiBit& rhs) { return lhs &= rhs; }
-CiBit cingulata::operator |   (CiBit lhs, const CiBit& rhs) { return lhs |= rhs; }
+CiBit cingulata::operator +  (CiBit lhs, const CiBit& rhs) {
+  return lhs += rhs;
+}
 
-CiBit cingulata::operator !   (CiBit lhs)                   { return lhs.op_not(); }
-CiBit cingulata::operator &&  (CiBit lhs, const CiBit& rhs) { return lhs &= rhs; }
-CiBit cingulata::operator ||  (CiBit lhs, const CiBit& rhs) { return lhs |= rhs; }
+CiBit cingulata::operator -  (CiBit lhs, const CiBit& rhs) {
+  return lhs -= rhs;
+}
 
-CiBit cingulata::operator ==  (CiBit lhs, const CiBit& rhs) { return lhs.op_xnor(rhs); }
-CiBit cingulata::operator !=  (CiBit lhs, const CiBit& rhs) { return lhs.op_xor(rhs); }
-CiBit cingulata::operator <   (CiBit lhs, const CiBit& rhs) { return lhs.op_andny(rhs); }
-CiBit cingulata::operator <=  (CiBit lhs, const CiBit& rhs) { return lhs.op_orny(rhs); }
-CiBit cingulata::operator >   (CiBit lhs, const CiBit& rhs) { return lhs.op_andyn(rhs); }
-CiBit cingulata::operator >=  (CiBit lhs, const CiBit& rhs) { return lhs.op_oryn(rhs); }
+CiBit cingulata::operator *  (CiBit lhs, const CiBit& rhs) {
+  return lhs *= rhs;
+}
+
+CiBit cingulata::operator ~  (CiBit lhs) {
+  return lhs.op_not();
+}
+
+CiBit cingulata::operator ^  (CiBit lhs, const CiBit& rhs) {
+  return lhs ^= rhs;
+}
+
+CiBit cingulata::operator &  (CiBit lhs, const CiBit& rhs) {
+  return lhs &= rhs;
+}
+
+CiBit cingulata::operator |  (CiBit lhs, const CiBit& rhs) {
+  return lhs |= rhs;
+}
+
+CiBit cingulata::operator !  (CiBit lhs) {
+  return lhs.op_not();
+}
+
+CiBit cingulata::operator && (CiBit lhs, const CiBit& rhs) {
+  return lhs &= rhs;
+}
+
+CiBit cingulata::operator || (CiBit lhs, const CiBit& rhs) {
+  return lhs |= rhs;
+}
+
+CiBit cingulata::operator == (CiBit lhs, const CiBit& rhs) {
+  return lhs.op_xnor(rhs);
+}
+
+CiBit cingulata::operator != (CiBit lhs, const CiBit& rhs) {
+  return lhs.op_xor(rhs);
+}
+
+CiBit cingulata::operator <  (CiBit lhs, const CiBit& rhs) {
+  return lhs.op_andny(rhs);
+}
+
+CiBit cingulata::operator <= (CiBit lhs, const CiBit& rhs) {
+  return lhs.op_orny(rhs);
+}
+
+CiBit cingulata::operator >  (CiBit lhs, const CiBit& rhs) {
+  return lhs.op_andyn(rhs);
+}
+
+CiBit cingulata::operator >= (CiBit lhs, const CiBit& rhs) {
+  return lhs.op_oryn(rhs);
+}
+

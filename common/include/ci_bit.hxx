@@ -2,178 +2,193 @@
 #define CI_BIT
 
 #include <bit_exec/interface.hxx>
-#include <bit_exec/obj_handle.hxx>
 
 #include <string>
-#include <cassert>
 
 namespace cingulata
 {
   /**
-   * @brief Instrumented bit class
-   * @details CiBit can be in clear or in encrypted state when obj_hdl is not null.
-   *  Plain-text -- cihper-text operations are automatically optimized.
+   * @brief      Instrumented bit class
+   * @details    CiBit object can be in clear or in encrypted state when obj_hdl is not
+   *             null. Operations between plain-text and cihper-text values are
+   *             automatically optimized.
    */
   class CiBit
   {
   public:
     /**
-     * @brief Get current bit executor
+     * @brief      Get bit executor
+     *
+     * @return     const pointer to current bit executor
      */
-    static std::shared_ptr<IBitExec> bit_exec() {
-      return m_bit_exec;
-    }
+    static IBitExec *const bit_exec();
 
     /**
-     * @brief Set bit executor
+     * @brief      Set bit executor
+     *
+     * @param[in]  p_bit_exec  bit executor object
      */
-    static void set_bit_exec(const std::shared_ptr<IBitExec>& p_bit_exec) {
-      m_bit_exec = p_bit_exec;
-    }
+    static void set_bit_exec(IBitExec *const p_bit_exec);
 
   private:
-    static std::shared_ptr<IBitExec> m_bit_exec;
+    static IBitExec* m_bit_exec;
 
   public:
     using bit_plain_t = IBitExec::bit_plain_t;
 
-    /**
-     * @brief Construct an object in with given clear bit value
-     */
-    CiBit(const bit_plain_t pt_val_p = 0) : pt_val(pt_val_p) {}
+    static const CiBit zero;
+    static const CiBit one;
 
     /**
-     * @brief Copy-construct an object
+     * @brief      Construct an object with a given clear value
+     *
+     * @param[in]  pt_val_p  plain-text value
      */
-    CiBit(const CiBit& other) {
-      copy(other);
-    }
+    CiBit(const bit_plain_t pt_val_p = 0);
 
     /**
-     * @brief Move-construct an object
+     * @brief      Copy-construct an object
+     *
+     * @param[in]  other  object to copy
      */
-    CiBit(CiBit&& other) {
-      move(other);
-    }
+    CiBit(const CiBit& other);
 
     /**
-     * @brief Assignement operator overload
+     * @brief      Move and construct an object
+     *
+     * @param[in]  other  object to move
      */
-    CiBit& operator=(const CiBit& other) {
-      if (this != &other)
-        copy(other);
-      return *this;
-    }
+    CiBit(CiBit&& other);
 
     /**
-     * @brief Move-assignment operator overload
+     * @brief      Assignement operator
+     *
+     * @param[in]  other  object to copy
+     *
+     * @return     reference to current object
      */
-    CiBit& operator=(CiBit&& other) {
-      if (this != &other)
-        move(other);
-      return *this;
-    }
+    CiBit& operator=(const CiBit& other);
 
     /**
-     * @brief Destruct bit object
+     * @brief      Move-assignment operator
+     *
+     * @param[in]  other  object to move
+     *
+     * @return     reference to current object
+     */
+    CiBit& operator=(CiBit&& other);
+
+    /**
+     * @brief      Destroys the object
      */
     ~CiBit() = default;
 
     /**
-     * @brief Get name, if name was not set before then a new name is generated automatically
+     * @brief      Get bit name.
+     * @details    If no name was set before then a new name is automatically
+     *             generated
+     *
+     * @param[in]  prefix  the prefix to add to name in case it is generated
+     *
+     * @return     object name
      */
-    std::string get_name(const std::string& prefix = "n") {
-      if (name.empty())
-        name = prefix + std::to_string(unique_name_cnt++);
-      return name;
-    }
+    std::string get_name(const std::string& prefix = "n");
 
     /**
-     * @brief Set name
+     * @brief      Set bit name
+     *
+     * @param[in]  name_p  string name to use
+     *
+     * @return     reference to current object
      */
-    CiBit& set_name(const std::string& name_p) {
-      name = name_p;
-      return *this;
-    }
+    CiBit& set_name(const std::string& name_p);
 
     /**
-     * @brief Clear name and set it to default value
+     * @brief      Clear name and set it to default value
+     *
+     * @return     reference to current object
      */
-    CiBit& clr_name() {
-      name.clear();
-      return *this;
-    }
+    CiBit& clr_name();
 
     /**
-     * @brief Returns clear bit value
-     * @details If current object is in encrypted state the result is undefined
-     * @return Plaintext value
+     * @brief      Returns plain-text bit value
+     * @details    If current object is in encrypted state the result is
+     *             undefined
+     *
+     * @return     plain-text value
      */
-    bit_plain_t get_val() const {
-      return pt_val;
-    }
+    bit_plain_t get_val() const;
 
     /**
-     * @brief Set bit to a plaintext value
-     * @details If bit is in encrypted state, the underlying object handle is destroyed
-     * @return Reference to current object
+     * @brief      Set bit to a plaintext value
+     * @details    If bit is in encrypted state, the underlying object handle is
+     *             destroyed
+     *
+     * @param[in]  pt_val_p  plain-text value to use
+     *
+     * @return     reference to current object
      */
-    CiBit& set_val(const bit_plain_t pt_val_p) {
-      clear_obj_handle();
-      pt_val = pt_val_p & 1;
-      return *this;
-    }
+    CiBit& set_val(const bit_plain_t pt_val_p);
 
     /**
-     * @brief Read bit, use current bit name
-     * @return Reference to current object
+     * @brief      Read bit, use current bit name
+     *
+     * @return     reference to current object
      */
     CiBit& read();
 
     /**
-     * @brief Set name and read bit
-     * @return Reference to current object
+     * @brief      Set name and read bit
+     *
+     * @param[in]  name_p  string name to use
+     *
+     * @return     reference to current object
      */
-    CiBit& read(const std::string name_p) {
-      return set_name(name_p).read();
-    }
+    CiBit& read(const std::string name_p);
 
     /**
-     * @brief Write bit, use current bit name
-     * @return Reference to current object
+     * @brief      Write bit, use current bit name
+     *
+     * @return     reference to current object
      */
     CiBit& write();
 
     /**
-     * @brief Set name and write bit
-     * @return Reference to current object
+     * @brief      Set name and write bit
+     *
+     * @param[in]  name_p  string name to use
+     *
+     * @return     reference to current object
      */
-    CiBit& write(const std::string name_p) {
-      return set_name(name_p).write();
-    }
+    CiBit& write(const std::string name_p);
 
     /**
-     * @brief Encrypt bit
-     * @return Reference to current object
+     * @brief      Encrypt bit
+     * @details    Bit object state pass to "encrypted"
+     *
+     * @return     reference to current object
      */
     CiBit& encrypt();
 
     /**
-     * @brief Decrypt bit
-     * @details If bit is an clear state this method does nothing
-     * @return CiBit plaintext value
+     * @brief      Decrypt bit
+     * @details    Bit object state pass to "unencrypted". If bit is an clear
+     *             state this method does nothing
+     *
+     * @return     plain-text value
      */
     bit_plain_t decrypt();
 
     /**
-     * @brief Is bit non-encrypted?
+     * @brief      Is bit plain?
+     *
+     * @return     true if plain, false otherwise
      */
-    bool is_plain() const {
-      return obj_hdl.is_empty();
-    }
+    bool is_plain() const;
 
     /**
-     * All possible boolean operations with non-encrypted bit
+     * @name Boolean operations with plain-text input
+     * @{
      */
     CiBit&  op_and      (const bit_plain_t);
     CiBit&  op_nand     (const bit_plain_t);
@@ -185,9 +200,13 @@ namespace cingulata
     CiBit&  op_oryn     (const bit_plain_t);
     CiBit&  op_xor      (const bit_plain_t);
     CiBit&  op_xnor     (const bit_plain_t);
+    /**
+     * @}
+     */
 
     /**
-     * All possible boolean operations
+     * @name Boolean operations
+     * @{
      */
     CiBit&  op_not      ();
     CiBit&  op_and      (const CiBit&);
@@ -200,36 +219,52 @@ namespace cingulata
     CiBit&  op_oryn     (const CiBit&);
     CiBit&  op_xor      (const CiBit&);
     CiBit&  op_xnor     (const CiBit&);
+    /**
+     * @}
+     */
 
     /**
-     * Compound assignment operators overload
+     * @name Compound assignment operators
+     * @{
      */
-    CiBit&  operator  +=  (const CiBit& rhs) { return op_or(rhs); }
-    CiBit&  operator  -=  (const CiBit& rhs) { return op_xor(rhs); }
-    CiBit&  operator  *=  (const CiBit& rhs) { return op_and(rhs); }
-    CiBit&  operator  &=  (const CiBit& rhs) { return op_and(rhs); }
-    CiBit&  operator  |=  (const CiBit& rhs) { return op_or(rhs); }
-    CiBit&  operator  ^=  (const CiBit& rhs) { return op_xor(rhs); }
+    CiBit&  operator  +=  (const CiBit& rhs);
+    CiBit&  operator  -=  (const CiBit& rhs);
+    CiBit&  operator  *=  (const CiBit& rhs);
+    CiBit&  operator  &=  (const CiBit& rhs);
+    CiBit&  operator  |=  (const CiBit& rhs);
+    CiBit&  operator  ^=  (const CiBit& rhs);
+    /**
+     * @}
+     */
 
   protected:
     /**
-     * @brief clear underlying object handle
+     * @brief      Clear underlying object handle
      */
     void clear_obj_handle();
 
     /**
-     * @brief Copy \c other object to current object
+     * @brief      Copy object to current object
+     *
+     * @param[in]  other  object to copy
      */
     void copy(const CiBit& other);
 
     /**
-     * @brief Move \c other object to current object
+     * @brief      Move object to current object
+     *
+     * @param[in]  other  object to move
      */
     void move(const CiBit& other);
 
-    static bit_plain_t negate(const bit_plain_t pt_val_p) {
-      return 1^pt_val_p;
-    }
+    /**
+     * @brief      Negate plain-text value
+     *
+     * @param[in]  pt_val_p  input value
+     *
+     * @return     negated input
+     */
+    static bit_plain_t negate(const bit_plain_t pt_val_p);
 
   protected:
     static uint unique_name_cnt;
@@ -245,6 +280,7 @@ namespace cingulata
   CiBit operator  +   (CiBit lhs, const CiBit& rhs);
   CiBit operator  -   (CiBit lhs, const CiBit& rhs);
   CiBit operator  *   (CiBit lhs, const CiBit& rhs);
+  CiBit operator  ~   (CiBit lhs);
   CiBit operator  ^   (CiBit lhs, const CiBit& rhs);
   CiBit operator  &   (CiBit lhs, const CiBit& rhs);
   CiBit operator  |   (CiBit lhs, const CiBit& rhs);

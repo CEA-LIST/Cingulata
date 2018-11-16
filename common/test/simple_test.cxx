@@ -1,18 +1,20 @@
 #include <bit_exec/tracker.hxx>
+#include <ci_bit.hxx>
 
 using namespace cingulata;
 
-
 int main() {
-  std::shared_ptr<IBitExec> be(new BitTracker());
+  IBitExec* be = new BitTracker();
+  CiBit::set_bit_exec(be);
 
-  auto zero = be->encode();
-  auto one = be->encrypt();
-  auto inp2 = be->encrypt();
-  auto a = be->op_and(one, inp2);
-  be->write(a, "a");
-  be->write(a, "b");
-  be->write(inp2, "c");
+  CiBit a;
+  a.encrypt();
 
-  std::static_pointer_cast<BitTracker>(be)->export_blif(std::cout, "lala");
+  CiBit d;
+  d.encrypt().set_name("lol");
+  d = 1 ^ a;
+
+  d.write();
+
+  static_cast<BitTracker*>(be)->export_blif(std::cout, "lala");
 }
