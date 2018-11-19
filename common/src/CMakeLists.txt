@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
+set (CMAKE_CXX_STANDARD 11)
 
 set(SRCS
     bit_exec/interface.cxx
@@ -12,4 +13,4 @@ include_directories(${INCLUDE_DIR})
 
 add_library(common ${SRCS})
 
-target_compile_options(common PRIVATE -std=c++11 -Wall)
+target_compile_options(common PRIVATE -Wall)
