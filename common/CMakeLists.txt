@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.9)
 
-project("Cingulata common" VERSION 0.2.0 LANGUAGES CXX)
-
 option(BUILD_DOC "Build documentation" ON)
 
 if (BUILD_DOC)
@@ -16,8 +14,7 @@ if (BUILD_DOC)
   endif (DOXYGEN_FOUND)
 endif(BUILD_DOC)
 
-
-set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
+set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_subdirectory(src)
 add_subdirectory(test)

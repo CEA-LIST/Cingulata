@@ -2,15 +2,11 @@ cmake_minimum_required(VERSION 3.0)
 
 include_directories(${INCLUDE_DIR})
 
-set(ENABLE_UNITTEST ON CACHE BOOL "Enable unit tests using googletest")
-
 if(ENABLE_UNITTEST)
-  add_subdirectory(googletest EXCLUDE_FROM_ALL)
-
   # if gtest_SOURCE_DIR has been set
   if (gtest_SOURCE_DIR)
     set(GOOGLETEST_SOURCES
-        unittest/test_ci_bit.cxx
+        unittest/test_ci_bit_pt.cxx
         )
 
     add_executable(unittests ${GOOGLETEST_SOURCES})
@@ -20,7 +16,7 @@ if(ENABLE_UNITTEST)
     add_test(unittests unittests)
 
   else(gtest_SOURCE_DIR)
-    message(WARNING "Cannot find googletest sources")
+    message(WARNING "Unittest compilation requested but googletest unavailable")
   endif(gtest_SOURCE_DIR)
 
 endif(ENABLE_UNITTEST)
