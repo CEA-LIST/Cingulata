@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <memory>
 
 
 namespace cingulata
@@ -22,7 +23,7 @@ namespace cingulata
   class IBitExec
   {
   public:
-    using bit_plain_t = uint8_t;
+    using bit_plain_t = unsigned;
 
     IBitExec()          = default;
     virtual ~IBitExec() = default;
@@ -49,8 +50,9 @@ namespace cingulata
     virtual ObjHandle   read        (const std::string& name)                       = 0;
     virtual void        write       (const ObjHandle& in1, const std::string& name) = 0;
 
-    /* Only AND, XOR and NOT gates are mandatory */
-    virtual ObjHandle   op_not      (const ObjHandle& in1)                          = 0;
+    virtual ObjHandle   op_not      (const ObjHandle& in1);
+
+    /* Only AND and XOR gates are mandatory */
     virtual ObjHandle   op_and      (const ObjHandle& in1, const ObjHandle& in2)    = 0;
     virtual ObjHandle   op_xor      (const ObjHandle& in1, const ObjHandle& in2)    = 0;
 

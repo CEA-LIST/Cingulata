@@ -6,7 +6,7 @@ if(ENABLE_UNITTEST)
   # if gtest_SOURCE_DIR has been set
   if (gtest_SOURCE_DIR)
     set(GOOGLETEST_SOURCES
-        unittest/test_ci_bit_pt.cxx
+        unittest/test_ci_bit.cxx
         )
 
     add_executable(unittests ${GOOGLETEST_SOURCES})

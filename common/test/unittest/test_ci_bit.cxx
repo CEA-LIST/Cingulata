@@ -3,6 +3,8 @@
 #include <bit_exec/interface.hxx>
 #include <ci_bit.hxx>
 
+#include "bit_exec_plain.hxx"
+
 using namespace std;
 using namespace cingulata;
 
@@ -35,8 +37,30 @@ tuple<
   { "", nullptr, {}}
 };
 
-TEST(CiBit_PT, oper_2_cibit_input) {
 
+class CiBitOperTest : public ::testing::TestWithParam<tuple<bool,bool>> {
+public:
+  bool encrypt_1st;
+  bool encrypt_2nd;
+  static IBitExec* be;
+
+  static void SetUpTestCase() {
+    be = new BitExecFake();
+    CiBit::set_bit_exec(be);
+  }
+
+  static void TearDownTestCase() {
+    delete be;
+  }
+
+  virtual void SetUp() {
+    tie(encrypt_1st, encrypt_2nd) = GetParam();
+  }
+
+};
+IBitExec* CiBitOperTest::be;
+
+TEST_P(CiBitOperTest, oper_2_input) {
   for (int idx = 0; ; ++idx)
   {
     auto& op_name = get<0>(obj_operators[idx]);
@@ -46,29 +70,34 @@ TEST(CiBit_PT, oper_2_cibit_input) {
     if (op_name.empty()) break;
 
     for (int v = 0; v < op_tt.size(); ++v) {
-      int b1 = 1 & (v >> 1);
-      CiBit a(b1);
-      int b0 = 1 & (v >> 0);
-      CiBit b(b0);
+      int a_val_inp = 1 & (v >> 1);
+      CiBit a(a_val_inp);
+      if (encrypt_1st) a.encrypt();
+
+      int b_val_inp = 1 & (v >> 0);
+      CiBit b(b_val_inp);
+      if (encrypt_2nd) b.encrypt();
 
       op_func(a, b);
 
+      int a_val_out = a.decrypt();
+      int b_val_out = encrypt_2nd ? b.decrypt() : b.get_val();
+
       // operator result is good
-      ASSERT_EQ(op_tt[v], (int)a.get_val())
-        << " operator '" << op_name << "'" << " (" << b1 << "," << b0 << ")";
+      EXPECT_EQ(op_tt[v], a_val_out)
+        << " operator '" << op_name << "'" << " (" << a_val_inp << "," << b_val_inp << ")";
 
       // value of b does not change
-      ASSERT_EQ(b0, (int)b.get_val()) << " operator '" << op_name << "'";
+      EXPECT_EQ(b_val_inp, b_val_out) << " operator '" << op_name << "'";
 
       // stays plain afterwards
-      ASSERT_TRUE(a.is_plain()) << " operator '" << op_name << "'";
-      ASSERT_TRUE(b.is_plain()) << " operator '" << op_name << "'";
+      EXPECT_TRUE(encrypt_2nd or b.is_plain()) << " operator '" << op_name << "'";
     }
   }
 }
 
-TEST(CiBit_PT, oper_1_cibit_1_pt_input) {
 
+TEST_P(CiBitOperTest, oper_2_input_pt) {
   for (int idx = 0; ; ++idx)
   {
     auto& op_name = get<0>(obj_operators[idx]);
@@ -78,18 +107,23 @@ TEST(CiBit_PT, oper_1_cibit_1_pt_input) {
     if (op_name.empty()) break;
 
     for (int v = 0; v < op_tt.size(); ++v) {
-      int b1 = 1 & (v >> 1);
-      CiBit a(b1);
+      int a_val_inp = 1 & (v >> 1);
+      CiBit a(a_val_inp);
+      if (encrypt_1st) a.encrypt();
 
-      int b0 = 1 & (v >> 0);
+      int b_val_inp = 1 & (v >> 0);
+      int b_val_out = b_val_inp;
 
-      op_func(a,b0);
+      op_func(a, b_val_out);
 
-      ASSERT_EQ(op_tt[v], (int)a.get_val())
-        << " operator '" << op_name << "'" << " (" << b1 << "," << b0 << ")";
+      int a_val_out = a.decrypt();
 
-      // stays plain afterwards
-      ASSERT_TRUE(a.is_plain()) << " operator '" << op_name << "'";
+      // operator result is good
+      EXPECT_EQ(op_tt[v], a_val_out)
+        << " operator '" << op_name << "'" << " (" << a_val_inp << "," << b_val_inp << ")";
+
+      // value of b does not change
+      EXPECT_EQ(b_val_inp, b_val_out) << " operator '" << op_name << "'";
     }
   }
 }
@@ -124,7 +158,7 @@ tuple<
   { "", nullptr, {}}
 };
 
-TEST(CiBit_PT, ext_oper_2_cibit_input) {
+TEST_P(CiBitOperTest, oper_2_input_ext) {
   for (int idx = 0; ; ++idx)
   {
     auto& op_name = get<0>(operators[idx]);
@@ -134,28 +168,39 @@ TEST(CiBit_PT, ext_oper_2_cibit_input) {
     if (op_name.empty()) break;
 
     for (int v = 0; v < op_tt.size(); ++v) {
-      int b1 = 1 & (v >> 1);
-      CiBit a(b1);
-      int b0 = 1 & (v >> 0);
-      CiBit b(b0);
+      int a_val_inp = 1 & (v >> 1);
+      CiBit a(a_val_inp);
+      if (encrypt_1st) a.encrypt();
+
+      int b_val_inp = 1 & (v >> 0);
+      CiBit b(b_val_inp);
+      if (encrypt_2nd) b.encrypt();
 
       CiBit c = op_func(a, b);
 
+      int a_val_out = encrypt_1st ? a.decrypt() : a.get_val();
+      int b_val_out = encrypt_2nd ? b.decrypt() : b.get_val();
+      int c_val_out = c.decrypt();
+
       // operator result is good
-      ASSERT_EQ(op_tt[v], (int)c.get_val())
-        << " operator '" << op_name << "'" << " (" << b1 << "," << b0 << ")";
+      EXPECT_EQ(op_tt[v], c_val_out)
+        << " operator '" << op_name << "'" << " (" << a_val_inp << "," << b_val_inp << ")";
 
       // value of b does not change
-      ASSERT_EQ(b1, (int)a.get_val()) << " operator '" << op_name << "'";
-      ASSERT_EQ(b0, (int)b.get_val()) << " operator '" << op_name << "'";
+      EXPECT_EQ(a_val_inp, a_val_out) << " operator '" << op_name << "'";
+      EXPECT_EQ(b_val_inp, b_val_out) << " operator '" << op_name << "'";
 
       // stays plain afterwards
-      ASSERT_TRUE(a.is_plain()) << " operator '" << op_name << "'";
-      ASSERT_TRUE(b.is_plain()) << " operator '" << op_name << "'";
-      ASSERT_TRUE(c.is_plain()) << " operator '" << op_name << "'";
+      EXPECT_TRUE(encrypt_1st or a.is_plain()) << " operator '" << op_name << "'";
+      EXPECT_TRUE(encrypt_2nd or b.is_plain()) << " operator '" << op_name << "'";
     }
   }
 }
+
+INSTANTIATE_TEST_CASE_P(,
+                        CiBitOperTest,
+                        ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+
 
 TEST(CiBit, set_name) {
   CiBit a;

@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.9)
 
-option(BUILD_DOC "Build documentation" ON)
-
 if (BUILD_DOC)
   find_package(Doxygen)
 

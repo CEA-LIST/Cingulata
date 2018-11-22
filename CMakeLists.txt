@@ -1,8 +1,9 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.9)
 
 project(cingulata VERSION 0.2.0 LANGUAGES CXX)
 
-set(ENABLE_UNITTEST ON CACHE BOOL "Enable unit tests using googletest")
+option(ENABLE_UNITTEST "Enable unit tests using googletest" ON)
+option(BUILD_DOC "Build documentation" ON)
 
 add_subdirectory(submodules)
 add_subdirectory(common)
