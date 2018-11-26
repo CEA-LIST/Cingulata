@@ -38,7 +38,7 @@ tuple<
 };
 
 
-class CiBitOperTest : public ::testing::TestWithParam<tuple<bool,bool>> {
+class CiBitOper : public ::testing::TestWithParam<tuple<bool,bool>> {
 public:
   bool encrypt_1st;
   bool encrypt_2nd;
@@ -58,9 +58,9 @@ public:
   }
 
 };
-IBitExec* CiBitOperTest::be;
+IBitExec* CiBitOper::be;
 
-TEST_P(CiBitOperTest, oper_2_input) {
+TEST_P(CiBitOper, two_input) {
   for (int idx = 0; ; ++idx)
   {
     auto& op_name = get<0>(obj_operators[idx]);
@@ -97,7 +97,7 @@ TEST_P(CiBitOperTest, oper_2_input) {
 }
 
 
-TEST_P(CiBitOperTest, oper_2_input_pt) {
+TEST_P(CiBitOper, two_input_pt) {
   for (int idx = 0; ; ++idx)
   {
     auto& op_name = get<0>(obj_operators[idx]);
@@ -158,7 +158,7 @@ tuple<
   { "", nullptr, {}}
 };
 
-TEST_P(CiBitOperTest, oper_2_input_ext) {
+TEST_P(CiBitOper, two_input_ext) {
   for (int idx = 0; ; ++idx)
   {
     auto& op_name = get<0>(operators[idx]);
@@ -198,7 +198,7 @@ TEST_P(CiBitOperTest, oper_2_input_ext) {
 }
 
 INSTANTIATE_TEST_CASE_P(,
-                        CiBitOperTest,
+                        CiBitOper,
                         ::testing::Combine(::testing::Bool(), ::testing::Bool()));
 
 
