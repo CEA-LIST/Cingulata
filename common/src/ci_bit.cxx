@@ -166,27 +166,27 @@ DEFINE_OPER(op_xor  ,   op_xor  ,   set_val(0));
 DEFINE_OPER(op_xnor ,   op_xnor ,   set_val(1));
 
 
-CiBit& CiBit::operator +=(const CiBit& rhs) {
+CiBit& CiBit::operator += (const CiBit& rhs) {
   return op_xor(rhs);
 }
 
-CiBit& CiBit::operator -=(const CiBit& rhs) {
+CiBit& CiBit::operator -= (const CiBit& rhs) {
   return op_xor(rhs);
 }
 
-CiBit& CiBit::operator *=(const CiBit& rhs) {
+CiBit& CiBit::operator *= (const CiBit& rhs) {
   return op_and(rhs);
 }
 
-CiBit& CiBit::operator &=(const CiBit& rhs) {
+CiBit& CiBit::operator &= (const CiBit& rhs) {
   return op_and(rhs);
 }
 
-CiBit& CiBit::operator |=(const CiBit& rhs) {
+CiBit& CiBit::operator |= (const CiBit& rhs) {
   return op_or(rhs);
 }
 
-CiBit& CiBit::operator ^=(const CiBit& rhs) {
+CiBit& CiBit::operator ^= (const CiBit& rhs) {
   return op_xor(rhs);
 }
 

@@ -275,7 +275,8 @@ namespace cingulata
   };
 
   /**
-   * Arithmetic operators
+   * @name Arithmetic operators
+   * @{
    */
   CiBit operator  +   (CiBit lhs, const CiBit& rhs);
   CiBit operator  -   (CiBit lhs, const CiBit& rhs);
@@ -284,16 +285,24 @@ namespace cingulata
   CiBit operator  ^   (CiBit lhs, const CiBit& rhs);
   CiBit operator  &   (CiBit lhs, const CiBit& rhs);
   CiBit operator  |   (CiBit lhs, const CiBit& rhs);
+  /**
+   * @}
+   */
 
   /**
-   * Logic operators
+   * @name Logic operators
+   * @{
    */
   CiBit operator  !   (CiBit lhs);
   CiBit operator  &&  (CiBit lhs, const CiBit& rhs);
   CiBit operator  ||  (CiBit lhs, const CiBit& rhs);
+  /**
+   * @}
+   */
 
   /**
-   * Comparison operators
+   * @name Comparison operators
+   * @{
    */
   CiBit operator  ==  (CiBit lhs, const CiBit& rhs);
   CiBit operator  !=  (CiBit lhs, const CiBit& rhs);
@@ -301,6 +310,9 @@ namespace cingulata
   CiBit operator  <=  (CiBit lhs, const CiBit& rhs);
   CiBit operator  >   (CiBit lhs, const CiBit& rhs);
   CiBit operator  >=  (CiBit lhs, const CiBit& rhs);
+  /**
+   * @}
+   */
 }
 
 #endif

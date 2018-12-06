@@ -1,5 +1,5 @@
 #include <ci_int.hxx>
-#include <int_op_gen/size.hxx>
+#include <int_op_gen/mult_depth.hxx>
 
 #include <cassert>
 
@@ -15,7 +15,7 @@ IIntOpGen const* CiInt::int_op_gen() {
   return m_int_op_gen;
 }
 
-IIntOpGen const* CiInt::m_int_op_gen{ new IntOpGenSize() };
+IIntOpGen const* CiInt::m_int_op_gen{ new IntOpGenDepth() };
 
 
 CiInt::CiInt(const CiBit& p_bit, const bool p_is_signed)
@@ -182,7 +182,7 @@ CiInt& CiInt::operator>>=(const int pos) {
 
 CiInt& CiInt::rol(const int pos) {
   if (size() > 0 and pos != 0) {
-    unsigned ppos = pos % size(); /**< @c ppos is positive after */
+    unsigned ppos = pos % size(); /** < @c ppos is positive after */
 
     auto bits_cpy = m_bits;
     m_bits = vector<CiBit>(bits_cpy.end()-ppos, bits_cpy.end());
@@ -372,19 +372,32 @@ CiInt ror(CiInt lhs, const unsigned& pos) {
 }
 
 /* Relational operators */
-#define DEFINE_RELATIONAL_OPERATOR(OP_NAME, OP_FUNC, SAME_OPERANDS_CODE) \
+#define DEFINE_RELATIONAL_OPERATOR_1(OP_NAME, OP_FUNC, SAME_OPERANDS_CODE) \
 CiBit OP_NAME(const CiInt& lhs, const CiInt& rhs) { \
   if (&lhs == &rhs) {  \
     SAME_OPERANDS_CODE; \
   } else { \
     unsigned res_size = result_size(lhs, rhs); \
-    return CiInt::int_op_gen()->OP_FUNC(lhs.resize(res_size).bits(), rhs.resize(res_size).bits()); \
+    return CiInt::int_op_gen()->OP_FUNC(lhs.resize(res_size).bits(), \
+      rhs.resize(res_size).bits()); \
   } \
 }
 
-DEFINE_RELATIONAL_OPERATOR(operator==, equal         , return CiBit::one);
-DEFINE_RELATIONAL_OPERATOR(operator!=, not_equal     , return CiBit::zero);
-DEFINE_RELATIONAL_OPERATOR(operator< , lower         , return CiBit::zero);
-DEFINE_RELATIONAL_OPERATOR(operator<=, lower_equal   , return CiBit::one);
-DEFINE_RELATIONAL_OPERATOR(operator> , greater       , return CiBit::zero);
-DEFINE_RELATIONAL_OPERATOR(operator>=, greater_equal , return CiBit::one);
+#define DEFINE_RELATIONAL_OPERATOR_2(OP_NAME, OP_FUNC, SAME_OPERANDS_CODE) \
+CiBit OP_NAME(const CiInt& lhs, const CiInt& rhs) { \
+  if (&lhs == &rhs) {  \
+    SAME_OPERANDS_CODE; \
+  } else { \
+    unsigned res_size = result_size(lhs, rhs); \
+    bool res_is_signed = result_sign(lhs, rhs); \
+    return CiInt::int_op_gen()->OP_FUNC(lhs.resize(res_size).bits(), \
+      rhs.resize(res_size).bits(), res_is_signed); \
+  } \
+}
+
+DEFINE_RELATIONAL_OPERATOR_1(operator==, equal         , return CiBit::one);
+DEFINE_RELATIONAL_OPERATOR_1(operator!=, not_equal     , return CiBit::zero);
+DEFINE_RELATIONAL_OPERATOR_2(operator< , lower         , return CiBit::zero);
+DEFINE_RELATIONAL_OPERATOR_2(operator<=, lower_equal   , return CiBit::one);
+DEFINE_RELATIONAL_OPERATOR_2(operator> , greater       , return CiBit::zero);
+DEFINE_RELATIONAL_OPERATOR_2(operator>=, greater_equal , return CiBit::one);

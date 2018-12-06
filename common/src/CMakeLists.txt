@@ -6,6 +6,8 @@ set(SRCS
     bit_exec/interface.cxx
     bit_exec/tracker.cxx
     ci_bit.cxx
+    int_op_gen/interface.cxx
+    int_op_gen/mult_depth.cxx
     ci_int.cxx
     )
 
