@@ -2,21 +2,19 @@
 
 using namespace cingulata;
 
-CiBit IntOpGenDepth::compare(const BitVectorT& lhs, const BitVectorT& rhs,
-    const int carry_inp, const bool signed_comp) const
-{
+CiBit IntOpGenDepth::not_equal(const BitVectorT& lhs, const BitVectorT& rhs) const {
   const int size = lhs.size();
 
-  CiBit carry(carry_inp);
-  CiBit n1, n2;
-  for (int i = 0; i < size; ++i) {
-    n1 = carry ^ lhs.at(i);
-    n2 = carry ^ rhs.at(i);
-    carry = n1 & n2;
-    carry ^= rhs.at(i);
-  }
-  if (signed_comp)
-    carry ^= n1 ^ n2;
+  BitVectorT tmp(size, 0);
+  for (int i = 0; i < size; ++i)
+    tmp[i] = lhs[i] != rhs[i];
 
-  return carry;
+  /* log depth tree */
+  for (int k = 1; k < size; k *= 2) {
+    for (int i = 0; i < size - k; i += 2*k) {
+      tmp.at(i) &= tmp.at(i+k);
+    }
+  }
+
+  return tmp[0];
 }

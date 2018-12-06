@@ -1,5 +1,5 @@
 #include <ci_int.hxx>
-#include <int_op_gen/mult_depth.hxx>
+#include <int_op_gen/size.hxx>
 
 #include <cassert>
 
@@ -15,8 +15,7 @@ IIntOpGen const* CiInt::int_op_gen() {
   return m_int_op_gen;
 }
 
-IIntOpGen const* CiInt::m_int_op_gen{ new IntOpGenDepth() };
-
+IIntOpGen const* CiInt::m_int_op_gen{ new IntOpGenSize() };
 
 CiInt::CiInt(const CiBit& p_bit, const bool p_is_signed)
 :

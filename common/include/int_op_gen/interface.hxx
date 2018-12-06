@@ -33,7 +33,7 @@ namespace cingulata
 
 
     virtual CiBit not_equal     ( const BitVectorT& lhs,
-                                  const BitVectorT& rhs)          const;
+                                  const BitVectorT& rhs)          const = 0;
 
     virtual CiBit equal         ( const BitVectorT& lhs,
                                   const BitVectorT& rhs)          const;

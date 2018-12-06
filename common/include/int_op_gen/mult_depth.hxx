@@ -7,10 +7,8 @@ namespace cingulata
 {
   class IntOpGenDepth : public IIntOpGen {
   public:
-    virtual CiBit compare ( const BitVectorT& lhs,
-                            const BitVectorT& rhs,
-                            const int carry_inp = 0,
-                            const bool signed_comp = false) const override;
+    virtual CiBit not_equal ( const BitVectorT& lhs,
+                              const BitVectorT& rhs)          const override;
   };
 }
 

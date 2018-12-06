@@ -3,18 +3,7 @@
 using namespace cingulata;
 
 CiBit IIntOpGen::equal(const BitVectorT& lhs, const BitVectorT& rhs) const {
-  const int size = lhs.size();
-
-  CiBit equal(1);
-  for (int i = 0; i < size; ++i) {
-    equal &= lhs[i] == rhs[i];
-  }
-
-  return equal;
-}
-
-CiBit IIntOpGen::not_equal(const BitVectorT& lhs, const BitVectorT& rhs) const {
-  return !equal(lhs,rhs);
+  return !not_equal(lhs,rhs);
 }
 
 CiBit IIntOpGen::lower(const BitVectorT& lhs, const BitVectorT& rhs, const bool signed_comp) const {
