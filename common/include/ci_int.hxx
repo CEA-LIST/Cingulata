@@ -408,7 +408,7 @@ namespace cingulata
   // CiInt   operator  %   (const CiInt& lhs, const CiInt& rhs);
 
   /* Bitwise logic */
-  CiInt   operator  ~   (const CiInt& lhs);
+  CiInt   operator  ~   (CiInt lhs);
   CiInt   operator  &   (const CiInt& lhs, const CiInt& rhs);
   CiInt   operator  |   (const CiInt& lhs, const CiInt& rhs);
   CiInt   operator  ^   (const CiInt& lhs, const CiInt& rhs);

@@ -15,7 +15,7 @@ IIntOpGen const* CiInt::int_op_gen() {
   return m_int_op_gen;
 }
 
-IIntOpGen const* CiInt::m_int_op_gen{ new IntOpGenSize() };
+IIntOpGen const* CiInt::m_int_op_gen{ nullptr };
 
 CiInt::CiInt(const CiBit& p_bit, const bool p_is_signed)
 :
@@ -208,7 +208,7 @@ CiInt& CiInt::operator--() {
 
 CiInt CiInt::operator++(int) {
   CiInt cpy{*this};
-  --(*this);
+  ++(*this);
   return cpy;
 }
 
@@ -229,22 +229,22 @@ unsigned CiInt::idx_rel_to_abs(const int idx) const {
 }
 
 /* Logical operators */
-CiBit operator!(const CiInt& lhs) {
+CiBit cingulata::operator!(const CiInt& lhs) {
   return !static_cast<CiBit>(lhs);
 }
 
-CiBit operator&&(const CiInt& lhs, const CiInt& rhs) {
+CiBit cingulata::operator&&(const CiInt& lhs, const CiInt& rhs) {
   return static_cast<CiBit>(lhs) & static_cast<CiBit>(rhs);
 }
-CiBit operator||(const CiInt& lhs, const CiInt& rhs) {
+CiBit cingulata::operator||(const CiInt& lhs, const CiInt& rhs) {
   return static_cast<CiBit>(lhs) | static_cast<CiBit>(rhs);
 }
 
-CiInt operator+(const CiInt& lhs) {
+CiInt cingulata::operator+(const CiInt& lhs) {
   return lhs;
 }
 
-CiInt operator-(const CiInt& lhs) {
+CiInt cingulata::operator-(const CiInt& lhs) {
   return (~lhs)+CiBit(1); /** < Two's complement negation */
 }
 
@@ -283,7 +283,7 @@ bool result_sign(const CiInt& lhs, const CiInt& rhs) {
 }
 
 /* Arithmetic operators */
-CiInt operator+(const CiInt& lhs, const CiInt& rhs) {
+CiInt cingulata::operator+(const CiInt& lhs, const CiInt& rhs) {
   unsigned res_size = result_size(lhs, rhs);
   bool res_is_signed = result_sign(lhs, rhs);
 
@@ -296,7 +296,7 @@ CiInt operator+(const CiInt& lhs, const CiInt& rhs) {
   }
 }
 
-CiInt operator-(const CiInt& lhs, const CiInt& rhs) {
+CiInt cingulata::operator-(const CiInt& lhs, const CiInt& rhs) {
   unsigned res_size = result_size(lhs, rhs);
   bool res_is_signed = result_sign(lhs, rhs);
 
@@ -310,7 +310,7 @@ CiInt operator-(const CiInt& lhs, const CiInt& rhs) {
   return CiInt(res_bits, res_is_signed);
 }
 
-CiInt operator*(const CiInt& lhs, const CiInt& rhs) {
+CiInt cingulata::operator*(const CiInt& lhs, const CiInt& rhs) {
   unsigned res_size = result_size(lhs, rhs);
   bool res_is_signed = result_sign(lhs, rhs);
 
@@ -328,7 +328,7 @@ CiInt operator*(const CiInt& lhs, const CiInt& rhs) {
 // CiInt CiInt::operator%(const CiInt& lhs, const CiInt& rhs);
 
 /* Bitwise logic */
-CiInt operator~(CiInt lhs) {
+CiInt cingulata::operator~(CiInt lhs) {
   for (unsigned i = 0; i < lhs.size(); ++i) {
     lhs[i] = ~lhs[i];
   }
@@ -354,11 +354,11 @@ DEFINE_BITWISE_OPERATOR(operator|, |=,        );
 DEFINE_BITWISE_OPERATOR(operator^, ^=, res = 0);
 
 /* Bitwise shift */
-CiInt operator<<(CiInt lhs, const unsigned& pos) {
+CiInt cingulata::operator<<(CiInt lhs, const unsigned& pos) {
   return lhs <<= pos;
 }
 
-CiInt operator>>(CiInt lhs, const unsigned& pos) {
+CiInt cingulata::operator>>(CiInt lhs, const unsigned& pos) {
   return lhs >>= pos;
 }
 
@@ -394,9 +394,9 @@ CiBit OP_NAME(const CiInt& lhs, const CiInt& rhs) { \
   } \
 }
 
-DEFINE_RELATIONAL_OPERATOR_1(operator==, equal         , return CiBit::one);
-DEFINE_RELATIONAL_OPERATOR_1(operator!=, not_equal     , return CiBit::zero);
-DEFINE_RELATIONAL_OPERATOR_2(operator< , lower         , return CiBit::zero);
-DEFINE_RELATIONAL_OPERATOR_2(operator<=, lower_equal   , return CiBit::one);
-DEFINE_RELATIONAL_OPERATOR_2(operator> , greater       , return CiBit::zero);
-DEFINE_RELATIONAL_OPERATOR_2(operator>=, greater_equal , return CiBit::one);
+DEFINE_RELATIONAL_OPERATOR_1(cingulata::operator==, equal         , return CiBit::one);
+DEFINE_RELATIONAL_OPERATOR_1(cingulata::operator!=, not_equal     , return CiBit::zero);
+DEFINE_RELATIONAL_OPERATOR_2(cingulata::operator< , lower         , return CiBit::zero);
+DEFINE_RELATIONAL_OPERATOR_2(cingulata::operator<=, lower_equal   , return CiBit::one);
+DEFINE_RELATIONAL_OPERATOR_2(cingulata::operator> , greater       , return CiBit::zero);
+DEFINE_RELATIONAL_OPERATOR_2(cingulata::operator>=, greater_equal , return CiBit::one);

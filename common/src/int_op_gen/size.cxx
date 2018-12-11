@@ -2,7 +2,7 @@
 
 using namespace cingulata;
 
-CiBit IIntOpGenSize::not_equal(const BitVectorT& lhs, const BitVectorT& rhs) const {
+CiBit IntOpGenSize::not_equal(const BitVectorT& lhs, const BitVectorT& rhs) const {
   const int size = lhs.size();
 
   CiBit ne(1);
@@ -13,7 +13,7 @@ CiBit IIntOpGenSize::not_equal(const BitVectorT& lhs, const BitVectorT& rhs) con
   return ne;
 }
 
-CiBit IIntOpGenSize::compare(const BitVectorT& lhs, const BitVectorT& rhs,
+CiBit IntOpGenSize::compare(const BitVectorT& lhs, const BitVectorT& rhs,
     const int carry_inp, const bool signed_comp) const
 {
   const int size = lhs.size();

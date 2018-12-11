@@ -15,11 +15,18 @@ CiInt& CiInt::operator= (const T p_val) {
 
 template<
   typename T,
-  typename = typename std::enable_if<std::is_integral<T>::value, T>::type
+  typename
+  //  typename = typename std::enable_if<std::is_integral<T>::value, T>::type
 >
 void CiInt::encode_plain_val(const T p_val, const unsigned p_bit_cnt) {
   m_bits.clear();
-  for (unsigned i = 0; i < p_bit_cnt; ++i) {
-    m_bits.push_back(CiBit((p_val >> i) & 1));
+  unsigned int size_p_val = 8 * sizeof(p_val);
+  for (unsigned int i = 0; i < p_bit_cnt; ++i) {
+    if (i >= size_p_val) {
+      m_bits.push_back(CiBit((p_val >> (size_p_val-1)) & 1));
+    }
+    else {
+      m_bits.push_back(CiBit((p_val >> i) & 1));
+    }
   }
 }
