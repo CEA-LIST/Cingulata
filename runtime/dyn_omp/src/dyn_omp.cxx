@@ -18,7 +18,7 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-/** 
+/**
  * @file dyn_omp.cxx
  * @brief Application for executing blif circuit files using homomorphic operations
  */
@@ -77,7 +77,7 @@ struct Options {
     }
     return res;
   }
-  
+
 private:
   static map<PriorityType, string> priority2string;
   static map<string, PriorityType> string2priority;
@@ -145,11 +145,11 @@ Options parseArgs(int argc, char** argv) {
   po::options_description hidden("Hidden");
   hidden.add_options()
       ("in_file", po::value<string>(&options.BlifFile), "")
-  ; 
+  ;
 
   po::options_description all("All");
   all.add(config).add(hidden);
-  
+
   po::positional_options_description p;
   p.add("in_file", -1);
 
@@ -179,11 +179,11 @@ Options parseArgs(int argc, char** argv) {
 
   } catch (po::error& e) {
     cerr << "ERROR: " << e.what() << endl;
-    cerr << config << endl; 
+    cerr << config << endl;
     exit(-1);
   } catch (...) {
     cerr << "Something went wrong!!!" << endl;
-    cerr << config << endl; 
+    cerr << config << endl;
     exit(-1);
   }
 
@@ -214,10 +214,10 @@ void readClearInputsFile(unordered_map<string, bool>& clearInps, const Options& 
         cerr << "Integer conversion error when parsing clear inputs file!!!" << endl;
         exit(-1);
       }
-    }   
+    }
     if (options.verbose) {
       cout << "Read " << clearInps.size() << " clear inputs from file '" << options.ClearInputsFile << "'" << endl;
-    }   
+    }
   }
   file.close();
 }
@@ -229,7 +229,7 @@ int main(int argc, char **argv)
 
   /* Read FHE scheme parameters */
   FheParams::readXml(options.FheParamsFile.c_str());
-  
+
   if (options.verbose) {
     cout << "Reading circuit file " << options.BlifFile << endl;
   }
@@ -320,7 +320,7 @@ int main(int argc, char **argv)
 
   duration<double> execTime =
       duration_cast<duration<double>>(steady_clock::now() - start);
-  cout << "Total execution time " << execTime.count() << " seconds" << endl;
+  cout << "Total execution real time " << execTime.count() << " seconds" << endl;
   homExec->printExecTime();
 
   delete sched;

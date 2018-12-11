@@ -5,12 +5,13 @@ set(TEST_NAME ASCII)
 set(SRCS
     ${TEST_NAME}.cxx
     )
+
 set(LIST_SIZE 10)
 set(NB_CHARS 6)
 set(BLIF_NAME ${TEST_NAME}.blif)
 set(BLOP_NAME ${TEST_NAME}-opt.blif)
 
-add_compile_options(-Wall -std=c++11 -Dnb_chars=${NB_CHARS} -Dlist_size=${LIST_SIZE}  -Dblif_name="${BLIF_NAME}")
+add_compile_options(-Wall -std=c++11 -Dnb_chars=${NB_CHARS} -Dlist_size=${LIST_SIZE} -Dblif_name="${BLIF_NAME}")
 
 set(GEN_NAME ${TEST_NAME}-gen)
 
@@ -27,12 +28,10 @@ add_custom_command(OUTPUT ${BLOP_NAME}
   DEPENDS abc ${BLIF_NAME})
 
 set(XML_PARAMS fhe_params.xml)
-set(MUL_DEPTH_SCRIPT ${OPTIM_DIR}/graph_info.py)
-set(GEN_PARAM_SCRIPT ${RUNTIME_DIR}/fhe_fv/script/genParams.py)
-
+set(SCRIPT_DIR ../../../runtime/fhe_fv/script)
 add_custom_command(OUTPUT ${XML_PARAMS}
-  COMMAND python3 ${GEN_PARAM_SCRIPT} --lambda_p 128 --mult_depth `python3 ${MUL_DEPTH_SCRIPT} ${BLOP_NAME} --mult_depth_max` --cyclotomic_poly_index 1024 --output_xml ${XML_PARAMS}
-  DEPENDS ${BLOP_NAME})
+        COMMAND bash ${SCRIPT_DIR}/selectParams.sh ${TEST_NAME} ${BLOP_NAME} ${MODEL} ${MIN_SECU}
+        DEPENDS ${BLOP_NAME})
 
 set(LAST_DEPEND ${XML_PARAMS})
 
@@ -45,10 +44,8 @@ set(CIRCUIT ${BLOP_NAME})
 configure_file("search_fixed_length.sh.in" "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/search_fixed_length.sh" @ONLY)
 configure_file("search_max_length.sh.in" "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/search_max_length.sh" @ONLY)
 
-
 file(COPY "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/search_fixed_length.sh" DESTINATION . FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 file(COPY "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/search_max_length.sh" DESTINATION . FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-
 
 file(COPY "plaintext/countries" DESTINATION "plaintext" )
 file(COPY "plaintext/countries${NB_CHARS}" DESTINATION "plaintext" )
