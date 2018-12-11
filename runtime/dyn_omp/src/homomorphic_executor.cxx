@@ -268,6 +268,7 @@ void HomomorphicExecutor::ExecuteGate(const Circuit::vertex_descriptor idx) {
 }
 
 void HomomorphicExecutor::printExecTime() {
+  cout << "CPU time: " << endl;      
   cout << "READ time " << execTime["READ"] << " seconds, #execs " << execCnt["READ"] << endl;
   cout << "COPY time " << execTime["COPY"] << " seconds, #execs " << execCnt["COPY"] << endl;
   cout << "XOR gates execution time " << execTime["XOR"] << " seconds, #execs " << execCnt["XOR"] << endl;

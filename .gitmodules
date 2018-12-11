@@ -1,0 +1,3 @@
+[submodule "cinguparam"]
+	path = CinguParam
+	url = git@github.com:CEA-LIST/CinguParam.git

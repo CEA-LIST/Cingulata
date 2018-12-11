@@ -37,7 +37,7 @@ echo "FHE key generation"
 $APPS_DIR/generate_keys
 
 echo "Input encryption"
-NR_THREADS=1
+NR_THREADS=$(nproc)
 
 #encrypt cipher key
 $APPS_DIR/encrypt --public-key fhe_key.pk -v --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 8 --prefix input/i_ --msb-first --start-idx 2 --idx-places 0 85 85 85 85 85 85 85 85 85 85 85 85 85 85 85 85`

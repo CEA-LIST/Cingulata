@@ -5,11 +5,13 @@ set(TEST_NAME multiplicity)
 set(SRCS 
     ${TEST_NAME}.cxx
     )
-    
+
 set(LIST_SIZE 10)
 
 set(BLIF_NAME ${TEST_NAME}.blif)
 set(BLOP_NAME ${TEST_NAME}-opt.blif)
+
+
 
 add_compile_options(-Wall -std=c++11 -Dlist_size=${LIST_SIZE} -Dblif_name="${BLIF_NAME}")
 
@@ -29,18 +31,17 @@ add_custom_command(OUTPUT ${BLOP_NAME}
 
 
 set(XML_PARAMS fhe_params.xml)
-set(MUL_DEPTH_SCRIPT ../../optim/graph_info.py)
-set(GEN_PARAM_SCRIPT ../../runtime/fhe_fv/script/genParams.py)
+set(SCRIPT_DIR ../../../runtime/fhe_fv/script)
 
 add_custom_command(OUTPUT ${XML_PARAMS}
-  COMMAND python3 ${GEN_PARAM_SCRIPT} --lambda_p 128 --mult_depth `python3 ${MUL_DEPTH_SCRIPT} ${BLOP_NAME} --mult_depth_max` --cyclotomic_poly_index 1024 --output_xml ${XML_PARAMS}
-  DEPENDS ${BLOP_NAME})
+        COMMAND bash ${SCRIPT_DIR}/selectParams.sh ${TEST_NAME} ${BLOP_NAME} ${MODEL} ${MIN_SECU}
+        DEPENDS ${BLOP_NAME})   
 
 set(LAST_DEPEND ${XML_PARAMS})
 
 add_custom_target(${TEST_NAME} ALL
   DEPENDS ${LAST_DEPEND})
-  
+
 configure_file("run.sh.in" "run.sh" @ONLY)
 file(COPY "plaintext/" DESTINATION "plaintext/" )
 file(COPY "README.md" DESTINATION .)

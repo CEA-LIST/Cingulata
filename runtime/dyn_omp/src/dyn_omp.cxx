@@ -320,7 +320,7 @@ int main(int argc, char **argv)
 
   duration<double> execTime =
       duration_cast<duration<double>>(steady_clock::now() - start);
-  cout << "Total execution time " << execTime.count() << " seconds" << endl;
+  cout << "Total execution real time " << execTime.count() << " seconds" << endl;
   homExec->printExecTime();
 
   delete sched;
