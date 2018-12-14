@@ -220,3 +220,4 @@ TEST(CiBit, clr_name) {
   a.clr_name();
   ASSERT_NE(test_name, a.get_name());
 }
+

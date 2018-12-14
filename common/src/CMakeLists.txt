@@ -8,6 +8,7 @@ set(SRCS
     ci_bit.cxx
     int_op_gen/interface.cxx
     int_op_gen/mult_depth.cxx
+    int_op_gen/size.cxx
     ci_int.cxx
     )
 
