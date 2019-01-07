@@ -188,7 +188,7 @@ namespace cingulata
      *
      * @param      p_bit_cnt  new bit-size
      *
-     * @return     reference to current object
+     * @return     new object
      */
     CiInt resize(const unsigned p_bit_cnt) const;
 
