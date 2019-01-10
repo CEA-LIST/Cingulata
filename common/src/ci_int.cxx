@@ -192,7 +192,7 @@ CiInt& CiInt::rol(const int pos) {
 }
 
 CiInt& CiInt::ror(const int pos) {
-  return ror(-pos);
+  return rol(-pos);
 }
 
 
