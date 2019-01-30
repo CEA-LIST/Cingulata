@@ -12,9 +12,6 @@ namespace cingulata
 
     virtual CiBit lower       ( const CiBitVector& lhs,
                                 const CiBitVector& rhs) const override;
-
-    virtual CiBit lower_equal ( const CiBitVector& lhs,
-                                const CiBitVector& rhs) const override;
   };
 }
 

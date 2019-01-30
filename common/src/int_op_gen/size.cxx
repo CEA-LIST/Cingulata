@@ -13,12 +13,10 @@ CiBit IntOpGenSize::not_equal(const CiBitVector& lhs, const CiBitVector& rhs) co
   return ne;
 }
 
-CiBit compare(const CiBitVector& lhs, const CiBitVector& rhs,
-    const int carry_inp)
-{
+CiBit IntOpGenSize::lower(const CiBitVector& lhs, const CiBitVector& rhs) const {
   const int size = lhs.size();
 
-  CiBit carry(carry_inp);
+  CiBit carry{0};
   CiBit n1, n2;
   for (int i = 0; i < size; ++i) {
     n1 = carry ^ lhs[i];
@@ -28,12 +26,4 @@ CiBit compare(const CiBitVector& lhs, const CiBitVector& rhs,
   }
 
   return carry;
-}
-
-CiBit IntOpGenSize::lower(const CiBitVector& lhs, const CiBitVector& rhs) const {
-  return compare(lhs, rhs, 0);
-}
-
-CiBit IntOpGenSize::lower_equal(const CiBitVector& lhs, const CiBitVector& rhs) const {
-  return compare(lhs, rhs, 1);
 }
