@@ -2,7 +2,7 @@
 
 using namespace cingulata;
 
-CiBit IntOpGenSize::not_equal(const BitVectorT& lhs, const BitVectorT& rhs) const {
+CiBit IntOpGenSize::not_equal(const CiBitVector& lhs, const CiBitVector& rhs) const {
   const int size = lhs.size();
 
   CiBit ne(1);
@@ -13,21 +13,27 @@ CiBit IntOpGenSize::not_equal(const BitVectorT& lhs, const BitVectorT& rhs) cons
   return ne;
 }
 
-CiBit IntOpGenSize::compare(const BitVectorT& lhs, const BitVectorT& rhs,
-    const int carry_inp, const bool signed_comp) const
+CiBit compare(const CiBitVector& lhs, const CiBitVector& rhs,
+    const int carry_inp)
 {
   const int size = lhs.size();
 
   CiBit carry(carry_inp);
   CiBit n1, n2;
   for (int i = 0; i < size; ++i) {
-    n1 = carry ^ lhs.at(i);
-    n2 = carry ^ rhs.at(i);
+    n1 = carry ^ lhs[i];
+    n2 = carry ^ rhs[i];
     carry = n1 & n2;
-    carry ^= rhs.at(i);
+    carry ^= rhs[i];
   }
-  if (signed_comp)
-    carry ^= n1 ^ n2;
 
   return carry;
+}
+
+CiBit IntOpGenSize::lower(const CiBitVector& lhs, const CiBitVector& rhs) const {
+  return compare(lhs, rhs, 0);
+}
+
+CiBit IntOpGenSize::lower_equal(const CiBitVector& lhs, const CiBitVector& rhs) const {
+  return compare(lhs, rhs, 1);
 }

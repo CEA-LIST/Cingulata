@@ -10,6 +10,7 @@ set(SRCS
     int_op_gen/mult_depth.cxx
     int_op_gen/size.cxx
     ci_int.cxx
+    ci_bit_vector.cxx
     )
 
 include_directories(${INCLUDE_DIR})

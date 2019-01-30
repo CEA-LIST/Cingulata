@@ -7,13 +7,14 @@ namespace cingulata
 {
   class IntOpGenSize : public IIntOpGen {
   public:
-    virtual CiBit not_equal ( const BitVectorT& lhs,
-                              const BitVectorT& rhs)          const override;
+    virtual CiBit not_equal   ( const CiBitVector& lhs,
+                                const CiBitVector& rhs) const override;
 
-    virtual CiBit compare   ( const BitVectorT& lhs,
-                              const BitVectorT& rhs,
-                              const int carry_inp = 0,
-                              const bool signed_comp = false) const override;
+    virtual CiBit lower       ( const CiBitVector& lhs,
+                                const CiBitVector& rhs) const override;
+
+    virtual CiBit lower_equal ( const CiBitVector& lhs,
+                                const CiBitVector& rhs) const override;
   };
 }
 

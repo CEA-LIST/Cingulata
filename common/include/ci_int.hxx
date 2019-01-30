@@ -2,8 +2,8 @@
 #define CI_INT
 
 #include <ci_bit.hxx>
+#include <ci_bit_vector.hxx>
 #include <int_op_gen/interface.hxx>
-#include <bit_exec/interface.hxx>
 
 #include <vector>
 
@@ -11,14 +11,14 @@ namespace cingulata
 {
 
   /**
-   * @brief      Instrumented integer class.
-   * @details    This class stores internally an array of @c CiBit objects. All
-   *             the operations are performed at bit level.
+   * @brief      An integer class with @c CiBit elements.
+   * @details    All the operations are performed at bit level. This class
+   *             stores internally a vector of type @c CiBitVector.
    *  - The bit-size and signedness cannot be changed once the object has been
    *    constructed. Utility functions (#resize, #cast, #change_sign etc.) are
    *    provided to obtain new objects with different bit-sizes and signs.
    *  - Indexing functions (#operator[]) use python style indexing: 0 is the
-   *    LSB, 1 the second LSB, etc. and -1 is the MSB, -2 the second MSB, etc.
+   *    MSB, 1 the second MSB, etc. and -1 is the LSB, -2 the second LSB, etc.
    *  - Two's complement representations is used for signed integers.
    */
   class CiInt
@@ -48,15 +48,15 @@ namespace cingulata
     constexpr static bool default_is_signed = false;
 
     /**
-     * @brief      Construct a new integer with given value, bit count and
-     *             signedness
-     * @details    Refer to function #encode_plain_val documentation for
-     *             more details on conversion of primitive type value to bits.
-
-     * @param      p_val        cleartext value
+     * @brief      Construct a new object from an integer with given bit count
+     *             and signedness
+     * @details    Refer to function #encode_plain_val documentation for more
+     *             details on conversion of primitive type value to bits.
+     *
+     * @param      p_val        integer value to encode in current object
      * @param      p_bit_cnt    bit count, if none given the bit-size of @c
      *                          p_val is used
-     * @param      p_is_signed  signedness of integer, if none given the @c
+     * @param      p_is_signed  signedness of new object, if none given the @c
      *                          p_val signedness is used
      *
      * @tparam     T            an integral type
@@ -65,26 +65,55 @@ namespace cingulata
     CiInt(
       const T p_val,
       const unsigned p_bit_cnt = sizeof(T)*8,
-      const bool p_is_signed = std::is_signed<T>::value)
-    ;
+      const bool p_is_signed = std::is_signed<T>::value
+    );
 
     /**
-     * @brief      Construct a new integer from a single bit
+     * @brief      Construct a new integer containing @c p_bit_cnt copies of @c
+     *             p_bit
      *
      * @param      p_bit        a bit object
-     * @param      p_is_signed  signedness of integer
+     * @param[in]  p_bit_cnt    number of bits to copy
+     * @param      p_is_signed  signedness of new object
      */
-    CiInt(const CiBit& p_bit, const bool p_is_signed = default_is_signed);
+    CiInt(
+      const CiBit& p_bit,
+      const unsigned p_bit_cnt = 1,
+      const bool p_is_signed = default_is_signed
+    );
 
     /**
-     * @brief      Construct a new integer from a vector of bits
-     * @note       First bit of vector is the least significant one
+     * @brief      Construct a new integer from a list of bits
+     * @note       First bit of vector is the most significant one
      *
      * @param      p_bits       vector of bits
-     * @param      p_is_signed  signedness of integer
+     * @param      p_is_signed  signedness of new object
+     */
+    CiInt(
+      const std::initializer_list<CiBit>& p_bits,
+      const bool p_is_signed = default_is_signed
+    );
+
+    /**
+     * @brief      Construct an object from a vector of bits
+     * @note       First bit of vector is the most significant one
+     *
+     * @param      p_bits       vector of bits
+     * @param      p_is_signed  signedness of new object
      */
     CiInt(
       const std::vector<CiBit>& p_bits,
+      const bool p_is_signed = default_is_signed
+    );
+
+    /**
+     * @brief      Constructs an object from a @c CiBitVector object
+     *
+     * @param[in]  p_bits       vector of bits object
+     * @param[in]  p_is_signed  signedness of new object
+     */
+    CiInt(
+      const CiBitVector& p_bits,
       const bool p_is_signed = default_is_signed
     );
 
@@ -128,6 +157,24 @@ namespace cingulata
      * @details    Returns an "1" bit when current object is different from zero
      */
     explicit operator CiBit() const;
+    /**
+     * @brief      Explicit conversion to @c CiBitVector object
+     * @details    Returns the bit-vector of current object
+     */
+    explicit operator CiBitVector();
+
+    /**
+     * @brief      Get bit-vector representation of current object
+     * @details    Integer MSB is on first position of the resuling vector.
+     *
+     * @return     a bit-vector object
+     */
+    CiBitVector& bits();
+
+    /**
+     * @copydoc bits()
+     */
+    const CiBitVector& bits() const;
 
     /**
      * @brief      Cast current object to a @c CiInt object with different
@@ -259,12 +306,6 @@ namespace cingulata
     const CiBit&  sign() const;
 
     /**
-     * @brief      Get internal representation of bit vector
-     *
-     * @return     Reference to vector of @c CiBit objects
-     */
-    const std::vector<CiBit>& bits() const;
-    /**
      * @}
      */
 
@@ -306,7 +347,7 @@ namespace cingulata
      * @brief      Left shift
      * @details    Shift object bits to left by @c pos positions. If @c pos is
      *             negative then a right shift by the negative amount @c pos is
-     *             used. Zero bits are inserted to the right (on LSB position).
+     *             used. Zero bits are inserted on LSB position.
      *
      * @param[in]  pos   number of positions to shift
      *
@@ -319,7 +360,7 @@ namespace cingulata
      * @details    Shift object bits to right by @c pos positions. If @c pos is
      *             negative then a left shift by the negative amount @c pos is
      *             used. MSB bit is replicated if integer is signed, otherwise
-     *             zero bit is inserted to the left (on MSB position).
+     *             zero bit is inserted on MSB position.
      *
      * @param[in]  pos   number of positions to shift
      *
@@ -331,6 +372,7 @@ namespace cingulata
      * @brief      Left rotate
      * @details    Rotate object bits to left by @c pos positions. If @c pos is
      *             negative then function #ror with negative @c pos is called.
+     *             The MSB bit is inserted on LSB position.
      *
      * @param[in]  pos   number of positions to rotate
      *
@@ -342,6 +384,7 @@ namespace cingulata
      * @brief      Right rotate
      * @details    Rotate object bits to right by @c pos positions. If @c pos is
      *             negative then function #rol with negative @c pos is called.
+     *             The LSB bit is inserted on MSB position.
      *
      * @param[in]  pos   number of positions to rotate
      *
@@ -353,7 +396,7 @@ namespace cingulata
      */
 
   private:
-    std::vector<CiBit> m_bits;
+    CiBitVector m_bits;
     bool m_is_signed;
 
     /**
@@ -381,16 +424,6 @@ namespace cingulata
      * @return     reference to current object
      */
     CiInt& alter(const unsigned p_bit_cnt, const bool p_is_signed);
-
-    /**
-     * @brief      Transform index from relative to absolute (python-like indexing)
-     * @details    This function returns size()-idx when idx<0 and idx otherwise
-     *
-     * @param[in]  idx   index to transform
-     *
-     * @return     transformed index
-     */
-    unsigned idx_rel_to_abs(const int idx) const;
   };
 
   /* Logical operators */

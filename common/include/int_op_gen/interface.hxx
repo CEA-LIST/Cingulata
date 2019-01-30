@@ -2,15 +2,15 @@
 #define INT_OP_GEN_INTERFACE
 
 #include <ci_bit.hxx>
+#include <ci_bit_vector.hxx>
 
 #include <vector>
+#include <cassert>
 
 namespace cingulata
 {
   class IIntOpGen {
   public:
-    using BitVectorT = std::vector<CiBit>;
-
     /**
      * @brief      Add integers represented as vectors of bits. The output
      *             vector size is equal to the @c lhs input vector size
@@ -20,44 +20,35 @@ namespace cingulata
      *
      * @return     The sum of input bit vectors as a bit vector
      */
-    virtual BitVectorT  add     ( const BitVectorT& lhs,
-                                  const BitVectorT& rhs)          const;
+    virtual CiBitVector add     ( const CiBitVector& lhs,
+                                  const CiBitVector& rhs) const { return lhs; };
 
-    virtual BitVectorT  sub     ( const BitVectorT& lhs,
-                                  const BitVectorT& rhs)          const;
+    virtual CiBitVector sub     ( const CiBitVector& lhs,
+                                  const CiBitVector& rhs) const { return lhs; };
 
-    virtual BitVectorT  mul     ( const BitVectorT& lhs,
-                                  const BitVectorT& rhs)          const;
+    virtual CiBitVector mul     ( const CiBitVector& lhs,
+                                  const CiBitVector& rhs) const { return lhs; };
 
-    virtual BitVectorT  square  ( const BitVectorT& lhs)          const;
+    virtual CiBitVector square  ( const CiBitVector& lhs) const { return lhs; };
 
 
-    virtual CiBit not_equal     ( const BitVectorT& lhs,
-                                  const BitVectorT& rhs)          const = 0;
+    virtual CiBit not_equal     ( const CiBitVector& lhs,
+                                  const CiBitVector& rhs) const = 0;
 
-    virtual CiBit equal         ( const BitVectorT& lhs,
-                                  const BitVectorT& rhs)          const;
+    virtual CiBit equal         ( const CiBitVector& lhs,
+                                  const CiBitVector& rhs) const;
 
-    virtual CiBit compare       ( const BitVectorT& lhs,
-                                  const BitVectorT& rhs,
-                                  const int carry_inp = 0,
-                                  const bool signed_comp = false) const = 0;
+    virtual CiBit lower         ( const CiBitVector& lhs,
+                                  const CiBitVector& rhs) const = 0;
 
-    virtual CiBit lower         ( const BitVectorT& lhs,
-                                  const BitVectorT& rhs,
-                                  const bool signed_comp = false) const;
+    virtual CiBit lower_equal   ( const CiBitVector& lhs,
+                                  const CiBitVector& rhs) const;
 
-    virtual CiBit lower_equal   ( const BitVectorT& lhs,
-                                  const BitVectorT& rhs,
-                                  const bool signed_comp = false) const;
+    virtual CiBit greater_equal ( const CiBitVector& lhs,
+                                  const CiBitVector& rhs) const;
 
-    virtual CiBit greater_equal ( const BitVectorT& lhs,
-                                  const BitVectorT& rhs,
-                                  const bool signed_comp = false) const;
-
-    virtual CiBit greater       ( const BitVectorT& lhs,
-                                  const BitVectorT& rhs,
-                                  const bool signed_comp = false) const;
+    virtual CiBit greater       ( const CiBitVector& lhs,
+                                  const CiBitVector& rhs) const;
 
   };
 }
