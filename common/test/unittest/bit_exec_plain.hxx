@@ -24,7 +24,7 @@ public:
     return *static_pointer_cast<bit_plain_t>(in1);
   }
 
-  ObjHandle read(const std::string& name) override {}
+  ObjHandle read(const std::string& name) override { return ObjHandle(); }
 
   void write(const ObjHandle& in1, const std::string& name) override {}
 

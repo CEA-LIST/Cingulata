@@ -4,9 +4,6 @@
 #include <ci_bit.hxx>
 #include <ci_bit_vector.hxx>
 
-#include <vector>
-#include <cassert>
-
 namespace cingulata
 {
   class IIntOpGen {
@@ -21,15 +18,17 @@ namespace cingulata
      * @return     The sum of input bit vectors as a bit vector
      */
     virtual CiBitVector add     ( const CiBitVector& lhs,
-                                  const CiBitVector& rhs) const { return lhs; };
+                                  const CiBitVector& rhs) const = 0;
 
     virtual CiBitVector sub     ( const CiBitVector& lhs,
-                                  const CiBitVector& rhs) const { return lhs; };
+                                  const CiBitVector& rhs) const;
+
+    virtual CiBitVector neg     ( const CiBitVector& lhs) const = 0;
 
     virtual CiBitVector mul     ( const CiBitVector& lhs,
-                                  const CiBitVector& rhs) const { return lhs; };
+                                  const CiBitVector& rhs) const = 0;
 
-    virtual CiBitVector square  ( const CiBitVector& lhs) const { return lhs; };
+    virtual CiBitVector square  ( const CiBitVector& lhs) const;
 
 
     virtual CiBit not_equal     ( const CiBitVector& lhs,
@@ -49,8 +48,30 @@ namespace cingulata
 
     virtual CiBit greater       ( const CiBitVector& lhs,
                                   const CiBitVector& rhs) const;
-
   };
+
+  template<typename _impl>
+  class IntOpGen : public IIntOpGen {
+  public:
+    virtual CiBitVector add     ( const CiBitVector& lhs,
+                                  const CiBitVector& rhs) const override;
+
+    virtual CiBitVector neg     ( const CiBitVector& lhs) const override;
+
+    virtual CiBitVector mul     ( const CiBitVector& lhs,
+                                  const CiBitVector& rhs) const override;
+
+    virtual CiBit not_equal     ( const CiBitVector& lhs,
+                                  const CiBitVector& rhs) const override;
+
+    virtual CiBit lower         ( const CiBitVector& lhs,
+                                  const CiBitVector& rhs) const override;
+
+  private:
+    _impl impl_m;
+  };
+
+  #include "interface_defs.cxx"
 }
 
 #endif

@@ -182,7 +182,7 @@ TEST(CiInt, sign) {
 
 TEST(CiInt, bits) {
   CiInt x(rand());
-  vector<CiBit> y = x.bits();
+  auto y = x.bits();
   ASSERT_EQ(x.size(), y.size());
   for (unsigned int i = 0; i < x.size(); i++) {
     ASSERT_EQ(x[i].get_val(), y[i].get_val());

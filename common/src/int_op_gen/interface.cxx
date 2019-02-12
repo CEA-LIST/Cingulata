@@ -2,6 +2,14 @@
 
 using namespace cingulata;
 
+CiBitVector IIntOpGen::sub(const CiBitVector& lhs, const CiBitVector& rhs) const {
+  return add(lhs, neg(rhs));
+}
+
+CiBitVector IIntOpGen::square(const CiBitVector& rhs) const {
+  return mul(rhs, rhs);
+}
+
 CiBit IIntOpGen::equal(const CiBitVector& lhs, const CiBitVector& rhs) const {
   return !not_equal(lhs,rhs);
 }
