@@ -102,23 +102,31 @@ CiBit& CiInt::operator[](const int p_idx) {
 }
 
 CiBit& CiInt::lsb() {
-  return (*this)[-1];
+  return (*this)[0];
 }
 
 const CiBit& CiInt::lsb() const {
-  return (*this)[-1];
+  return (*this)[0];
 }
 
 CiBit& CiInt::msb() {
-  return (*this)[0];
+  return (*this)[-1];
 }
 
 const CiBit& CiInt::msb() const {
-  return (*this)[0];
+  return (*this)[-1];
 }
 
 const CiBit& CiInt::sign() const {
-  return is_signed() ? msb() : CiBit::zero;
+  return is_signed() ? m_bits.at(-1) : CiBit::zero;
+}
+
+CiInt CiInt::operator+() {
+  return *this;
+}
+
+CiInt CiInt::operator-() {
+  return CiInt(m_int_op_gen->neg(bits()), is_signed());
 }
 
 CiInt& CiInt::operator+=(const CiInt& other) {
@@ -152,33 +160,33 @@ CiInt& CiInt::operator^=(const CiInt& other) {
 }
 
 CiInt& CiInt::operator<<=(const int pos) {
-  bits().shl(pos, CiBit::zero);
+  bits().shr(pos, CiBit::zero);
   return *this;
 }
 
 CiInt& CiInt::operator>>=(const int pos) {
-  bits().shr(pos, sign());
+  bits().shl(pos, sign());
   return *this;
 }
 
 CiInt& CiInt::rol(const int pos) {
-  bits().rol(pos);
+  bits().ror(pos);
   return *this;
 }
 
 CiInt& CiInt::ror(const int pos) {
-  bits().ror(pos);
+  bits().rol(pos);
   return *this;
 }
 
 
 CiInt& CiInt::operator++() {
-  *this += CiBit(1);
+  *this += CiBit::one;
   return *this;
 }
 
 CiInt& CiInt::operator--() {
-  *this -= CiBit(1);
+  *this -= CiBit::one;
   return *this;
 }
 
@@ -212,52 +220,47 @@ CiBit cingulata::operator||(const CiInt& lhs, const CiInt& rhs) {
   return static_cast<CiBit>(lhs) | static_cast<CiBit>(rhs);
 }
 
-CiInt cingulata::operator+(const CiInt& lhs) {
-  return lhs;
-}
+namespace
+{
+  /**
+   * @brief      Gets the bit-size the output of a 2 input operator.
+   * @details    This function computes the bit-size of the integer obtained as a
+   *             result of application of an 2-input integer operator.
+   *
+   * @param[in]  lhs   The left hand side
+   * @param[in]  rhs   The right hand side
+   *
+   * @return     Result bit-size
+   */
+  unsigned result_size(const CiInt& lhs, const CiInt& rhs) {
+    return (lhs.size() > rhs.size()) ? lhs.size() : rhs.size();
+  }
 
-CiInt cingulata::operator-(const CiInt& lhs) {
-  return (~lhs)+CiBit(1); /** < Two's complement negation */
-}
-
-/**
- * @brief      Gets the bit-size the output of a 2 input operator.
- * @details    This function computes the bit-size of the integer obtained as a
- *             result of application of an 2-input integer operator.
- *
- * @param[in]  lhs   The left hand side
- * @param[in]  rhs   The right hand side
- *
- * @return     Result bit-size
- */
-unsigned result_size(const CiInt& lhs, const CiInt& rhs) {
-  return (lhs.size() > rhs.size()) ? lhs.size() : rhs.size();
-}
-
-/**
- * @brief      Gets the sign the output of a 2 input operator.
- * @details    This function computes the signedness of the integer obtained as
- *             a result of application of an 2-input integer operator.
- *
- * @param[in]  lhs   The left hand side
- * @param[in]  rhs   The right hand side
- *
- * @return     Result sign
- */
-bool result_sign(const CiInt& lhs, const CiInt& rhs) {
-  if (lhs.size() == rhs.size()) {
-    return lhs.is_signed() and rhs.is_signed();
-  } else if (lhs.size() > rhs.size()) {
-    return lhs.is_signed();
-  } else {
-    return rhs.is_signed();
+  /**
+   * @brief      Gets the sign the output of a 2 input operator.
+   * @details    This function computes the signedness of the integer obtained as
+   *             a result of application of an 2-input integer operator.
+   *
+   * @param[in]  lhs   The left hand side
+   * @param[in]  rhs   The right hand side
+   *
+   * @return     Result sign
+   */
+  bool result_is_signed(const CiInt& lhs, const CiInt& rhs) {
+    if (lhs.size() == rhs.size()) {
+      return lhs.is_signed() and rhs.is_signed();
+    } else if (lhs.size() > rhs.size()) {
+      return lhs.is_signed();
+    } else {
+      return rhs.is_signed();
+    }
   }
 }
 
 /* Arithmetic operators */
 CiInt cingulata::operator+(const CiInt& lhs, const CiInt& rhs) {
   unsigned res_size = result_size(lhs, rhs);
-  bool res_is_signed = result_sign(lhs, rhs);
+  bool res_is_signed = result_is_signed(lhs, rhs);
 
   if (&lhs == &rhs) {
      /** < when @c lhs and @c rhs are the same multiply by 2 */
@@ -272,7 +275,7 @@ CiInt cingulata::operator+(const CiInt& lhs, const CiInt& rhs) {
 
 CiInt cingulata::operator-(const CiInt& lhs, const CiInt& rhs) {
   unsigned res_size = result_size(lhs, rhs);
-  bool res_is_signed = result_sign(lhs, rhs);
+  bool res_is_signed = result_is_signed(lhs, rhs);
 
   CiBitVector res;
   if (&lhs == &rhs) {
@@ -288,7 +291,7 @@ CiInt cingulata::operator-(const CiInt& lhs, const CiInt& rhs) {
 
 CiInt cingulata::operator*(const CiInt& lhs, const CiInt& rhs) {
   unsigned res_size = result_size(lhs, rhs);
-  bool res_is_signed = result_sign(lhs, rhs);
+  bool res_is_signed = result_is_signed(lhs, rhs);
 
   CiBitVector res;
   if (&lhs == &rhs) {
@@ -313,7 +316,7 @@ CiInt cingulata::operator~(CiInt lhs) {
 
 #define DEFINE_BITWISE_OPERATOR(OP_NAME, OP, SAME_OPERANDS_CODE) \
 CiInt cingulata::OP_NAME(const CiInt& lhs, const CiInt& rhs) { \
-  CiInt res{lhs.cast(result_size(lhs, rhs), result_sign(lhs, rhs))}; \
+  CiInt res{lhs.cast(result_size(lhs, rhs), result_is_signed(lhs, rhs))}; \
  \
   if (&lhs == &rhs) { \
     SAME_OPERANDS_CODE; \
@@ -328,19 +331,19 @@ DEFINE_BITWISE_OPERATOR(operator|, |=,        );
 DEFINE_BITWISE_OPERATOR(operator^, ^=, res = 0);
 
 /* Bitwise shift */
-CiInt cingulata::operator<<(CiInt lhs, const unsigned& pos) {
+CiInt cingulata::operator<<(CiInt lhs, const int pos) {
   return lhs <<= pos;
 }
 
-CiInt cingulata::operator>>(CiInt lhs, const unsigned& pos) {
+CiInt cingulata::operator>>(CiInt lhs, const int pos) {
   return lhs >>= pos;
 }
 
-CiInt cingulata::rol(CiInt lhs, const unsigned& pos) {
+CiInt cingulata::rol(CiInt lhs, const int pos) {
   return lhs.rol(pos);
 }
 
-CiInt cingulata::ror(CiInt lhs, const unsigned& pos) {
+CiInt cingulata::ror(CiInt lhs, const int pos) {
   return lhs.ror(pos);
 }
 
@@ -366,7 +369,7 @@ CiBit cingulata::OP_NAME(const CiInt& lhs, const CiInt& rhs) { \
     CiBit res = CiInt::int_op_gen()->OP_FUNC( \
       lhs.resize(res_size).bits(), \
       rhs.resize(res_size).bits()); \
-    bool res_is_signed = result_sign(lhs, rhs); \
+    bool res_is_signed = result_is_signed(lhs, rhs); \
     if (res_is_signed) \
       res ^= lhs.sign() ^ rhs.sign(); \
     return res; \

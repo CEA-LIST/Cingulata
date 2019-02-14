@@ -13,12 +13,12 @@ namespace cingulata
   /**
    * @brief      An integer class with @c CiBit elements.
    * @details    All the operations are performed at bit level. This class
-   *             stores internally a vector of type @c CiBitVector.
+   *             uses internally a vector of type @c CiBitVector.
    *  - The bit-size and signedness cannot be changed once the object has been
-   *    constructed. Utility functions (#resize, #cast, #change_sign etc.) are
+   *    created. Utility functions (#resize, #cast, #change_sign etc.) are
    *    provided to obtain new objects with different bit-sizes and signs.
    *  - Indexing functions (#operator[]) use python style indexing: 0 is the
-   *    MSB, 1 the second MSB, etc. and -1 is the LSB, -2 the second LSB, etc.
+   *    LSB, 1 the second LSB, etc. and -1 is the MSB, -2 the second MSB, etc.
    *  - Two's complement representations is used for signed integers.
    */
   class CiInt
@@ -84,7 +84,7 @@ namespace cingulata
 
     /**
      * @brief      Construct a new integer from a list of bits
-     * @note       First bit of vector is the most significant one
+     * @note       First bit of vector is the least significant one
      *
      * @param      p_bits       vector of bits
      * @param      p_is_signed  signedness of new object
@@ -96,7 +96,7 @@ namespace cingulata
 
     /**
      * @brief      Construct an object from a vector of bits
-     * @note       First bit of vector is the most significant one
+     * @note       First bit of vector is the least significant one
      *
      * @param      p_bits       vector of bits
      * @param      p_is_signed  signedness of new object
@@ -108,6 +108,8 @@ namespace cingulata
 
     /**
      * @brief      Constructs an object from a @c CiBitVector object
+     * @note       First element of bit-vector @c p_bits is the least
+     *             significant one
      *
      * @param[in]  p_bits       vector of bits object
      * @param[in]  p_is_signed  signedness of new object
@@ -134,9 +136,8 @@ namespace cingulata
     CiInt& operator= (const CiInt& other);
 
     /**
-     * @brief      Assign a primitive integer to current object
-     * @details    Refer to function #encode_plain_val documentation for
-     *             more details on conversion of primitive type value to bits.
+     * @brief      Assign a primitive type value to current object
+     * @details    Current object bit-count and signedness are used.
      *
      * @param[in]  p_val  value to assign from
      *
@@ -157,15 +158,16 @@ namespace cingulata
      * @details    Returns an "1" bit when current object is different from zero
      */
     explicit operator CiBit() const;
+
     /**
      * @brief      Explicit conversion to @c CiBitVector object
-     * @details    Returns the bit-vector of current object
+     * @details    Returns the bit-vector of current object with LSB first.
      */
     explicit operator CiBitVector();
 
     /**
      * @brief      Get bit-vector representation of current object
-     * @details    Integer MSB is on first position of the resuling vector.
+     * @details    Resuling bit-vector with LSB first.
      *
      * @return     a bit-vector object
      */
@@ -313,6 +315,8 @@ namespace cingulata
      * @name Arithmetic operators
      * @{
      */
+    CiInt   operator  +   ();
+    CiInt   operator  -   ();
     CiInt&  operator  +=  (const CiInt& other);
     CiInt&  operator  -=  (const CiInt& other);
     CiInt&  operator  *=  (const CiInt& other);
@@ -345,9 +349,10 @@ namespace cingulata
 
     /**
      * @brief      Left shift
-     * @details    Shift object bits to left by @c pos positions. If @c pos is
-     *             negative then a right shift by the negative amount @c pos is
-     *             used. Zero bits are inserted on LSB position.
+     * @details    Shift object bits to left by @c pos positions. Zero bits are
+     *             inserted on LSB positions.
+     * @note       If @c pos is negative then a right shift (#operator>>=) by the
+     *             negative amount @c pos is used.
      *
      * @param[in]  pos   number of positions to shift
      *
@@ -357,10 +362,10 @@ namespace cingulata
 
     /**
      * @brief      Right shift
-     * @details    Shift object bits to right by @c pos positions. If @c pos is
-     *             negative then a left shift by the negative amount @c pos is
-     *             used. MSB bit is replicated if integer is signed, otherwise
-     *             zero bit is inserted on MSB position.
+     * @details    Shift object bits to right by @c pos positions. Bit given by
+     *             #sign function is replicated on MSB positions.
+     * @note       If @c pos is negative then a left shift (#operator<<=) by the
+     *             negative amount @c pos is used.
      *
      * @param[in]  pos   number of positions to shift
      *
@@ -370,9 +375,10 @@ namespace cingulata
 
     /**
      * @brief      Left rotate
-     * @details    Rotate object bits to left by @c pos positions. If @c pos is
-     *             negative then function #ror with negative @c pos is called.
-     *             The MSB bit is inserted on LSB position.
+     * @details    Rotate object bits to left by @c pos positions. This function
+     *             moves the MSB bit to LSB position @c pos times.
+     * @note       If @c pos is negative then a right rotate (#ror) with
+     *             negative amount @c pos is used.
      *
      * @param[in]  pos   number of positions to rotate
      *
@@ -382,9 +388,10 @@ namespace cingulata
 
     /**
      * @brief      Right rotate
-     * @details    Rotate object bits to right by @c pos positions. If @c pos is
-     *             negative then function #rol with negative @c pos is called.
-     *             The LSB bit is inserted on MSB position.
+     * @details    Rotate object bits to right by @c pos positions. This
+     *             function moves the LSB bit to MSB position @c pos times.
+     * @note       If @c pos is negative then a left rotate (#rol) with negative
+     *             amount @c pos is used.
      *
      * @param[in]  pos   number of positions to rotate
      *
@@ -432,8 +439,6 @@ namespace cingulata
   CiBit   operator  ||  (const CiInt& lhs, const CiInt& rhs);
 
   /* Arithmetic operators */
-  CiInt   operator  +   (const CiInt& lhs);
-  CiInt   operator  -   (const CiInt& lhs);
   CiInt   operator  +   (const CiInt& lhs, const CiInt& rhs);
   CiInt   operator  -   (const CiInt& lhs, const CiInt& rhs);
   CiInt   operator  *   (const CiInt& lhs, const CiInt& rhs);
@@ -447,10 +452,10 @@ namespace cingulata
   CiInt   operator  ^   (const CiInt& lhs, const CiInt& rhs);
 
   /* Bitwise shift */
-  CiInt   operator  <<  (CiInt lhs, const unsigned& pos);
-  CiInt   operator  >>  (CiInt lhs, const unsigned& pos);
-  CiInt   rol           (CiInt lhs, const unsigned& pos);
-  CiInt   ror           (CiInt lhs, const unsigned& pos);
+  CiInt   operator  <<  (CiInt lhs, const int pos);
+  CiInt   operator  >>  (CiInt lhs, const int pos);
+  CiInt   rol           (CiInt lhs, const int pos);
+  CiInt   ror           (CiInt lhs, const int pos);
 
   /* Relational operators */
   CiBit   operator  ==  (const CiInt& lhs, const CiInt& rhs);

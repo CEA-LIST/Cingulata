@@ -9,10 +9,7 @@ namespace cingulata
 {
   /**
    * @brief      A vector of @c CiBit elements
-   * @details    The size of current object is fixed at construction. Function
-   *             altering the size (e.g. #resize) return new objects.
-   *  - Object size cannot be changed once the object has been constructed.
-   *    Utility functions #resize returns an object of new size.
+   * @details    The size of current object is mutable (#resize function).
    *  - Indexing functions (#operator[], #slice) use python style indexing. Thus
    *    '-1' is the last bit, '-2' the second last bit, etc.
    */
@@ -66,16 +63,16 @@ namespace cingulata
     unsigned size() const;
 
     /**
-     * @brief      Resize object to @c p_bit_cnt bits
+     * @brief      Resizes current object to @c p_bit_cnt bits
      * @details    If new bit-size is smaller then end bits are deleted.
      *             Otherwise, bit vector is extended with copies of @c p_bit.
      *
      * @param      p_bit_cnt  new bit size
      * @param[in]  p_bit      object to add when size is extended
      *
-     * @return     new bit-vector object
+     * @return     bit-vector object
      */
-    CiBitVector resize(const unsigned p_bit_cnt, const CiBit& p_bit = CiBit::zero) const;
+    CiBitVector& resize(const unsigned p_bit_cnt, const CiBit& p_bit = CiBit::zero);
 
     /**
      * @name Bit selection/change functions
@@ -137,7 +134,7 @@ namespace cingulata
 
     /**
      * @brief      Select a range of bits using slice indexing.
-     * @details    Bits on positions @c start+k*stride<end for @c k>=0 are used
+     * @details    Bits on positions @c start+k*stride<end for @c pos>=0 are used
      *             to create a new bit-vector object. Method @c idx_rel_to_abs
      *             is used to transform @c start and @c end indexes beforehand.
      *
@@ -254,10 +251,11 @@ namespace cingulata
      */
 
     /**
-     * @brief      Left shift
-     * @details    Shift object bits to the left by @c pos positions. Copies of
-     *             @c p_bit object are inserted on the right.
-     * @note       If @c pos is negative then a right shift by the negative
+     * @brief      Left shift object bits
+     * @details    Shift bits to the left by @c pos positions. First @c pos bits
+     *             (positions @c 0..pos-1) are deleted. @c pos copies of @c
+     *             p_bit object are inserted on the last @c pos positions.
+     * @note       If @c pos is negative then a right shift (#shr) by negative
      *             amount @c pos is used.
      *
      * @param[in]  pos    number of positions to shift
@@ -268,10 +266,12 @@ namespace cingulata
     CiBitVector&  shl           (const int pos, const CiBit& p_bit = CiBit::zero);
 
     /**
-     * @brief      Right shift
-     * @details    Shift object bits to the right by @c pos positions. Copies of
-     *             @c p_bit object are inserted on the left.
-     * @note       If @c pos is negative then a left shift by the negative
+     * @brief      Right shift object bits
+     * @details    Shift object bits to the right by @c pos positions. Last @c
+     *             pos bits (positions @c #size-pos..#size-1) are deleted.
+     *             Copies of @c p_bit object are inserted on the first @c pos
+     *             positions.
+     * @note       If @c pos is negative then a left shift (#shl) by negative
      *             amount @c pos is used.
      *
      * @param[in]  pos    number of positions to shift
@@ -283,9 +283,10 @@ namespace cingulata
 
     /**
      * @brief      Left rotate
-     * @details    Rotate object bits to the left by @c pos positions.
-     * @note       If @c pos is negative then a right rotate with negative @c
-     *             pos is used.
+     * @details    Rotate object bits to the left by @c pos positions. Bits on
+     *             first @c pos positions are moved to the end of vector.
+     * @note       If @c pos is negative then a right rotate (#ror) by negative
+     *             amount @c pos is used.
      *
      * @param[in]  pos   number of positions to rotate
      *
@@ -295,9 +296,10 @@ namespace cingulata
 
     /**
      * @brief      Right rotate
-     * @details    Rotate object bits to the right by @c pos positions.
-     * @note       If @c pos is negative then a left rotate with negative @c pos
-     *             is used.
+     * @details    Rotate object bits to the right by @c pos positions. Bits on
+     *             last @c pos positions are moved to the beginning of vector.
+     * @note       If @c pos is negative then a left rotate (#rol) by negative
+     *             amount @c pos is used.
      *
      * @param[in]  pos   number of positions to rotate
      *
@@ -348,12 +350,12 @@ namespace cingulata
   CiBitVector   operator~(CiBitVector lhs);
 
   /* Bitwise shift */
-  CiBitVector   shl           (CiBitVector lhs, const unsigned& pos, const CiBit& p_bit);
-  CiBitVector   shr           (CiBitVector lhs, const unsigned& pos, const CiBit& p_bit);
-  CiBitVector   rol           (CiBitVector lhs, const unsigned& pos);
-  CiBitVector   ror           (CiBitVector lhs, const unsigned& pos);
-  CiBitVector   operator  <<  (CiBitVector lhs, const unsigned& pos);
-  CiBitVector   operator  >>  (CiBitVector lhs, const unsigned& pos);
+  CiBitVector   shl           (CiBitVector lhs, const int pos, const CiBit& p_bit);
+  CiBitVector   shr           (CiBitVector lhs, const int pos, const CiBit& p_bit);
+  CiBitVector   rol           (CiBitVector lhs, const int pos);
+  CiBitVector   ror           (CiBitVector lhs, const int pos);
+  CiBitVector   operator  <<  (CiBitVector lhs, const int pos);
+  CiBitVector   operator  >>  (CiBitVector lhs, const int pos);
 }
 
 #endif

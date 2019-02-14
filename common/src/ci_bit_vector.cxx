@@ -33,10 +33,9 @@ unsigned CiBitVector::size() const {
   return m_vec.size();
 }
 
-CiBitVector CiBitVector::resize(const unsigned p_bit_cnt, const CiBit& p_bit) const {
-  CiBitVector tmp(*this);
-  tmp.m_vec.resize(p_bit_cnt, p_bit);
-  return tmp;
+CiBitVector& CiBitVector::resize(const unsigned p_bit_cnt, const CiBit& p_bit) {
+  m_vec.resize(p_bit_cnt, p_bit);
+  return *this;
 }
 
 CiBit& CiBitVector::operator[](const int p_idx) {
@@ -132,12 +131,12 @@ CiBitVector& CiBitVector::shl(const int pos, const CiBit& p_bit) {
     return *this;
 
   if (pos < 0)
-    return this->shr(-pos, p_bit);
+    return shr(-pos, p_bit);
 
   if (pos > 0) {
     unsigned ppos = (pos > (int)size()) ? size() : pos;
-    m_vec.resize(size() - ppos);
-    m_vec.insert(m_vec.begin(), ppos, p_bit);
+    m_vec.resize(size() + ppos, p_bit);
+    m_vec.erase(m_vec.begin(), m_vec.begin() + ppos);
   }
 
   return *this;
@@ -152,8 +151,8 @@ CiBitVector& CiBitVector::shr(const int pos, const CiBit& p_bit) {
 
   if (pos > 0) {
     unsigned ppos = (pos > (int)size()) ? size() : pos;
-    m_vec.resize(size() + ppos, p_bit);
-    m_vec.erase(m_vec.begin(), m_vec.begin() + ppos);
+    m_vec.resize(size() - ppos);
+    m_vec.insert(m_vec.begin(), ppos, p_bit);
   }
 
   return *this;
@@ -164,8 +163,8 @@ CiBitVector& CiBitVector::rol(const int pos) {
     unsigned ppos = pos % size(); /** < @c ppos is positive after */
 
     auto bits_cpy = m_vec;
-    m_vec = vector<CiBit>(bits_cpy.end()-ppos, bits_cpy.end());
-    m_vec.insert(m_vec.end(), bits_cpy.begin(), bits_cpy.end()-ppos);
+    m_vec = vector<CiBit>(bits_cpy.begin()+ppos, bits_cpy.end());
+    m_vec.insert(m_vec.end(), bits_cpy.begin(), bits_cpy.begin()+ppos);
   }
 
   return *this;
@@ -202,27 +201,27 @@ CiBitVector cingulata::operator~(CiBitVector lhs) {
   return lhs.op_not();
 }
 
-CiBitVector cingulata::shl(CiBitVector lhs, const unsigned& pos, const CiBit& p_bit) {
+CiBitVector cingulata::shl(CiBitVector lhs, const int pos, const CiBit& p_bit) {
   return lhs.shl(pos, p_bit);
 }
 
-CiBitVector cingulata::shr(CiBitVector lhs, const unsigned& pos, const CiBit& p_bit) {
+CiBitVector cingulata::shr(CiBitVector lhs, const int pos, const CiBit& p_bit) {
   return lhs.shr(pos, p_bit);
 }
 
-CiBitVector cingulata::rol(CiBitVector lhs, const unsigned& pos) {
+CiBitVector cingulata::rol(CiBitVector lhs, const int pos) {
   return lhs.rol(pos);
 }
 
-CiBitVector cingulata::ror(CiBitVector lhs, const unsigned& pos) {
+CiBitVector cingulata::ror(CiBitVector lhs, const int pos) {
   return lhs.ror(pos);
 }
 
-CiBitVector cingulata::operator<< (CiBitVector lhs, const unsigned& pos) {
+CiBitVector cingulata::operator<< (CiBitVector lhs, const int pos) {
   return lhs <<= pos;
 }
 
-CiBitVector cingulata::operator>> (CiBitVector lhs, const unsigned& pos) {
+CiBitVector cingulata::operator>> (CiBitVector lhs, const int pos) {
   return lhs >>= pos;
 }
 
