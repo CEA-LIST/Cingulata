@@ -1,5 +1,5 @@
-#ifndef NOT_EQUAL_OPER
-#define NOT_EQUAL_OPER
+#ifndef EQUAL_OPER
+#define EQUAL_OPER
 
 #include <int_op_gen/impl/operator.hxx>
 
@@ -8,12 +8,12 @@ namespace cingulata
   namespace int_ops
   {
     /**
-     * @brief      Small depth inequality comparator
+     * @brief      Small depth equality comparator
      * @details    The multiplicative depth of generated circuit is logaritmic
      *             in input size. It uses @c lhs.size()-1 AND gates and @c
      *             lhs.size() XOR gates.
      */
-    class NotEqualDepth : public CompOper {
+    class EqualDepth : public CompOper {
       /**
        * @brief      Implementation
        *
@@ -26,7 +26,7 @@ namespace cingulata
     };
 
     /**
-     * @brief      Small size inequality comparator
+     * @brief      Small size equality comparator
      * @details    The multiplicative depth of generated circuit is linear in
      *             input size. It uses @c lhs.size() AND gates and @c
      *             3*lhs.size() XOR gates
@@ -34,7 +34,7 @@ namespace cingulata
      *             *Improved garbled circuit building blocks and applications to
      *             auctions and computing minima*
      */
-    class NotEqualSize : public CompOper {
+    class EqualSize : public CompOper {
       /**
        * @brief      Implementation
        *

@@ -10,8 +10,8 @@ CiBitVector IIntOpGen::square(const CiBitVector& rhs) const {
   return mul(rhs, rhs);
 }
 
-CiBit IIntOpGen::equal(const CiBitVector& lhs, const CiBitVector& rhs) const {
-  return !not_equal(lhs,rhs);
+CiBit IIntOpGen::not_equal(const CiBitVector& lhs, const CiBitVector& rhs) const {
+  return !equal(lhs,rhs);
 }
 
 CiBit IIntOpGen::greater(const CiBitVector& lhs, const CiBitVector& rhs) const {

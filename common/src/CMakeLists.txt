@@ -9,11 +9,13 @@ set(SRCS
     ci_int.cxx
     ci_bit_vector.cxx
     int_op_gen/interface.cxx
+    int_op_gen/mult_depth.cxx
+    int_op_gen/size.cxx
     int_op_gen/impl/operator.cxx
     int_op_gen/impl/adder.cxx
     int_op_gen/impl/lower.cxx
     int_op_gen/impl/negate.cxx
-    int_op_gen/impl/not_equal.cxx
+    int_op_gen/impl/equal.cxx
     )
 
 include_directories(${INCLUDE_DIR})

@@ -6,15 +6,31 @@
 
 namespace cingulata
 {
-  struct IntOpGenSize_impl {
-    int_ops::RippleCarryAdder add;
-    int_ops::Negate           neg{add};
-    int_ops::Multiplier       mul;
-    int_ops::NotEqualSize     not_equal;
-    int_ops::LowerCompSize    lower;
-  };
+  class IntOpGenSize : public IIntOpGen {
+  public:
+    IntOpGenSize();
 
-  class IntOpGenSize : public IntOpGen<IntOpGenSize_impl> {};
+    virtual CiBitVector add     ( const CiBitVector& lhs,
+                                  const CiBitVector& rhs) const override;
+
+    virtual CiBitVector neg     ( const CiBitVector& lhs) const override;
+
+    virtual CiBitVector mul     ( const CiBitVector& lhs,
+                                  const CiBitVector& rhs) const override;
+
+    virtual CiBit equal         ( const CiBitVector& lhs,
+                                  const CiBitVector& rhs) const override;
+
+    virtual CiBit lower         ( const CiBitVector& lhs,
+                                  const CiBitVector& rhs) const override;
+
+  private:
+    int_ops::RippleCarryAdder m_add;
+    int_ops::Negate           m_neg;
+    int_ops::Multiplier       m_mul;
+    int_ops::EqualSize        m_equal;
+    int_ops::LowerCompSize    m_lower;
+  };
 }
 
 #endif

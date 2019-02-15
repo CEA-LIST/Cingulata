@@ -31,10 +31,10 @@ namespace cingulata
     virtual CiBitVector square  ( const CiBitVector& lhs) const;
 
 
-    virtual CiBit not_equal     ( const CiBitVector& lhs,
+    virtual CiBit equal         ( const CiBitVector& lhs,
                                   const CiBitVector& rhs) const = 0;
 
-    virtual CiBit equal         ( const CiBitVector& lhs,
+    virtual CiBit not_equal     ( const CiBitVector& lhs,
                                   const CiBitVector& rhs) const;
 
     virtual CiBit lower         ( const CiBitVector& lhs,
@@ -49,29 +49,6 @@ namespace cingulata
     virtual CiBit greater       ( const CiBitVector& lhs,
                                   const CiBitVector& rhs) const;
   };
-
-  template<typename _impl>
-  class IntOpGen : public IIntOpGen {
-  public:
-    virtual CiBitVector add     ( const CiBitVector& lhs,
-                                  const CiBitVector& rhs) const override;
-
-    virtual CiBitVector neg     ( const CiBitVector& lhs) const override;
-
-    virtual CiBitVector mul     ( const CiBitVector& lhs,
-                                  const CiBitVector& rhs) const override;
-
-    virtual CiBit not_equal     ( const CiBitVector& lhs,
-                                  const CiBitVector& rhs) const override;
-
-    virtual CiBit lower         ( const CiBitVector& lhs,
-                                  const CiBitVector& rhs) const override;
-
-  private:
-    _impl impl_m;
-  };
-
-  #include "interface_defs.cxx"
 }
 
 #endif

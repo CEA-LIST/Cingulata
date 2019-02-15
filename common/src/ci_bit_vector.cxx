@@ -63,8 +63,7 @@ CiBitVector CiBitVector::slice(int p_start, int p_end, const int p_stride) const
   p_start = idx_clip(idx_rel_to_abs(p_start));
   p_end = idx_clip(idx_rel_to_abs(p_end));
 
-  CiBitVector tmp;
-  vector<CiBit>& bits = tmp.m_vec;
+  vector<CiBit> bits;
 
   if (p_stride > 0) {
     for (int i = p_start; i < (int)p_end; i += p_stride)
@@ -74,7 +73,7 @@ CiBitVector CiBitVector::slice(int p_start, int p_end, const int p_stride) const
       bits.push_back(m_vec.at(i));
   }
 
-  return tmp;
+  return bits;
 }
 
 CiBitVector& CiBitVector::operator&=(const CiBitVector& other) {
