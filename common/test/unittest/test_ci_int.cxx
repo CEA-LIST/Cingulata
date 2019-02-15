@@ -5,69 +5,63 @@
 using namespace std;
 using namespace cingulata;
 
-TEST(CiInt, constructor_from_ci_bit) {
-  for (unsigned int i = 0; i < 100; i++) {
-    CiBit b(rand() % 2);
-    CiInt x(b);
-    ASSERT_EQ(x.is_signed(), false);
-    ASSERT_EQ(x.size(), 1);
-    ASSERT_EQ(x[0].get_val(), b.get_val());
+
+template<typename T>
+T get_val(const CiInt& a) {
+  T res = 0;
+
+  for (unsigned i = 0; i < a.size(); ++i) {
+    res += (a[i].get_val() & 1) << i;
   }
+
+  for (int i = a.size(); i < sizeof(T)*8; ++i) {
+    res += (a.sign().get_val() & 1) << i;
+  }
+
+  return res;
+}
+
+
+TEST(CiInt, constructor_from_ci_bit) {
+  CiBit b(rand() % 2);
+  CiInt x(b);
+  ASSERT_EQ(x.is_signed(), false);
+  ASSERT_EQ(x.size(), 1);
+  ASSERT_EQ(get_val<CiBit::bit_plain_t>(x), b.get_val());
 }
 
 TEST(CiInt, constructor_from_ci_bit_vector) {
-  for (unsigned int i = 0; i < 100; i++) {
-    int size = rand() % 128;
-    vector<CiBit> v;
-    for (unsigned int j = 0; j < size; j++) {
-      v.push_back(CiBit(rand() % 2));
-    }
+  int size = rand() % 128;
+  vector<CiBit> v;
+  for (unsigned int j = 0; j < size; j++) {
+    v.push_back(CiBit(rand() % 2));
+  }
 
-    CiInt x(v);
-    ASSERT_EQ(x.is_signed(), false);
-    ASSERT_EQ(x.size(), v.size());
-    ASSERT_EQ(x.size(), size);
-    for (unsigned int j = 0; j < size; j++) {
-      ASSERT_EQ(x[j].get_val(), v[j].get_val());
-    }
+  CiInt x(v);
+  ASSERT_EQ(x.is_signed(), false);
+  ASSERT_EQ(x.size(), size);
+  for (unsigned int j = 0; j < size; j++) {
+    ASSERT_EQ(x[j].get_val(), v[j].get_val());
   }
 }
 
 TEST(CiInt, encode_plain_val) {
   unsigned int bit_cnt[5] = {8, 16, 24, 32, 48};
 
-  for (unsigned int i = 0; i < 100; i++) {
-    int val = rand();
-    for (unsigned int j = 0; j < 5; j++) {
-      CiInt x(val, bit_cnt[j], false);
-      ASSERT_EQ(x.is_signed(), false);
-      for (unsigned int k = 0; k < x.size(); k++) {
-        if ( k >= (8 * sizeof(val)) ) {
-          ASSERT_EQ(x[k].get_val(), ((val >> (8 * sizeof(val) -1)) & 1));
-        }
-        else {
-          ASSERT_EQ(x[k].get_val(), ((val >> k) & 1));
-        }
-      }
+  int val = rand();
+  for (unsigned int j = 0; j < 5; j++) {
+    CiInt x(val, bit_cnt[j], false);
+    ASSERT_EQ(x.is_signed(), false);
+    ASSERT_EQ(get_val<long>(x), val % (1L<<bit_cnt[j])) << " bit count = " << bit_cnt[j];
 
-      CiInt y(val, bit_cnt[j], true);
-      ASSERT_EQ(y.is_signed(), true);
-      for (unsigned int k = 0; k < y.size(); k++) {
-        if ( k >= (8 * sizeof(val)) ) {
-          ASSERT_EQ(y[k].get_val(), ((val >> (8 * sizeof(val) -1)) & 1));
-        }
-        else {
-          ASSERT_EQ(y[k].get_val(), ((val >> k) & 1));
-        }
-      }
-    }
-
-    CiInt z(val);
-    ASSERT_EQ(z.is_signed(), true);
-    for (unsigned int k = 0; k < z.size(); k++) {
-      ASSERT_EQ(z[k].get_val(), ((val >> k) & 1));
-    }
+    CiInt y(val, bit_cnt[j], true);
+    ASSERT_EQ(y.is_signed(), true);
+    ASSERT_EQ(get_val<long>(x), val % (1L<<bit_cnt[j])) << " bit count = " << bit_cnt[j];
   }
+
+  CiInt z(val);
+  ASSERT_EQ(z.is_signed(), true);
+  ASSERT_EQ(get_val<long>(z), val % (1L<<sizeof(int)*8));
 }
 
 TEST(CiInt, assign_from_ci_int) {
@@ -76,9 +70,7 @@ TEST(CiInt, assign_from_ci_int) {
 
   ASSERT_EQ(x.size(), y.size());
   ASSERT_EQ(x.is_signed(), y.is_signed());
-  for (unsigned int i = 0; i < y.size(); i++) {
-    ASSERT_EQ(x[i].get_val(), y[i].get_val());
-  }
+  ASSERT_EQ(get_val<long>(x), get_val<long>(y));
 }
 
 TEST(CiInt, assign_from_value) {
@@ -88,9 +80,7 @@ TEST(CiInt, assign_from_value) {
 
   ASSERT_EQ(x.size(), y.size());
   ASSERT_EQ(x.is_signed(), y.is_signed());
-  for (unsigned int i = 0; i < y.size(); i++) {
-    ASSERT_EQ(x[i].get_val(), y[i].get_val());
-  }
+  ASSERT_EQ(get_val<long>(x), val);
 }
 
 TEST(CiInt, cast) {
@@ -103,30 +93,20 @@ TEST(CiInt, cast) {
   ASSERT_EQ(y.size(), x.size() + delta);
   ASSERT_EQ(y.is_signed(), false);
   ASSERT_EQ(y.sign().get_val(), 0);
-  for (unsigned int i = 0; i < y.size(); i++) {
-    if (i < x.size())
-      ASSERT_EQ(x[i].get_val(), y[i].get_val());
-    else
-      ASSERT_EQ(y[i].get_val(), x.sign().get_val());
-  }
+  ASSERT_EQ(get_val<long>(x), get_val<long>(y));
 
   y = x.cast(x_size + delta, true);
   ASSERT_EQ(x.size(), x_size);
   ASSERT_EQ(y.size(), x.size() + delta);
   ASSERT_EQ(y.is_signed(), true);
   ASSERT_EQ(y.sign().get_val(), x.sign().get_val());
-  for (unsigned int i = 0; i < y.size(); i++) {
-    if (i < x.size())
-      ASSERT_EQ(x[i].get_val(), y[i].get_val());
-    else
-      ASSERT_EQ(y[i].get_val(), x.sign().get_val());
-  }
+  ASSERT_EQ(get_val<long>(x), get_val<long>(y));
 }
 
 TEST(CiInt, is_signed) {
-  CiInt x(rand(), 32, false);
+  CiInt x(rand(), rand() % 128, false);
   ASSERT_EQ(x.is_signed(), false);
-  x = CiInt(rand(), 32, true);
+  x = CiInt(rand(), rand() % 128, true);
   ASSERT_EQ(x.is_signed(), true);
 }
 
@@ -144,22 +124,16 @@ TEST(CiInt, resize) {
   int delta = rand() % (x_size);
 
   CiInt y = x.resize(x_size - delta);
+  int y_sign = y.sign().get_val();
   ASSERT_EQ(x.size(), x_size);
   ASSERT_EQ(y.size(), x.size() - delta);
-  for (unsigned int i = 0; i < y.size(); i++) {
-    ASSERT_EQ(x[i].get_val(), y[i].get_val());
-  }
+  ASSERT_EQ(get_val<long>(x) % (1L << y.size()), get_val<long>(y) % (1L << y.size()) + y_sign);
 
-  int y_sign = y.sign().get_val();
+  int y_size = y.size();
   y = y.resize(y.size() + delta);
   ASSERT_EQ(y.size(), x.size());
-  for (unsigned int i = 0; i < y.size(); i++) {
-    if (i < (y.size() - delta))
-      ASSERT_EQ(y[i].get_val(), x[i].get_val());
-    else {
-      ASSERT_EQ(y[i].get_val(), y_sign);
-    }
-  }
+  ASSERT_EQ(get_val<long>(x) % (1L << y_size), get_val<long>(y) % (1L << y_size) + y_sign);
+  ASSERT_EQ((get_val<long>(y) >> y_size) % (1L << delta), (y_sign << (delta))-y_sign);
 }
 
 TEST(CiInt, lsb) {
