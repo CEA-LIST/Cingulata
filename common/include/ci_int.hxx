@@ -315,8 +315,8 @@ namespace cingulata
      * @name Arithmetic operators
      * @{
      */
-    CiInt   operator  +   ();
-    CiInt   operator  -   ();
+    CiInt   operator  +   () const;
+    CiInt   operator  -   () const;
     CiInt&  operator  +=  (const CiInt& other);
     CiInt&  operator  -=  (const CiInt& other);
     CiInt&  operator  *=  (const CiInt& other);
