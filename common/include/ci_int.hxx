@@ -163,7 +163,7 @@ namespace cingulata
      * @brief      Explicit conversion to @c CiBitVector object
      * @details    Returns the bit-vector of current object with LSB first.
      */
-    explicit operator CiBitVector();
+    explicit operator CiBitVector() const;
 
     /**
      * @brief      Get bit-vector representation of current object
@@ -171,26 +171,25 @@ namespace cingulata
      *
      * @return     a bit-vector object
      */
-    CiBitVector& bits();
+    // const CiBitVector& bits() const;
 
     /**
-     * @copydoc bits()
-     */
-    const CiBitVector& bits() const;
-
-    /**
-     * @brief      Cast current object to a @c CiInt object with different
-     *             bit-size and signedness
-     * @note       Bit-size is changed in first place and afterwards the sign.
-     *             This is important for signed integers where the MSB is
-     *             extended.
-     *
-     * @param[in]  p_bit_cnt    new bit-size
-     * @param[in]  p_is_signed  new sign
+     * @brief      Cast current object to a bit-vector object
      *
      * @return     new object
      */
-    CiInt cast(const unsigned p_bit_cnt, const bool p_is_signed) const;
+    CiBitVector cast() const;
+
+    /**
+     * @brief      @copybrief cast()
+     * @details    Bit-vector object size is changed to @c p_bit_cnt. When size
+     *             is increased #sign bits are added to the end.
+     *
+     * @param[in]  p_bit_cnt  new bit-size
+     *
+     * @return     new object
+     */
+    CiBitVector cast(const unsigned p_bit_cnt) const;
 
     /**
      * @brief      Is integer signed?
@@ -200,7 +199,7 @@ namespace cingulata
     bool is_signed() const;
 
     /**
-     * @brief      Return a copy of current integer with changed sign
+     * @brief      Create a copy of current integer with sign changed
      *
      * @param      p_is_signed  new signedness
      *
@@ -209,14 +208,14 @@ namespace cingulata
     CiInt change_sign(const bool p_is_signed) const;
 
     /**
-     * @brief      Return a signed copy of current integer
+     * @brief      Create a signed copy of current object
      *
      * @return     new signed integer object
      */
     CiInt to_signed() const;
 
     /**
-     * @brief      Return a unsigned copy of current integer
+     * @brief      Create a unsigned copy of current object
      *
      * @return     new unsigned integer object
      */
@@ -230,7 +229,7 @@ namespace cingulata
     unsigned size() const;
 
     /**
-     * @brief      Resize object to @c p_bit_cnt bits
+     * @brief      Create a resized copy of current object
      * @details    If new bit-size is smaller then most significant bits are
      *             deleted. Otherwise, integer is extended by @c CiBit returned
      *             by #sign function.
@@ -240,6 +239,18 @@ namespace cingulata
      * @return     new object
      */
     CiInt resize(const unsigned p_bit_cnt) const;
+
+    /**
+     * @brief      Create new object from current one with new bit-size and
+     *             signedness
+     * @note       Bit-size is changed in first place and afterwards the sign.
+     *
+     * @param[in]  p_bit_cnt    new bit-size
+     * @param[in]  p_is_signed  new sign
+     *
+     * @return     new object
+     */
+    CiInt alter(const unsigned p_bit_cnt, const bool p_is_signed) const;
 
     /**
      * @name Bit selection/change functions
@@ -420,17 +431,6 @@ namespace cingulata
         typename = typename std::enable_if<std::is_integral<T>::value, T>::type
     >
     void encode_plain_val(const T p_val, const unsigned p_bit_cnt);
-
-    /**
-     * @brief      Change current object to new bit-size and signedness
-     * @note       Bit-size is changed in first place and afterwards the sign.
-     *
-     * @param[in]  p_bit_cnt    new bit-size
-     * @param[in]  p_is_signed  new sign
-     *
-     * @return     reference to current object
-     */
-    CiInt& alter(const unsigned p_bit_cnt, const bool p_is_signed);
   };
 
   /* Logical operators */
@@ -446,7 +446,7 @@ namespace cingulata
   // CiInt   operator  %   (const CiInt& lhs, const CiInt& rhs);
 
   /* Bitwise logic */
-  CiInt   operator  ~   (CiInt lhs);
+  CiInt   operator  ~   (const CiInt& lhs);
   CiInt   operator  &   (const CiInt& lhs, const CiInt& rhs);
   CiInt   operator  |   (const CiInt& lhs, const CiInt& rhs);
   CiInt   operator  ^   (const CiInt& lhs, const CiInt& rhs);

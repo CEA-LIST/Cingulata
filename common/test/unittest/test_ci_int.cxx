@@ -127,13 +127,13 @@ TEST(CiInt, assign_from_value) {
   }
 }
 
-TEST(CiInt, cast) {
+TEST(CiInt, alter) {
   GEN_RAND_CI_L(x, rand() % 64, rand() % 2);
 
   unsigned y_size = rand() % 64;
   bool y_is_signed = rand() % 2;
 
-  CiInt y = x.cast(y_size, y_is_signed);
+  CiInt y = x.alter(y_size, y_is_signed);
 
   ASSERT_CI_PARAM(x, x_size, x_is_signed);
   ASSERT_EQ_CI_L(x, x_val);
@@ -187,9 +187,9 @@ TEST(CiInt, sign) {
   ASSERT_EQ(x.sign().get_val(), 1);
 }
 
-TEST(CiInt, bits) {
+TEST(CiInt, cast) {
   CiInt x(rand());
-  auto y = x.bits();
+  CiBitVector y = x.cast();
   ASSERT_EQ(x.size(), y.size());
   for (unsigned int i = 0; i < x.size(); i++) {
     ASSERT_EQ(x[i].get_val(), y[i].get_val());

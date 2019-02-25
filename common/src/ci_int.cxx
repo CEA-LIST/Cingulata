@@ -53,20 +53,18 @@ CiInt::operator CiBit() const {
   return *this != CiInt(0L, size(), is_signed());
 }
 
-CiInt::operator CiBitVector() {
-  return m_bits;
+CiInt::operator CiBitVector() const {
+  return cast();
 }
 
-CiBitVector& CiInt::bits() {
-  return m_bits;
+CiBitVector CiInt::cast(const unsigned p_bit_cnt) const {
+  CiBitVector tmp = cast();
+  tmp.resize(p_bit_cnt, sign());
+  return tmp;
 }
 
-const CiBitVector& CiInt::bits() const {
+CiBitVector CiInt::cast() const {
   return m_bits;
-}
-
-CiInt CiInt::cast(const unsigned p_bit_cnt, const bool p_is_signed) const {
-  return CiInt(*this).alter(p_bit_cnt, p_is_signed);
 }
 
 bool CiInt::is_signed() const {
@@ -74,7 +72,7 @@ bool CiInt::is_signed() const {
 }
 
 CiInt CiInt::change_sign(const bool p_is_signed) const {
-  return CiInt(*this).alter(size(), p_is_signed);
+  return alter(size(), p_is_signed);
 }
 
 CiInt CiInt::to_signed() const {
@@ -90,7 +88,11 @@ unsigned CiInt::size() const {
 }
 
 CiInt CiInt::resize(const unsigned p_bit_cnt) const {
-  return CiInt(*this).alter(p_bit_cnt, is_signed());
+  return alter(p_bit_cnt, is_signed());
+}
+
+CiInt CiInt::alter(const unsigned p_bit_cnt, const bool p_is_signed) const {
+  return CiInt(cast(p_bit_cnt), p_is_signed);
 }
 
 const CiBit& CiInt::operator[](const int p_idx) const {
@@ -126,7 +128,7 @@ CiInt CiInt::operator+() const {
 }
 
 CiInt CiInt::operator-() const {
-  return CiInt(m_int_op_gen->neg(bits()), is_signed());
+  return CiInt(m_int_op_gen->neg(cast()), is_signed());
 }
 
 CiInt& CiInt::operator+=(const CiInt& other) {
@@ -160,22 +162,22 @@ CiInt& CiInt::operator^=(const CiInt& other) {
 }
 
 CiInt& CiInt::operator<<=(const int pos) {
-  bits().shr(pos, CiBit::zero);
+  m_bits.shr(pos, CiBit::zero);
   return *this;
 }
 
 CiInt& CiInt::operator>>=(const int pos) {
-  bits().shl(pos, sign());
+  m_bits.shl(pos, sign());
   return *this;
 }
 
 CiInt& CiInt::rol(const int pos) {
-  bits().ror(pos);
+  m_bits.ror(pos);
   return *this;
 }
 
 CiInt& CiInt::ror(const int pos) {
-  bits().rol(pos);
+  m_bits.rol(pos);
   return *this;
 }
 
@@ -200,12 +202,6 @@ CiInt CiInt::operator--(int) {
   CiInt cpy{*this};
   --(*this);
   return cpy;
-}
-
-CiInt& CiInt::alter(const unsigned p_bit_cnt, const bool p_is_signed) {
-  m_bits.resize(p_bit_cnt, sign());
-  m_is_signed = p_is_signed;
-  return *this;
 }
 
 /* Logical operators */
@@ -259,64 +255,62 @@ namespace
 
 /* Arithmetic operators */
 CiInt cingulata::operator+(const CiInt& lhs, const CiInt& rhs) {
-  unsigned res_size = result_size(lhs, rhs);
-  bool res_is_signed = result_is_signed(lhs, rhs);
-
   if (&lhs == &rhs) {
      /** < when @c lhs and @c rhs are the same multiply by 2 */
-    return lhs.cast(res_size, res_is_signed) << 1;
+    return lhs << 1;
   } else {
+    unsigned res_size = result_size(lhs, rhs);
+    bool res_is_signed = result_is_signed(lhs, rhs);
+
     auto res = CiInt::int_op_gen()->add(
-      lhs.resize(res_size).bits(),
-      rhs.resize(res_size).bits());
+      lhs.cast(res_size),
+      rhs.cast(res_size));
     return CiInt(res, res_is_signed);
   }
 }
 
 CiInt cingulata::operator-(const CiInt& lhs, const CiInt& rhs) {
-  unsigned res_size = result_size(lhs, rhs);
-  bool res_is_signed = result_is_signed(lhs, rhs);
-
-  CiBitVector res;
   if (&lhs == &rhs) {
      /** < when @c lhs and @c rhs are the same the difference is zero */
-    res = CiBitVector(res_size, CiBit::zero);
+    return CiInt(CiBit::zero, lhs.size(), lhs.is_signed());
   } else {
-    res = CiInt::int_op_gen()->sub(
-      lhs.resize(res_size).bits(),
-      rhs.resize(res_size).bits());
+    unsigned res_size = result_size(lhs, rhs);
+    bool res_is_signed = result_is_signed(lhs, rhs);
+
+    auto res = CiInt::int_op_gen()->sub(
+      lhs.cast(res_size),
+      rhs.cast(res_size));
+    return CiInt(res, res_is_signed);
   }
-  return CiInt(res, res_is_signed);
 }
 
 CiInt cingulata::operator*(const CiInt& lhs, const CiInt& rhs) {
-  unsigned res_size = result_size(lhs, rhs);
-  bool res_is_signed = result_is_signed(lhs, rhs);
-
-  CiBitVector res;
   if (&lhs == &rhs) {
     /** < when @c lhs and @c rhs are the same square @c lhs */
-    res = CiInt::int_op_gen()->square(lhs.bits());
+    return CiInt(CiInt::int_op_gen()->square(lhs.cast()), lhs.is_signed());
   } else {
-    res = CiInt::int_op_gen()->mul(
-      lhs.resize(res_size).bits(),
-      rhs.resize(res_size).bits());
+    unsigned res_size = result_size(lhs, rhs);
+    bool res_is_signed = result_is_signed(lhs, rhs);
+
+    auto res = CiInt::int_op_gen()->mul(
+      lhs.cast(res_size),
+      rhs.cast(res_size));
+    return CiInt(res, res_is_signed);
   }
-  return CiInt(res, res_is_signed);
 }
 
 // CiInt CiInt::operator/(const CiInt& lhs, const CiInt& rhs);
 // CiInt CiInt::operator%(const CiInt& lhs, const CiInt& rhs);
 
 /* Bitwise logic */
-CiInt cingulata::operator~(CiInt lhs) {
-  lhs.bits().op_not();
-  return lhs;
+CiInt cingulata::operator~(const CiInt& lhs) {
+  return lhs.cast().op_not(); // TODO: see if unittest catch this bug
+  // return CiInt(lhs.cast().op_not(), lhs.is_signed());
 }
 
 #define DEFINE_BITWISE_OPERATOR(OP_NAME, OP, SAME_OPERANDS_CODE) \
 CiInt cingulata::OP_NAME(const CiInt& lhs, const CiInt& rhs) { \
-  CiInt res{lhs.cast(result_size(lhs, rhs), result_is_signed(lhs, rhs))}; \
+  CiInt res { lhs.alter(result_size(lhs, rhs), result_is_signed(lhs, rhs)) }; \
  \
   if (&lhs == &rhs) { \
     SAME_OPERANDS_CODE; \
@@ -348,35 +342,21 @@ CiInt cingulata::ror(CiInt lhs, const int pos) {
 }
 
 /* Relational operators */
-#define DEFINE_RELATIONAL_OPERATOR_1(OP_NAME, OP_FUNC, SAME_OPERANDS_CODE) \
+#define DEFINE_RELATIONAL_OPERATOR(OP_NAME, OP_FUNC, SAME_OPERANDS_CODE) \
 CiBit cingulata::OP_NAME(const CiInt& lhs, const CiInt& rhs) { \
   if (&lhs == &rhs) {  \
     SAME_OPERANDS_CODE; \
   } else { \
     unsigned res_size = result_size(lhs, rhs); \
     return CiInt::int_op_gen()->OP_FUNC( \
-      lhs.resize(res_size).bits(), \
-      rhs.resize(res_size).bits()); \
+      lhs.cast(res_size), \
+      rhs.cast(res_size)); \
   } \
 }
 
-#define DEFINE_RELATIONAL_OPERATOR_2(OP_NAME, OP_FUNC, SAME_OPERANDS_CODE) \
-CiBit cingulata::OP_NAME(const CiInt& lhs, const CiInt& rhs) { \
-  if (&lhs == &rhs) {  \
-    SAME_OPERANDS_CODE; \
-  } else { \
-    unsigned res_size = result_size(lhs, rhs); \
-    bool res_is_signed = result_is_signed(lhs, rhs); \
-    CiBit res = CiInt::int_op_gen()->OP_FUNC( \
-      lhs.cast(res_size, res_is_signed).bits(), \
-      rhs.cast(res_size, res_is_signed).bits()); \
-    return res; \
-  } \
-}
-
-DEFINE_RELATIONAL_OPERATOR_1(operator==, equal         , return CiBit::one);
-DEFINE_RELATIONAL_OPERATOR_1(operator!=, not_equal     , return CiBit::zero);
-DEFINE_RELATIONAL_OPERATOR_2(operator< , lower         , return CiBit::zero);
-DEFINE_RELATIONAL_OPERATOR_2(operator<=, lower_equal   , return CiBit::one);
-DEFINE_RELATIONAL_OPERATOR_2(operator> , greater       , return CiBit::zero);
-DEFINE_RELATIONAL_OPERATOR_2(operator>=, greater_equal , return CiBit::one);
+DEFINE_RELATIONAL_OPERATOR(operator==, equal         , return CiBit::one);
+DEFINE_RELATIONAL_OPERATOR(operator!=, not_equal     , return CiBit::zero);
+DEFINE_RELATIONAL_OPERATOR(operator< , lower         , return CiBit::zero);
+DEFINE_RELATIONAL_OPERATOR(operator<=, lower_equal   , return CiBit::one);
+DEFINE_RELATIONAL_OPERATOR(operator> , greater       , return CiBit::zero);
+DEFINE_RELATIONAL_OPERATOR(operator>=, greater_equal , return CiBit::one);
