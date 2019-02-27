@@ -231,3 +231,13 @@ CiBitVector cingulata::operator>> (CiBitVector lhs, const int pos) {
   return lhs >>= pos;
 }
 
+istream& cingulata::operator>>(istream& inp, CiBitVector& val) {
+  val.read();
+  return inp;
+}
+
+ostream& cingulata::operator<<(ostream& out, CiBitVector& val) {
+  val.write();
+  return out;
+}
+

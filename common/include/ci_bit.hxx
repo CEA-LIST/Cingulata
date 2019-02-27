@@ -97,11 +97,11 @@ namespace cingulata
     /**
      * @brief      Set bit name
      *
-     * @param[in]  name_p  string name to use
+     * @param[in]  p_name  string name to use
      *
      * @return     reference to current object
      */
-    CiBit& set_name(const std::string& name_p);
+    CiBit& set_name(const std::string& p_name);
 
     /**
      * @brief      Clear name and set it to default value
@@ -140,11 +140,11 @@ namespace cingulata
     /**
      * @brief      Set name and read bit
      *
-     * @param[in]  name_p  string name to use
+     * @param[in]  p_name  string name to use
      *
      * @return     reference to current object
      */
-    CiBit& read(const std::string name_p);
+    CiBit& read(const std::string& p_name);
 
     /**
      * @brief      Write bit, use current bit name
@@ -156,11 +156,11 @@ namespace cingulata
     /**
      * @brief      Set name and write bit
      *
-     * @param[in]  name_p  string name to use
+     * @param[in]  p_name  string name to use
      *
      * @return     reference to current object
      */
-    CiBit& write(const std::string name_p);
+    CiBit& write(const std::string& p_name);
 
     /**
      * @brief      Encrypt bit
@@ -227,12 +227,12 @@ namespace cingulata
      * @name Compound assignment operators
      * @{
      */
-    CiBit&  operator  +=  (const CiBit& rhs);
-    CiBit&  operator  -=  (const CiBit& rhs);
-    CiBit&  operator  *=  (const CiBit& rhs);
-    CiBit&  operator  &=  (const CiBit& rhs);
-    CiBit&  operator  |=  (const CiBit& rhs);
-    CiBit&  operator  ^=  (const CiBit& rhs);
+    CiBit&  operator  +=  (const CiBit&);
+    CiBit&  operator  -=  (const CiBit&);
+    CiBit&  operator  *=  (const CiBit&);
+    CiBit&  operator  &=  (const CiBit&);
+    CiBit&  operator  |=  (const CiBit&);
+    CiBit&  operator  ^=  (const CiBit&);
     /**
      * @}
      */
@@ -278,13 +278,13 @@ namespace cingulata
    * @name Arithmetic operators
    * @{
    */
-  CiBit operator  +   (CiBit lhs, const CiBit& rhs);
-  CiBit operator  -   (CiBit lhs, const CiBit& rhs);
-  CiBit operator  *   (CiBit lhs, const CiBit& rhs);
-  CiBit operator  ~   (CiBit lhs);
-  CiBit operator  ^   (CiBit lhs, const CiBit& rhs);
-  CiBit operator  &   (CiBit lhs, const CiBit& rhs);
-  CiBit operator  |   (CiBit lhs, const CiBit& rhs);
+  CiBit operator  +   (CiBit, const CiBit&);
+  CiBit operator  -   (CiBit, const CiBit&);
+  CiBit operator  *   (CiBit, const CiBit&);
+  CiBit operator  ~   (CiBit);
+  CiBit operator  ^   (CiBit, const CiBit&);
+  CiBit operator  &   (CiBit, const CiBit&);
+  CiBit operator  |   (CiBit, const CiBit&);
   /**
    * @}
    */
@@ -293,9 +293,9 @@ namespace cingulata
    * @name Logic operators
    * @{
    */
-  CiBit operator  !   (CiBit lhs);
-  CiBit operator  &&  (CiBit lhs, const CiBit& rhs);
-  CiBit operator  ||  (CiBit lhs, const CiBit& rhs);
+  CiBit operator  !   (CiBit);
+  CiBit operator  &&  (CiBit, const CiBit&);
+  CiBit operator  ||  (CiBit, const CiBit&);
   /**
    * @}
    */
@@ -304,12 +304,22 @@ namespace cingulata
    * @name Comparison operators
    * @{
    */
-  CiBit operator  ==  (CiBit lhs, const CiBit& rhs);
-  CiBit operator  !=  (CiBit lhs, const CiBit& rhs);
-  CiBit operator  <   (CiBit lhs, const CiBit& rhs);
-  CiBit operator  <=  (CiBit lhs, const CiBit& rhs);
-  CiBit operator  >   (CiBit lhs, const CiBit& rhs);
-  CiBit operator  >=  (CiBit lhs, const CiBit& rhs);
+  CiBit operator  ==  (CiBit, const CiBit&);
+  CiBit operator  !=  (CiBit, const CiBit&);
+  CiBit operator  <   (CiBit, const CiBit&);
+  CiBit operator  <=  (CiBit, const CiBit&);
+  CiBit operator  >   (CiBit, const CiBit&);
+  CiBit operator  >=  (CiBit, const CiBit&);
+  /**
+   * @}
+   */
+
+  /**
+   * @name Stream input/output operators
+   * @{
+   */
+  std::istream& operator>>(std::istream&, CiBit&);
+  std::ostream& operator<<(std::ostream&, CiBit&);
   /**
    * @}
    */

@@ -367,3 +367,14 @@ DEFINE_RELATIONAL_OPERATOR(operator<=, lower_equal   , return CiBit::one);
 DEFINE_RELATIONAL_OPERATOR(operator> , greater       , return CiBit::zero);
 DEFINE_RELATIONAL_OPERATOR(operator>=, greater_equal , return CiBit::one);
 
+
+istream& cingulata::operator>>(istream& inp, CiInt& val) {
+  val.read();
+  return inp;
+}
+
+ostream& cingulata::operator<<(ostream& out, CiInt& val) {
+  val.write();
+  return out;
+}
+

@@ -3,8 +3,8 @@
 
 #include <ci_bit.hxx>
 #include <ci_bit_vector.hxx>
-#include <io_name_vec.hxx>
 #include <int_op_gen/interface.hxx>
+#include <io_name_vec.hxx>
 
 #include <vector>
 
@@ -465,6 +465,16 @@ namespace cingulata
   CiBit   operator  >   (const CiInt& lhs, const CiInt& rhs);
   CiBit   operator  <=  (const CiInt& lhs, const CiInt& rhs);
   CiBit   operator  >=  (const CiInt& lhs, const CiInt& rhs);
+
+  /**
+   * @name Stream input/output operators
+   * @{
+   */
+  std::istream& operator>>(std::istream&, CiInt&);
+  std::ostream& operator<<(std::ostream&, CiInt&);
+  /**
+   * @}
+   */
 
   #include <ci_int_defs.cxx>
 }

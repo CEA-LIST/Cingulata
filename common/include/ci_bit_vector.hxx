@@ -357,6 +357,16 @@ namespace cingulata
   CiBitVector   ror           (CiBitVector lhs, const int pos);
   CiBitVector   operator  <<  (CiBitVector lhs, const int pos);
   CiBitVector   operator  >>  (CiBitVector lhs, const int pos);
+
+  /**
+   * @name Stream input/output operators
+   * @{
+   */
+  std::istream& operator>>(std::istream&, CiBitVector&);
+  std::ostream& operator<<(std::ostream&, CiBitVector&);
+  /**
+   * @}
+   */
 }
 
 #endif

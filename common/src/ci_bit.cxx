@@ -16,14 +16,14 @@ void CiBit::set_bit_exec(IBitExec *const p_bit_exec) {
 }
 
 IBitExec* CiBit::m_bit_exec = nullptr;
-uint CiBit::unique_name_cnt = 0;
+uint CiBit::unique_name_cnt = 2; // start at 2 for legacy
 
 const CiBit CiBit::zero(0);
 const CiBit CiBit::one(1);
 
-CiBit::CiBit(const bit_plain_t pt_val_p)
+CiBit::CiBit(const bit_plain_t p_pt_val)
 :
-  pt_val(pt_val_p)
+  pt_val(p_pt_val)
 {
 }
 
@@ -53,8 +53,8 @@ std::string CiBit::get_name(const std::string& prefix) {
   return name;
 }
 
-CiBit& CiBit::set_name(const std::string& name_p) {
-  name = name_p;
+CiBit& CiBit::set_name(const std::string& p_name) {
+  name = p_name;
   return *this;
 }
 
@@ -67,9 +67,9 @@ CiBit::bit_plain_t CiBit::get_val() const {
   return pt_val;
 }
 
-CiBit& CiBit::set_val(const bit_plain_t pt_val_p) {
+CiBit& CiBit::set_val(const bit_plain_t p_pt_val) {
   clear_obj_handle();
-  pt_val = pt_val_p & 1;
+  pt_val = p_pt_val & 1;
   return *this;
 }
 
@@ -78,8 +78,8 @@ CiBit& CiBit::read() {
   return *this;
 }
 
-CiBit& CiBit::read(const std::string name_p) {
-  return set_name(name_p).read();
+CiBit& CiBit::read(const std::string& p_name) {
+  return set_name(p_name).read();
 }
 
 CiBit& CiBit::write() {
@@ -89,8 +89,8 @@ CiBit& CiBit::write() {
   return *this;
 }
 
-CiBit& CiBit::write(const std::string name_p) {
-  return set_name(name_p).write();
+CiBit& CiBit::write(const std::string& p_name) {
+  return set_name(p_name).write();
 }
 
 CiBit& CiBit::encrypt() {
@@ -209,8 +209,8 @@ void CiBit::move(const CiBit& other) {
   name = std::move(other.name);
 }
 
-CiBit::bit_plain_t CiBit::negate(const bit_plain_t pt_val_p) {
-  return 1^pt_val_p;
+CiBit::bit_plain_t CiBit::negate(const bit_plain_t p_pt_val) {
+  return 1^p_pt_val;
 }
 
 CiBit cingulata::operator +  (CiBit lhs, const CiBit& rhs) {
@@ -275,5 +275,15 @@ CiBit cingulata::operator >  (CiBit lhs, const CiBit& rhs) {
 
 CiBit cingulata::operator >= (CiBit lhs, const CiBit& rhs) {
   return lhs.op_oryn(rhs);
+}
+
+istream& cingulata::operator>>(istream& inp, CiBit& val) {
+  val.read();
+  return inp;
+}
+
+ostream& cingulata::operator<<(ostream& out, CiBit& val) {
+  val.write();
+  return out;
 }
 
