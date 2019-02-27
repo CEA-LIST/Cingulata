@@ -5,6 +5,13 @@
 using namespace std;
 using namespace cingulata;
 
+
+/**
+ * Define name manager format to use for @c CiBitVector types
+ */
+template<>
+string IoNameVec<CiBitVector>::m_name_fmt{ "%s_%d" };
+
 CiBitVector::CiBitVector(
     const int p_bit_cnt,
     const CiBit& p_bit)
@@ -223,7 +230,4 @@ CiBitVector cingulata::operator<< (CiBitVector lhs, const int pos) {
 CiBitVector cingulata::operator>> (CiBitVector lhs, const int pos) {
   return lhs >>= pos;
 }
-
-
-
 

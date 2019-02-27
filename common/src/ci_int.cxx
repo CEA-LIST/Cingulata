@@ -6,6 +6,12 @@
 using namespace std;
 using namespace cingulata;
 
+/**
+ * Define name manager format to use for @c CiInt types
+ */
+template<>
+string IoNameVec<CiInt>::m_name_fmt{ "%s_%d" };
+
 void CiInt::set_int_op_gen(IIntOpGen const* p_int_op_gen) {
   m_int_op_gen = p_int_op_gen;
 }
@@ -360,3 +366,4 @@ DEFINE_RELATIONAL_OPERATOR(operator< , lower         , return CiBit::zero);
 DEFINE_RELATIONAL_OPERATOR(operator<=, lower_equal   , return CiBit::one);
 DEFINE_RELATIONAL_OPERATOR(operator> , greater       , return CiBit::zero);
 DEFINE_RELATIONAL_OPERATOR(operator>=, greater_equal , return CiBit::one);
+

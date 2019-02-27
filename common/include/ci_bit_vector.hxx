@@ -2,6 +2,7 @@
 #define CI_BIT_VECTOR
 
 #include <ci_bit.hxx>
+#include <io_name_vec.hxx>
 
 #include <vector>
 
@@ -13,7 +14,7 @@ namespace cingulata
    *  - Indexing functions (#operator[], #slice) use python style indexing. Thus
    *    '-1' is the last bit, '-2' the second last bit, etc.
    */
-  class CiBitVector
+  class CiBitVector : public IoNameVec<CiBitVector>
   {
   public:
     /**

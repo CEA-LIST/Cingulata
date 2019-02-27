@@ -3,6 +3,7 @@
 
 #include <ci_bit.hxx>
 #include <ci_bit_vector.hxx>
+#include <io_name_vec.hxx>
 #include <int_op_gen/interface.hxx>
 
 #include <vector>
@@ -21,7 +22,7 @@ namespace cingulata
    *    LSB, 1 the second LSB, etc. and -1 is the MSB, -2 the second MSB, etc.
    *  - Two's complement representations is used for signed integers.
    */
-  class CiInt
+  class CiInt : public IoNameVec<CiInt>
   {
   public:
     /**
