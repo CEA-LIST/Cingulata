@@ -1,5 +1,5 @@
 #include <ci_bit_vector.hxx>
-
+#include <iostream>
 #include <cassert>
 
 using namespace std;
@@ -130,7 +130,7 @@ CiBitVector& CiBitVector::shl(const int pos, const CiBit& p_bit) {
     return *this;
 
   if (pos < 0)
-    return shr(-pos, p_bit);
+    return this->shr(-pos, p_bit);
 
   if (pos > 0) {
     unsigned ppos = (pos > (int)size()) ? size() : pos;
@@ -159,7 +159,7 @@ CiBitVector& CiBitVector::shr(const int pos, const CiBit& p_bit) {
 
 CiBitVector& CiBitVector::rol(const int pos) {
   if (size() > 0 and pos != 0) {
-    unsigned ppos = pos % size(); /** < @c ppos is positive after */
+    unsigned ppos = (pos > 0) ? (pos % size()) : (size() - (-pos % size()));
 
     auto bits_cpy = m_vec;
     m_vec = vector<CiBit>(bits_cpy.begin()+ppos, bits_cpy.end());
