@@ -4,22 +4,25 @@ include_directories(${INCLUDE_DIR})
 
 if(ENABLE_UNITTEST)
   # if gtest_SOURCE_DIR has been set
-  if (gtest_SOURCE_DIR)
-    set(GOOGLETEST_SOURCES
+  if (gtest_SOURCE_DIR AND gmock_SOURCE_DIR)
+    set(UNITTEST_SOURCES
         unittest/test_ci_bit.cxx
         unittest/test_ci_bit_vector.cxx
         unittest/test_ci_int.cxx
+        unittest/test_io_name_vec.cxx
         )
 
-    add_executable(unittests ${GOOGLETEST_SOURCES})
+    add_executable(unittests ${UNITTEST_SOURCES})
     target_include_directories(unittests
       PRIVATE ${gtest_SOURCE_DIR}/include)
-    target_link_libraries(unittests gtest_main common -lpthread)
+    target_include_directories(unittests
+      PRIVATE ${gmock_SOURCE_DIR}/include)
+    target_link_libraries(unittests gtest_main gmock_main common -lpthread)
     add_test(unittests unittests)
 
-  else(gtest_SOURCE_DIR)
+  else(gtest_SOURCE_DIR AND gmock_SOURCE_DIR)
     message(WARNING "Unittest compilation requested but googletest unavailable")
-  endif(gtest_SOURCE_DIR)
+  endif(gtest_SOURCE_DIR AND gmock_SOURCE_DIR)
 
 endif(ENABLE_UNITTEST)
 
