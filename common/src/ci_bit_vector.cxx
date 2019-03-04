@@ -103,6 +103,21 @@ CiBitVector& CiBitVector::operator^=(const CiBitVector& other) {
   return *this;
 }
 
+CiBitVector& CiBitVector::operator&=(const CiBit& p_bit) {
+  this->op_and(p_bit);
+  return *this;
+}
+
+CiBitVector& CiBitVector::operator|=(const CiBit& p_bit) {
+  this->op_or(p_bit);
+  return *this;
+}
+
+CiBitVector& CiBitVector::operator^=(const CiBit& p_bit) {
+  this->op_xor(p_bit);
+  return *this;
+}
+
 CiBitVector& CiBitVector::op_not() {
   for (unsigned i = 0; i < size(); ++i) {
     (*this)[i].op_not();
@@ -110,7 +125,7 @@ CiBitVector& CiBitVector::op_not() {
   return *this;
 }
 
-#define DEFINE_BITWISE_MEMBER_FUNC(OP_NAME, SAME_OPERANDS_CODE) \
+#define DEFINE_BITWISE_MEMBER_FUNC_BV(OP_NAME, SAME_OPERANDS_CODE) \
 CiBitVector& CiBitVector::OP_NAME(const CiBitVector& other, const CiBit& p_bit) { \
   if (this == &other) { \
     SAME_OPERANDS_CODE; \
@@ -126,16 +141,36 @@ CiBitVector& CiBitVector::OP_NAME(const CiBitVector& other, const CiBit& p_bit) 
   return *this; \
 }
 
-DEFINE_BITWISE_MEMBER_FUNC(op_and  , );
-DEFINE_BITWISE_MEMBER_FUNC(op_nand , op_not());
-DEFINE_BITWISE_MEMBER_FUNC(op_andny, m_vec.assign(size(), CiBit::zero));
-DEFINE_BITWISE_MEMBER_FUNC(op_andyn, m_vec.assign(size(), CiBit::zero));
-DEFINE_BITWISE_MEMBER_FUNC(op_or   , );
-DEFINE_BITWISE_MEMBER_FUNC(op_nor  , op_not());
-DEFINE_BITWISE_MEMBER_FUNC(op_orny , m_vec.assign(size(), CiBit::one));
-DEFINE_BITWISE_MEMBER_FUNC(op_oryn , m_vec.assign(size(), CiBit::one));
-DEFINE_BITWISE_MEMBER_FUNC(op_xor  , m_vec.assign(size(), CiBit::zero));
-DEFINE_BITWISE_MEMBER_FUNC(op_xnor , m_vec.assign(size(), CiBit::one));
+DEFINE_BITWISE_MEMBER_FUNC_BV(op_and  , );
+DEFINE_BITWISE_MEMBER_FUNC_BV(op_nand , op_not());
+DEFINE_BITWISE_MEMBER_FUNC_BV(op_andny, m_vec.assign(size(), CiBit::zero));
+DEFINE_BITWISE_MEMBER_FUNC_BV(op_andyn, m_vec.assign(size(), CiBit::zero));
+DEFINE_BITWISE_MEMBER_FUNC_BV(op_or   , );
+DEFINE_BITWISE_MEMBER_FUNC_BV(op_nor  , op_not());
+DEFINE_BITWISE_MEMBER_FUNC_BV(op_orny , m_vec.assign(size(), CiBit::one));
+DEFINE_BITWISE_MEMBER_FUNC_BV(op_oryn , m_vec.assign(size(), CiBit::one));
+DEFINE_BITWISE_MEMBER_FUNC_BV(op_xor  , m_vec.assign(size(), CiBit::zero));
+DEFINE_BITWISE_MEMBER_FUNC_BV(op_xnor , m_vec.assign(size(), CiBit::one));
+
+#define DEFINE_BITWISE_MEMBER_FUNC_B(OP_NAME) \
+CiBitVector& CiBitVector::OP_NAME(const CiBit& p_bit) { \
+  for (unsigned i = 0; i < size(); ++i) { \
+    (*this)[i].OP_NAME(p_bit); \
+  } \
+  return *this; \
+}
+
+DEFINE_BITWISE_MEMBER_FUNC_B(op_and);
+DEFINE_BITWISE_MEMBER_FUNC_B(op_nand);
+DEFINE_BITWISE_MEMBER_FUNC_B(op_andny);
+DEFINE_BITWISE_MEMBER_FUNC_B(op_andyn);
+DEFINE_BITWISE_MEMBER_FUNC_B(op_or);
+DEFINE_BITWISE_MEMBER_FUNC_B(op_nor);
+DEFINE_BITWISE_MEMBER_FUNC_B(op_orny);
+DEFINE_BITWISE_MEMBER_FUNC_B(op_oryn);
+DEFINE_BITWISE_MEMBER_FUNC_B(op_xor);
+DEFINE_BITWISE_MEMBER_FUNC_B(op_xnor);
+
 
 CiBitVector& CiBitVector::shl(const int pos, const CiBit& p_bit) {
   if (size() == 0)
@@ -221,6 +256,18 @@ CiBitVector cingulata::operator&(CiBitVector lhs, const CiBitVector& rhs) {
 }
 
 CiBitVector cingulata::operator|(CiBitVector lhs, const CiBitVector& rhs) {
+  return lhs |= rhs;
+}
+
+CiBitVector cingulata::operator^(CiBitVector lhs, const CiBit& rhs) {
+  return lhs ^= rhs;
+}
+
+CiBitVector cingulata::operator&(CiBitVector lhs, const CiBit& rhs) {
+  return lhs &= rhs;
+}
+
+CiBitVector cingulata::operator|(CiBitVector lhs, const CiBit& rhs) {
   return lhs |= rhs;
 }
 
