@@ -17,6 +17,7 @@ set(SRCS
     int_op_gen/impl/negate.cxx
     int_op_gen/impl/equal.cxx
     int_op_gen/impl/dec.cxx
+    int_op_gen/impl/mux.cxx
     )
 
 include_directories(${INCLUDE_DIR})
