@@ -24,7 +24,7 @@ namespace cingulata
      * @param[in]  p_bit      @c CiBit object to copy
      * @param[in]  p_bit_cnt  size of bit-vector object to construct
      */
-    CiBitVector(const int p_bit_cnt = 1, const CiBit& p_bit = CiBit::zero);
+    CiBitVector(const int p_bit_cnt = 0, const CiBit& p_bit = CiBit::zero);
 
     /**
      * @brief      Construct a bit-vector from a list of bits
@@ -71,9 +71,18 @@ namespace cingulata
      * @param      p_bit_cnt  new bit size
      * @param[in]  p_bit      object to add when size is extended
      *
-     * @return     bit-vector object
+     * @return     reference to current object
      */
     CiBitVector& resize(const unsigned p_bit_cnt, const CiBit& p_bit = CiBit::zero);
+
+    /**
+     * @brief      Append a bit to the end of vector
+     *
+     * @param[in]  p_bit  The @c CiBit object to append
+     *
+     * @return     reference to current object
+     */
+    CiBitVector& append(const CiBit& p_bit);
 
     /**
      * @name Bit selection/change functions
@@ -348,7 +357,10 @@ namespace cingulata
     std::vector<CiBit> m_vec;
   };
 
-  CiBitVector   operator~(CiBitVector lhs);
+  CiBitVector   operator  ~   (CiBitVector lhs);
+  CiBitVector   operator  ^   (CiBitVector, const CiBitVector&);
+  CiBitVector   operator  &   (CiBitVector, const CiBitVector&);
+  CiBitVector   operator  |   (CiBitVector, const CiBitVector&);
 
   /* Bitwise shift */
   CiBitVector   shl           (CiBitVector lhs, const int pos, const CiBit& p_bit);

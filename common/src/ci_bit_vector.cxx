@@ -45,6 +45,11 @@ CiBitVector& CiBitVector::resize(const unsigned p_bit_cnt, const CiBit& p_bit) {
   return *this;
 }
 
+CiBitVector& CiBitVector::append(const CiBit& p_bit) {
+  m_vec.push_back(p_bit);
+  return *this;
+}
+
 CiBit& CiBitVector::operator[](const int p_idx) {
   return at(p_idx);
 }
@@ -205,6 +210,18 @@ unsigned CiBitVector::idx_clip(int idx) const {
 
 CiBitVector cingulata::operator~(CiBitVector lhs) {
   return lhs.op_not();
+}
+
+CiBitVector cingulata::operator^(CiBitVector lhs, const CiBitVector& rhs) {
+  return lhs ^= rhs;
+}
+
+CiBitVector cingulata::operator&(CiBitVector lhs, const CiBitVector& rhs) {
+  return lhs &= rhs;
+}
+
+CiBitVector cingulata::operator|(CiBitVector lhs, const CiBitVector& rhs) {
+  return lhs |= rhs;
 }
 
 CiBitVector cingulata::shl(CiBitVector lhs, const int pos, const CiBit& p_bit) {

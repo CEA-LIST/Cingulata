@@ -55,9 +55,7 @@ using namespace cingulata;
 
 TEST(CiBitVector, constructor_from_ci_bit) {
   CiBitVector v;
-  ASSERT_EQ(v.size(), 1);
-  ASSERT_EQ(v[0].get_val(), CiBit::zero.get_val());
-  ASSERT_EQ(v[0].get_val(), 0);
+  ASSERT_EQ(v.size(), 0);
 
   v = CiBitVector(1, CiBit::one);
   ASSERT_EQ(v.size(), 1);
