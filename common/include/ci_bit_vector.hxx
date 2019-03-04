@@ -24,7 +24,7 @@ namespace cingulata
      * @param[in]  p_bit      @c CiBit object to copy
      * @param[in]  p_bit_cnt  size of bit-vector object to construct
      */
-    CiBitVector(const int p_bit_cnt = 1, const CiBit& p_bit = CiBit::zero);
+    CiBitVector(const int p_bit_cnt = 0, const CiBit& p_bit = CiBit::zero);
 
     /**
      * @brief      Construct a bit-vector from a list of bits
@@ -71,9 +71,18 @@ namespace cingulata
      * @param      p_bit_cnt  new bit size
      * @param[in]  p_bit      object to add when size is extended
      *
-     * @return     bit-vector object
+     * @return     reference to current object
      */
     CiBitVector& resize(const unsigned p_bit_cnt, const CiBit& p_bit = CiBit::zero);
+
+    /**
+     * @brief      Append a bit to the end of vector
+     *
+     * @param[in]  p_bit  The @c CiBit object to append
+     *
+     * @return     reference to current object
+     */
+    CiBitVector& append(const CiBit& p_bit);
 
     /**
      * @name Bit selection/change functions
@@ -154,9 +163,7 @@ namespace cingulata
     /**
      * @name Bitwise operators
      * @{
-     */
-
-    /**
+     *
      * @brief      Perform operation on first @c min(size(),other.size()) bits
      *             individually.
      * @details    Other bits are remain unchanged.
@@ -166,16 +173,30 @@ namespace cingulata
      * @return     reference to current object
      */
     CiBitVector&  operator  &=  (const CiBitVector& other);
-
-    /**
-     * @copydoc operator&=
-     */
     CiBitVector&  operator  |=  (const CiBitVector& other);
+    CiBitVector&  operator  ^=  (const CiBitVector& other);
+     /**
+       * @}
+       */
 
     /**
-     * @copydoc operator&=
+     * @name Bitwise operators
+     * @{
+     *
+     * @brief      Perform operation between current object elements and object
+     *             @c p_bit
+     *
+     * @param[in]  p_bit  The p bit
+     *
+     * @return     reference to current object
      */
-    CiBitVector&  operator  ^=  (const CiBitVector& other);
+    CiBitVector&  operator  &=  (const CiBit& p_bit);
+    CiBitVector&  operator  |=  (const CiBit& p_bit);
+    CiBitVector&  operator  ^=  (const CiBit& p_bit);
+     /**
+       * @}
+       */
+
 
     /**
      * @brief      Negate all bits of current object
@@ -185,7 +206,10 @@ namespace cingulata
     CiBitVector&  op_not      ();
 
     /**
-     * @brief      Perform operation on each bit individually.
+     * @name Bitwise boolean operations with a bit-vector
+     * @{
+     *
+     * @brief      Perform operation bitwise.
      * @details    Extend @c other with copies of @c p_bit if the size of
      *             current object is larger then the size of @c other.
      *
@@ -196,51 +220,44 @@ namespace cingulata
      * @return     reference to current object
      */
     CiBitVector&  op_and      (const CiBitVector& other, const CiBit& p_bit = CiBit::zero);
-
-    /**
-     * @copybrief op_and()
-     */
     CiBitVector&  op_nand     (const CiBitVector& other, const CiBit& p_bit = CiBit::zero);
-
-    /**
-     * @copybrief op_and()
-     */
     CiBitVector&  op_andny    (const CiBitVector& other, const CiBit& p_bit = CiBit::zero);
-
-    /**
-     * @copybrief op_and()
-     */
     CiBitVector&  op_andyn    (const CiBitVector& other, const CiBit& p_bit = CiBit::zero);
-
-    /**
-     * @copybrief op_and()
-     */
     CiBitVector&  op_or       (const CiBitVector& other, const CiBit& p_bit = CiBit::zero);
-
-    /**
-     * @copybrief op_and()
-     */
     CiBitVector&  op_nor      (const CiBitVector& other, const CiBit& p_bit = CiBit::zero);
-
-    /**
-     * @copybrief op_and()
-     */
     CiBitVector&  op_orny     (const CiBitVector& other, const CiBit& p_bit = CiBit::zero);
-
-    /**
-     * @copybrief op_and()
-     */
     CiBitVector&  op_oryn     (const CiBitVector& other, const CiBit& p_bit = CiBit::zero);
-
-    /**
-     * @copybrief op_and()
-     */
     CiBitVector&  op_xor      (const CiBitVector& other, const CiBit& p_bit = CiBit::zero);
+    CiBitVector&  op_xnor     (const CiBitVector& other, const CiBit& p_bit = CiBit::zero);
+    /**
+     * @}
+     */
 
     /**
-     * @copybrief op_and()
+     * @name Bitwise boolean operations with a bit
+     * @{
+     *
+     * @brief      Perform operation bitwise between bit-vector elements and a
+     *             bit.
+     *
+     * @param[in]  p_bit  bit object
+     *
+     * @return     reference to current object
      */
-    CiBitVector&  op_xnor     (const CiBitVector& other, const CiBit& p_bit = CiBit::zero);
+    CiBitVector&  op_and      (const CiBit& p_bit);
+    CiBitVector&  op_nand     (const CiBit& p_bit);
+    CiBitVector&  op_andny    (const CiBit& p_bit);
+    CiBitVector&  op_andyn    (const CiBit& p_bit);
+    CiBitVector&  op_or       (const CiBit& p_bit);
+    CiBitVector&  op_nor      (const CiBit& p_bit);
+    CiBitVector&  op_orny     (const CiBit& p_bit);
+    CiBitVector&  op_oryn     (const CiBit& p_bit);
+    CiBitVector&  op_xor      (const CiBit& p_bit);
+    CiBitVector&  op_xnor     (const CiBit& p_bit);
+    /**
+     * @}
+     */
+
 
     /**
      * @}
@@ -348,7 +365,28 @@ namespace cingulata
     std::vector<CiBit> m_vec;
   };
 
-  CiBitVector   operator~(CiBitVector lhs);
+  /**
+   * @name Bitwise boolean operations with a bit-vector
+   * @{
+   */
+  CiBitVector   operator  ~   (CiBitVector lhs);
+  CiBitVector   operator  ^   (CiBitVector, const CiBitVector&);
+  CiBitVector   operator  &   (CiBitVector, const CiBitVector&);
+  CiBitVector   operator  |   (CiBitVector, const CiBitVector&);
+  /**
+   * @}
+   */
+
+  /**
+   * @name Bitwise boolean operations with a bit
+   * @{
+   */
+  CiBitVector   operator  ^   (CiBitVector, const CiBit&);
+  CiBitVector   operator  &   (CiBitVector, const CiBit&);
+  CiBitVector   operator  |   (CiBitVector, const CiBit&);
+  /**
+   * @}
+   */
 
   /* Bitwise shift */
   CiBitVector   shl           (CiBitVector lhs, const int pos, const CiBit& p_bit);

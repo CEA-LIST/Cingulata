@@ -84,14 +84,14 @@ TEST_P(CiBitOper, two_input) {
       int b_val_out = encrypt_2nd ? b.decrypt() : b.get_val();
 
       // operator result is good
-      EXPECT_EQ(op_tt[v], a_val_out)
+      ASSERT_EQ(op_tt[v], a_val_out)
         << " operator '" << op_name << "'" << " (" << a_val_inp << "," << b_val_inp << ")";
 
       // value of b does not change
-      EXPECT_EQ(b_val_inp, b_val_out) << " operator '" << op_name << "'";
+      ASSERT_EQ(b_val_inp, b_val_out) << " operator '" << op_name << "'";
 
       // stays plain afterwards
-      EXPECT_TRUE(encrypt_2nd or b.is_plain()) << " operator '" << op_name << "'";
+      ASSERT_TRUE(encrypt_2nd or b.is_plain()) << " operator '" << op_name << "'";
     }
   }
 }
@@ -119,11 +119,11 @@ TEST_P(CiBitOper, two_input_pt) {
       int a_val_out = a.decrypt();
 
       // operator result is good
-      EXPECT_EQ(op_tt[v], a_val_out)
+      ASSERT_EQ(op_tt[v], a_val_out)
         << " operator '" << op_name << "'" << " (" << a_val_inp << "," << b_val_inp << ")";
 
       // value of b does not change
-      EXPECT_EQ(b_val_inp, b_val_out) << " operator '" << op_name << "'";
+      ASSERT_EQ(b_val_inp, b_val_out) << " operator '" << op_name << "'";
     }
   }
 }
@@ -183,16 +183,16 @@ TEST_P(CiBitOper, two_input_ext) {
       int c_val_out = c.decrypt();
 
       // operator result is good
-      EXPECT_EQ(op_tt[v], c_val_out)
+      ASSERT_EQ(op_tt[v], c_val_out)
         << " operator '" << op_name << "'" << " (" << a_val_inp << "," << b_val_inp << ")";
 
       // value of b does not change
-      EXPECT_EQ(a_val_inp, a_val_out) << " operator '" << op_name << "'";
-      EXPECT_EQ(b_val_inp, b_val_out) << " operator '" << op_name << "'";
+      ASSERT_EQ(a_val_inp, a_val_out) << " operator '" << op_name << "'";
+      ASSERT_EQ(b_val_inp, b_val_out) << " operator '" << op_name << "'";
 
       // stays plain afterwards
-      EXPECT_TRUE(encrypt_1st or a.is_plain()) << " operator '" << op_name << "'";
-      EXPECT_TRUE(encrypt_2nd or b.is_plain()) << " operator '" << op_name << "'";
+      ASSERT_TRUE(encrypt_1st or a.is_plain()) << " operator '" << op_name << "'";
+      ASSERT_TRUE(encrypt_2nd or b.is_plain()) << " operator '" << op_name << "'";
     }
   }
 }

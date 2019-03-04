@@ -4,6 +4,8 @@
 #include <ci_bit.hxx>
 #include <ci_bit_vector.hxx>
 
+#include <vector>
+
 namespace cingulata
 {
   namespace int_ops
@@ -49,6 +51,33 @@ namespace cingulata
 
     private:
       virtual CiBit oper(const CiBitVector&, const CiBitVector&) const = 0;
+    };
+
+    /**
+     * @brief      Multiplexer operator base class
+     */
+    class MuxOper
+    {
+    public:
+      using signature = CiBitVector (const CiBitVector&, const std::vector<const CiBitVector&>& inps);
+
+      /**
+       * @brief      Selects the k-th element from vector @c inps where the
+       *             binary form of k is given by @c cond.
+       * @details    The number of elements in @c inps must be equal to @c
+       *             2^cond.size(). All the elements of @c inps must have the
+       *             same bit-size. The bit-size of result is the same as
+       *             bit-size of an @c inps element.
+       *
+       * @param[in]  cond  Selection condition
+       * @param[in]  inps  Vector of input words
+       *
+       * @return     selected word
+       */
+      CiBitVector operator()(const CiBitVector& cond, const std::vector<CiBitVector>& inps) const;
+
+    private:
+      virtual CiBitVector oper(const CiBitVector& cond, const std::vector<CiBitVector>& inps) const = 0;
     };
   }
 }
