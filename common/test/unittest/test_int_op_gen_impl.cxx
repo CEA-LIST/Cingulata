@@ -6,21 +6,6 @@ using namespace cingulata;
 using namespace cingulata::int_ops;
 using namespace std;
 
-#define ASSERT_EQ_CT_PT_VEC(ct_vec, pt_vec)       \
-ASSERT_EQ((ct_vec).size(), (pt_vec).size());      \
-for (int i = 0; i < (ct_vec).size(); ++i) {       \
-  ASSERT_EQ((ct_vec)[i].get_val(), (pt_vec)[i]);  \
-}
-
-#define ASSERT_EQ_CT_PT_MAT(ct_mat, pt_mat)               \
-ASSERT_EQ((ct_mat).size(), (pt_mat).size());              \
-for (int i = 0; i < (ct_mat).size(); ++i) {               \
-  ASSERT_EQ((ct_mat)[i].size(), (pt_mat)[i].size());      \
-  for (int j = 0; j < (ct_mat)[i].size(); ++j) {          \
-    ASSERT_EQ((ct_mat)[i][j].get_val(), (pt_mat)[i][j]);  \
-  }                                                       \
-}
-
 template<typename T>
 T to_binary(unsigned val, int n) {
   T res(n,0);
@@ -34,39 +19,30 @@ T to_binary(unsigned val, int n) {
 
 #define GEN_RAND_BV(VAR, n, val)                               \
   unsigned VAR ## _int = mod(val, n);                           \
-  vector<int> VAR ## _pv = to_binary<vector<int>>((VAR ## _int), (n));  \
   CiBitVector VAR ## _bv = to_binary<CiBitVector>((VAR ## _int), (n));
 
-#define ASSERT_EQ_BV_INT(ct_vec, pt_int)            \
-{                                                   \
-  auto pt_vec = to_binary<vector<int>>((pt_int),    \
-    (ct_vec).size());                               \
-  for (int i = 0; i < (ct_vec).size(); ++i) {       \
-    ASSERT_EQ((ct_vec)[i].get_val(), pt_vec[i]);    \
-  }                                                 \
+#define ASSERT_EQ_BV_INT(ct_vec1, pt_int)         \
+{                                                 \
+  auto ct_vec = (ct_vec1);                        \
+  auto pt_vec = to_binary<vector<int>>((pt_int),  \
+    ct_vec.size());                               \
+  for (int i = 0; i < ct_vec.size(); ++i) {       \
+    ASSERT_EQ(ct_vec[i].get_val(), pt_vec[i]);    \
+  }                                               \
 }
 
-
 TEST(IntOpGen, Decoder) {
-  vector<char> inp_vec(rand()%12+1, 0);
-  unsigned inp_int = 0;
-  CiBitVector inp(inp_vec.size(), 0);
+  const unsigned n = rand() % 12 + 1;
 
-  for (unsigned i = 0; i < inp.size(); ++i) {
-    if (rand() % 2) {
-      inp_vec[i] = 1;
-      inp_int |= 1 << i;
-      inp[i] = 1;
-    }
-  }
+  GEN_RAND_BV(inp, n, rand());
 
-  CiBitVector out = Decoder()(inp);
+  CiBitVector out = Decoder()(inp_bv);
 
   /* inputs did not changed */
-  ASSERT_EQ_CT_PT_VEC(inp, inp_vec);
+  ASSERT_EQ_BV_INT(inp_bv, inp_int);
 
   /* output is valid */
-  ASSERT_EQ(out.size(), (1<<inp.size()));
+  ASSERT_EQ(out.size(), (1<<n));
   for (unsigned i = 0; i < out.size(); ++i) {
     if (i == inp_int)
       ASSERT_TRUE(out[i].get_val());
@@ -78,40 +54,28 @@ TEST(IntOpGen, Decoder) {
 TEST(IntOpGen, Mux) {
   const unsigned logn = (rand()%8)+1;
   const unsigned n = 1 << logn;
-  const unsigned m = rand() % 48;
+  const unsigned m = rand() % 32;
 
-  vector<vector<int>> vals_pt;
-  vector<CiBitVector> vals;
+  vector<unsigned> vals_m_int;
+  vector<CiBitVector> vals_m_bv;
   for (unsigned i = 0; i < n; ++i) {
-    vals_pt.push_back(vector<int>(m,0));
-    vals.push_back(CiBitVector(m,0));
-    for (unsigned j = 0; j < m; ++j) {
-      if (rand()%2) {
-        vals[i][j] = 1;
-        vals_pt[i][j] = 1;
-      }
-    }
+    GEN_RAND_BV(tmp, m, rand());
+    vals_m_int.push_back(tmp_int);
+    vals_m_bv.push_back(tmp_bv);
   }
 
-  vector<int> cond_pt(logn, 0);
-  unsigned cond_idx = 0;
-  CiBitVector cond(cond_pt.size(), 0);
-  for (unsigned i = 0; i < logn; ++i) {
-    if (rand() % 2) {
-      cond_pt[i] = 1;
-      cond[i] = 1;
-      cond_idx |= 1 << i;
-    }
-  }
+  GEN_RAND_BV(cond, logn, rand());
 
-  CiBitVector out = MuxDepth()(cond, vals);
+  CiBitVector out = MuxDepth()(cond_bv, vals_m_bv);
 
   /* inputs did not changed */
-  ASSERT_EQ_CT_PT_VEC(cond, cond_pt);
-  ASSERT_EQ_CT_PT_MAT(vals, vals_pt);
+  ASSERT_EQ_BV_INT(cond_bv, cond_int);
+  for (int i = 0; i < n; ++i) {
+    ASSERT_EQ_BV_INT(vals_m_bv[i], vals_m_int[i]);
+  }
 
   /* output is valid */
-  ASSERT_EQ_CT_PT_VEC(out, vals_pt[cond_idx]);
+  ASSERT_EQ_BV_INT(out, vals_m_int[cond_int]);
 }
 
 
