@@ -24,3 +24,14 @@ CiBit CompOper::operator()(const CiBitVector& lhs, const CiBitVector& rhs) const
 
   return oper(lhs, rhs);
 }
+
+CiBitVector MuxOper::operator()(const CiBitVector& cond, const std::vector<CiBitVector>& inps) const {
+  /* all inputs has same bit-size */
+  auto s = inps[0].size();
+  for (const auto& inp: inps)
+    assert(inp.size() == s);
+
+  assert((1U<<cond.size()) == inps.size());
+
+  return oper(cond, inps);
+}

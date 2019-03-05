@@ -10,6 +10,7 @@ if(ENABLE_UNITTEST)
         unittest/test_ci_bit_vector.cxx
         unittest/test_ci_int.cxx
         unittest/test_io_name_vec.cxx
+        unittest/test_int_op_gen_impl.cxx
         )
 
     add_executable(unittests ${UNITTEST_SOURCES})

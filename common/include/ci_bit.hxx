@@ -290,6 +290,25 @@ namespace cingulata
    */
 
   /**
+   * @name Boolean operators
+   * @{
+   */
+  CiBit op_not      (CiBit);
+  CiBit op_and      (CiBit, const CiBit&);
+  CiBit op_nand     (CiBit, const CiBit&);
+  CiBit op_andny    (CiBit, const CiBit&);
+  CiBit op_andyn    (CiBit, const CiBit&);
+  CiBit op_or       (CiBit, const CiBit&);
+  CiBit op_nor      (CiBit, const CiBit&);
+  CiBit op_orny     (CiBit, const CiBit&);
+  CiBit op_oryn     (CiBit, const CiBit&);
+  CiBit op_xor      (CiBit, const CiBit&);
+  CiBit op_xnor     (CiBit, const CiBit&);
+  /**
+   * @}
+   */
+
+  /**
    * @name Logic operators
    * @{
    */
