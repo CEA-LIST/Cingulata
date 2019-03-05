@@ -21,6 +21,32 @@ for (int i = 0; i < (ct_mat).size(); ++i) {               \
   }                                                       \
 }
 
+template<typename T>
+T to_binary(unsigned val, int n) {
+  T res(n,0);
+  for (int i = 0; i < n; ++i) {
+    res[i] = (val >> i) & 1;
+  }
+  return res;
+}
+
+#define mod(val, bc) ((val) & (((bc) < 64) ? ((1UL<<(bc)) - 1) : -1L))
+
+#define GEN_RAND_BV(VAR, n, val)                               \
+  unsigned VAR ## _int = mod(val, n);                           \
+  vector<int> VAR ## _pv = to_binary<vector<int>>((VAR ## _int), (n));  \
+  CiBitVector VAR ## _bv = to_binary<CiBitVector>((VAR ## _int), (n));
+
+#define ASSERT_EQ_BV_INT(ct_vec, pt_int)            \
+{                                                   \
+  auto pt_vec = to_binary<vector<int>>((pt_int),    \
+    (ct_vec).size());                               \
+  for (int i = 0; i < (ct_vec).size(); ++i) {       \
+    ASSERT_EQ((ct_vec)[i].get_val(), pt_vec[i]);    \
+  }                                                 \
+}
+
+
 TEST(IntOpGen, Decoder) {
   vector<char> inp_vec(rand()%12+1, 0);
   unsigned inp_int = 0;
@@ -88,114 +114,209 @@ TEST(IntOpGen, Mux) {
   ASSERT_EQ_CT_PT_VEC(out, vals_pt[cond_idx]);
 }
 
+
 /*-------------------------------------------------------------------------*/
 /**
- * Adder test
+ * Multiple implementations operators
  */
 /*-------------------------------------------------------------------------*/
 
-class Adder : public ::testing::TestWithParam<const BinaryOper*> {
+template<typename T>
+string get_oper_name(const testing::TestParamInfo<T>& oper) {
+  return get<0>(oper.param);
+}
+/*-------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------*/
+/**
+ * Binary operator tests
+ */
+/*-------------------------------------------------------------------------*/
+
+using BinaryParam =
+tuple<
+  string,
+  function<BinaryOper::signature>,
+  function<unsigned (const unsigned, const unsigned)>
+>;
+
+class Binary : public ::testing::TestWithParam<BinaryParam> {
 public:
-  const BinaryOper* adder;
+  string name;
+  function<BinaryOper::signature> op_ct;
+  function<unsigned (const unsigned, const unsigned)> op_pt;
+
   virtual void SetUp() {
-    adder = GetParam();
+    auto tmp = GetParam();
+    name = get<0>(tmp);
+    op_ct = get<1>(tmp);
+    op_pt = get<2>(tmp);
   }
 };
 
-#define GEN_RAND_BV(VAR, n)             \
-  vector<char> VAR ## _pv((n), 0);      \
-  unsigned VAR ## _int = 0;             \
-  CiBitVector VAR ## _bv((n), 0);       \
-  for (unsigned i = 0; i < (n); ++i) {  \
-    if (rand() % 2) {                   \
-      (VAR ## _pv)[i] = 1;              \
-      (VAR ## _int)  |= 1 << i;         \
-      (VAR ## _bv)[i] = 1;              \
-    }                                   \
-  }
+#define TEST_BINARY_OP(a_int, a_bv, b_int, b_bv)  \
+{                                                             \
+  auto r_int = op_pt(a_int, b_int);                           \
+  auto r_bv = op_ct(a_bv, b_bv);                              \
+  /* inputs did not changed */                                \
+  ASSERT_EQ_BV_INT(a_bv, a_int);                              \
+  ASSERT_EQ_BV_INT(b_bv, b_int);                              \
+  /* output is valid */                                       \
+  ASSERT_EQ_BV_INT(r_bv, r_int);                              \
+}
 
-TEST_P(Adder, non_zero_inps) {
+TEST_P(Binary, non_zero_inps) {
   const unsigned n = rand() % 32 + 1;
-  GEN_RAND_BV(a, n);
-  GEN_RAND_BV(b, n);
 
-  vector<char> r_pv(n,0);
-  unsigned r_int = a_int + b_int;
-  for (int i = 0; i < n; ++i) {
-    r_pv[i] = (r_int >> i) & 1;
-  }
+  GEN_RAND_BV(a, n, rand());
+  GEN_RAND_BV(b, n, rand());
 
-  CiBitVector r_bv = (*adder)(a_bv, b_bv);
-
-  /* inputs did not changed */
-  ASSERT_EQ_CT_PT_VEC(a_bv, a_pv);
-  ASSERT_EQ_CT_PT_VEC(b_bv, b_pv);
-
-  /* output is valid */
-  ASSERT_EQ_CT_PT_VEC(r_bv, r_pv);
+  TEST_BINARY_OP(a_int, a_bv, b_int, b_bv);
+  TEST_BINARY_OP(b_int, b_bv, a_int, a_bv);
 }
 
-TEST_P(Adder, order) {
+TEST_P(Binary, one_zero_inp) {
   const unsigned n = rand() % 32 + 1;
-  GEN_RAND_BV(a, n);
-  GEN_RAND_BV(b, n);
 
-  vector<char> r_pv(n,0);
-  unsigned r_int = a_int + b_int;
-  for (int i = 0; i < n; ++i) {
-    r_pv[i] = (r_int >> i) & 1;
+  GEN_RAND_BV(a, n, rand());
+  GEN_RAND_BV(b, n, 0);
+
+  TEST_BINARY_OP(a_int, a_bv, b_int, b_bv);
+  TEST_BINARY_OP(b_int, b_bv, a_int, a_bv);
+}
+
+BinaryParam binary_params[] =
+{
+  {
+    "RippleCarryAdder",
+    [](const CiBitVector& a, const CiBitVector& b) -> CiBitVector {
+      return RippleCarryAdder()(a,b);
+    },
+    [](const unsigned a, const unsigned b) -> unsigned {
+      return a + b;
+    }
+  },
+  {
+    "SklanskyAdder",
+    [](const CiBitVector& a, const CiBitVector& b) -> CiBitVector {
+      return SklanskyAdder()(a,b);
+    },
+    [](const unsigned a, const unsigned b) -> unsigned {
+      return a + b;
+    }
   }
-
-  CiBitVector r1_bv = (*adder)(a_bv, b_bv);
-  CiBitVector r2_bv = (*adder)(b_bv, a_bv);
-
-  /* inputs did not changed */
-  ASSERT_EQ_CT_PT_VEC(a_bv, a_pv);
-  ASSERT_EQ_CT_PT_VEC(b_bv, b_pv);
-
-  /* output is valid */
-  ASSERT_EQ_CT_PT_VEC(r1_bv, r_pv);
-  ASSERT_EQ_CT_PT_VEC(r2_bv, r_pv);
-}
-
-TEST_P(Adder, one_zero_inp) {
-  const unsigned n = rand() % 32 + 1;
-  GEN_RAND_BV(a, n);
-
-  const CiBitVector b_bv(n, 0);
-  const vector<char> b_pv(n, 0);
-
-  CiBitVector r_bv = (*adder)(a_bv, b_bv);
-
-  /* inputs did not changed */
-  ASSERT_EQ_CT_PT_VEC(a_bv, a_pv);
-  ASSERT_EQ_CT_PT_VEC(b_bv, b_pv);
-
-  /* output is valid */
-  ASSERT_EQ_CT_PT_VEC(r_bv, a_pv);
-
-  /* change direction */
-  r_bv = (*adder)(b_bv, a_bv);
-
-  /* inputs did not changed */
-  ASSERT_EQ_CT_PT_VEC(a_bv, a_pv);
-  ASSERT_EQ_CT_PT_VEC(b_bv, b_pv);
-
-  /* output is valid */
-  ASSERT_EQ_CT_PT_VEC(r_bv, a_pv);
-}
-
-string adder_name(const testing::TestParamInfo<const BinaryOper*>& adder) {
-  if (dynamic_cast<const RippleCarryAdder*>(adder.param))
-    return "RippleCarry";
-  else if (dynamic_cast<const SklanskyAdder*>(adder.param))
-    return "Sklansky";
-  else
-    return "UNKNOWN";
-}
-const BinaryOper* adder_impls[] = {
-  new RippleCarryAdder(),
-  new SklanskyAdder()
 };
 
-INSTANTIATE_TEST_CASE_P(IntOpGen, Adder, ::testing::ValuesIn(adder_impls), adder_name);
+INSTANTIATE_TEST_CASE_P(
+  IntOpGen,
+  Binary,
+  ::testing::ValuesIn(binary_params),
+  get_oper_name<BinaryParam>
+);
+
+
+/*-------------------------------------------------------------------------*/
+/**
+ * Comparator tests
+ */
+/*-------------------------------------------------------------------------*/
+
+using ComparatorParam =
+tuple<
+  string,
+  function<CompOper::signature>,
+  function<bool (const unsigned, const unsigned)>
+>;
+
+class Comparator : public ::testing::TestWithParam<ComparatorParam>
+{
+public:
+  string name;
+  function<CompOper::signature> cmp_ct;
+  function<bool (const unsigned, const unsigned)> cmp_pt;
+
+  virtual void SetUp() {
+    auto cmp = GetParam();
+    name = get<0>(cmp);
+    cmp_ct = get<1>(cmp);
+    cmp_pt = get<2>(cmp);
+  }
+};
+
+#define TEST_COMP_OP(a_int, a_bv, b_int, b_bv)  \
+{                                               \
+  auto r_pt = cmp_pt(a_int, b_int);             \
+  auto r_ct = cmp_ct(a_bv, b_bv);               \
+  /* inputs did not changed */                  \
+  ASSERT_EQ_BV_INT(a_bv, a_int);                \
+  ASSERT_EQ_BV_INT(b_bv, b_int);                \
+  /* output is valid */                         \
+  ASSERT_EQ(r_ct.get_val(), r_pt);              \
+}
+
+TEST_P(Comparator, non_zero_inps) {
+  const unsigned n = rand() % 32 + 1;
+
+  GEN_RAND_BV(a, n, rand());
+  GEN_RAND_BV(b, n, rand());
+
+  TEST_COMP_OP(a_int, a_bv, b_int, b_bv);
+  TEST_COMP_OP(b_int, b_bv, a_int, a_bv);
+}
+
+TEST_P(Comparator, one_zero_inp) {
+  const unsigned n = rand() % 32 + 1;
+
+  GEN_RAND_BV(a, n, rand());
+  GEN_RAND_BV(b, n, 0);
+
+  TEST_COMP_OP(a_int, a_bv, b_int, b_bv);
+  TEST_COMP_OP(b_int, b_bv, a_int, a_bv);
+}
+
+ComparatorParam comp_params[] =
+{
+  {
+    "EqualDepth",
+    [](const CiBitVector& a, const CiBitVector& b) -> CiBit {
+      return EqualDepth()(a,b);
+    },
+    [](const unsigned a, const unsigned b) -> bool {
+      return a == b;
+    }
+  },
+  {
+    "EqualSize",
+    [](const CiBitVector& a, const CiBitVector& b) -> CiBit {
+      return EqualSize()(a,b);
+    },
+    [](const unsigned a, const unsigned b) -> bool {
+      return a == b;
+    }
+  },
+  {
+    "LowerCompDepth",
+    [](const CiBitVector& a, const CiBitVector& b) -> CiBit {
+      return LowerCompDepth(EqualSize())(a,b);
+    },
+    [](const unsigned a, const unsigned b) -> bool {
+      return a < b;
+    }
+  },
+  {
+    "LowerCompSize",
+    [](const CiBitVector& a, const CiBitVector& b) -> CiBit {
+      return LowerCompSize()(a,b);
+    },
+    [](const unsigned a, const unsigned b) -> bool {
+      return a < b;
+    }
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(
+  IntOpGen,
+  Comparator,
+  ::testing::ValuesIn(comp_params),
+  get_oper_name<ComparatorParam>
+);
