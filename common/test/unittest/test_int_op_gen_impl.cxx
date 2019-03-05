@@ -88,3 +88,114 @@ TEST(IntOpGen, Mux) {
   ASSERT_EQ_CT_PT_VEC(out, vals_pt[cond_idx]);
 }
 
+/*-------------------------------------------------------------------------*/
+/**
+ * Adder test
+ */
+/*-------------------------------------------------------------------------*/
+
+class Adder : public ::testing::TestWithParam<const BinaryOper*> {
+public:
+  const BinaryOper* adder;
+  virtual void SetUp() {
+    adder = GetParam();
+  }
+};
+
+#define GEN_RAND_BV(VAR, n)             \
+  vector<char> VAR ## _pv((n), 0);      \
+  unsigned VAR ## _int = 0;             \
+  CiBitVector VAR ## _bv((n), 0);       \
+  for (unsigned i = 0; i < (n); ++i) {  \
+    if (rand() % 2) {                   \
+      (VAR ## _pv)[i] = 1;              \
+      (VAR ## _int)  |= 1 << i;         \
+      (VAR ## _bv)[i] = 1;              \
+    }                                   \
+  }
+
+TEST_P(Adder, non_zero_inps) {
+  const unsigned n = rand() % 32 + 1;
+  GEN_RAND_BV(a, n);
+  GEN_RAND_BV(b, n);
+
+  vector<char> r_pv(n,0);
+  unsigned r_int = a_int + b_int;
+  for (int i = 0; i < n; ++i) {
+    r_pv[i] = (r_int >> i) & 1;
+  }
+
+  CiBitVector r_bv = (*adder)(a_bv, b_bv);
+
+  /* inputs did not changed */
+  ASSERT_EQ_CT_PT_VEC(a_bv, a_pv);
+  ASSERT_EQ_CT_PT_VEC(b_bv, b_pv);
+
+  /* output is valid */
+  ASSERT_EQ_CT_PT_VEC(r_bv, r_pv);
+}
+
+TEST_P(Adder, order) {
+  const unsigned n = rand() % 32 + 1;
+  GEN_RAND_BV(a, n);
+  GEN_RAND_BV(b, n);
+
+  vector<char> r_pv(n,0);
+  unsigned r_int = a_int + b_int;
+  for (int i = 0; i < n; ++i) {
+    r_pv[i] = (r_int >> i) & 1;
+  }
+
+  CiBitVector r1_bv = (*adder)(a_bv, b_bv);
+  CiBitVector r2_bv = (*adder)(b_bv, a_bv);
+
+  /* inputs did not changed */
+  ASSERT_EQ_CT_PT_VEC(a_bv, a_pv);
+  ASSERT_EQ_CT_PT_VEC(b_bv, b_pv);
+
+  /* output is valid */
+  ASSERT_EQ_CT_PT_VEC(r1_bv, r_pv);
+  ASSERT_EQ_CT_PT_VEC(r2_bv, r_pv);
+}
+
+TEST_P(Adder, one_zero_inp) {
+  const unsigned n = rand() % 32 + 1;
+  GEN_RAND_BV(a, n);
+
+  const CiBitVector b_bv(n, 0);
+  const vector<char> b_pv(n, 0);
+
+  CiBitVector r_bv = (*adder)(a_bv, b_bv);
+
+  /* inputs did not changed */
+  ASSERT_EQ_CT_PT_VEC(a_bv, a_pv);
+  ASSERT_EQ_CT_PT_VEC(b_bv, b_pv);
+
+  /* output is valid */
+  ASSERT_EQ_CT_PT_VEC(r_bv, a_pv);
+
+  /* change direction */
+  r_bv = (*adder)(b_bv, a_bv);
+
+  /* inputs did not changed */
+  ASSERT_EQ_CT_PT_VEC(a_bv, a_pv);
+  ASSERT_EQ_CT_PT_VEC(b_bv, b_pv);
+
+  /* output is valid */
+  ASSERT_EQ_CT_PT_VEC(r_bv, a_pv);
+}
+
+string adder_name(const testing::TestParamInfo<const BinaryOper*>& adder) {
+  if (dynamic_cast<const RippleCarryAdder*>(adder.param))
+    return "RippleCarry";
+  else if (dynamic_cast<const SklanskyAdder*>(adder.param))
+    return "Sklansky";
+  else
+    return "UNKNOWN";
+}
+const BinaryOper* adder_impls[] = {
+  new RippleCarryAdder(),
+  new SklanskyAdder()
+};
+
+INSTANTIATE_TEST_CASE_P(IntOpGen, Adder, ::testing::ValuesIn(adder_impls), adder_name);
