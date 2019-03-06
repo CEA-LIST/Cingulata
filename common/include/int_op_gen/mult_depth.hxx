@@ -25,11 +25,11 @@ namespace cingulata
                                   const CiBitVector& rhs) const override;
 
   private:
-    int_ops::SklanskyAdder m_add;
-    int_ops::Negate           m_neg;
-    int_ops::Multiplier       m_mul;
-    int_ops::EqualDepth       m_equal;
-    int_ops::LowerCompDepth   m_lower;
+    int_ops::SklanskyAdder      m_add;
+    int_ops::Negate             m_neg;
+    int_ops::WallaceMultiplier  m_mul;
+    int_ops::EqualDepth         m_equal;
+    int_ops::LowerCompDepth     m_lower;
   };
 }
 

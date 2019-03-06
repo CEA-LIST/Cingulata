@@ -712,3 +712,51 @@ TEST(CiBitVector, tilde) {
   ASSERT_EQ_CIBITV(v2, v1);
 }
 
+TEST(CiBitVector, begin) {
+  CiBitVector v1;
+  RAND_CIBITV(v1);
+  std::vector<CiBit>::iterator it = v1.begin();
+  ASSERT_EQ((*it).get_val(), v1[0].get_val());
+}
+
+TEST(CiBitVector, end) {
+  CiBitVector v1;
+  RAND_CIBITV(v1);
+  std::vector<CiBit>::iterator it = v1.end();
+  ASSERT_EQ((*it).get_val(), v1[v1.size()-1].get_val());
+}
+
+TEST(CiBitVector, insert) {
+  CiBitVector v1(rand()%128, CiBit::zero);
+  unsigned size = v1.size();
+  unsigned pos = rand() % size;
+  CiBitVector v2 = v1;
+
+  v2.insert(v2.begin() + pos, CiBit::one);
+  ASSERT_EQ(v2.size(), size + 1);
+  ASSERT_EQ(v2[pos].get_val(), 1);
+
+  unsigned n = rand() % 128;
+  v2.insert(v2.begin() + pos + 1, (n - 1), CiBit::one);
+  ASSERT_EQ(v2.size(), size + n);
+  for (unsigned i = 0; i < (size + n); ++i) {
+    if (i < pos)
+      ASSERT_EQ(v2[i].get_val(), 0);
+    else if ((i >= pos) && (i < (pos + n)))
+      ASSERT_EQ(v2[i].get_val(), 1);
+    else if (i >= (pos + n))
+      ASSERT_EQ(v2[i].get_val(), 0);
+  }
+
+  RAND_CIBITV(v2);
+  v1.insert(v1.begin() + pos, v2.begin(), v2.end());
+  ASSERT_EQ(v1.size(), size + v2.size());
+  for (unsigned i = 0; i < v1.size(); ++i) {
+    if (i < pos)
+      ASSERT_EQ(v1[i].get_val(), 0);
+    else if ((i >= pos) && (i < (pos + v2.size())))
+      ASSERT_EQ(v1[i].get_val(),v2[i-pos].get_val());
+    else if (i >= (pos + v2.size()))
+      ASSERT_EQ(v1[i].get_val(), 0);
+  }
+}

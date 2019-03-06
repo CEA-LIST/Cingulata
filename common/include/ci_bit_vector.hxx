@@ -337,6 +337,50 @@ namespace cingulata
     CiBitVector&  operator  >>= (const int pos);
 
     /**
+     *  @brief    First elment of a vector
+     *  @return   reference to the first CiBit of a CiBitVector
+     */
+    std::vector<CiBit>::iterator begin(void);
+
+    /**
+     *  @brief    Last element of a vector
+     *  @return   reference to the last CiBit of a CiBitVector
+     */
+    std::vector<CiBit>::iterator end(void);
+
+    /**
+     * @brief      Insert a CiBit into a CiBitVector
+     *
+     * @param[in]  pos    where to insert the CiBit
+     * @param[in]  p_bit  bit object to copy
+     *
+     * @return     nothing
+     */
+    void insert(std::vector<CiBit>::iterator pos, const CiBit& p_bit = CiBit::zero);
+
+    /**
+     * @brief      Insert n CiBit objects into a CiBitVector
+     *
+     * @param[in]  pos    where to insert the CiBit
+     * @param[in]  n      number of CiBit objects to be added
+     * @param[in]  p_bit  bit object to copy
+     *
+     * @return     nothing
+     */
+    void insert(std::vector<CiBit>::iterator pos, size_t n, const CiBit& p_bit);
+
+    /**
+     * @brief      Insert n CiBit from a CiBitVector into a CiBitVector
+     *
+     * @param[in]  pos    where to insert the CiBit
+     * @param[in]  first  first CiBit object from the input vector
+     * @param[in]  last   last CiBit object from the input vector
+     *
+     * @return     nothing
+     */
+    void insert(std::vector<CiBit>::iterator pos, std::vector<CiBit>::iterator first, std::vector<CiBit>::iterator last);
+
+    /**
      * @}
      */
 
