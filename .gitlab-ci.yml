@@ -1,0 +1,52 @@
+image: ubuntu:18.04
+
+stages:
+  - build
+  - test
+
+build:unittests:
+  variables:
+    GIT_SUBMODULE_STRATEGY: normal
+  stage: build
+  before_script:
+    - apt-get update -qq && apt-get -qq -y install g++ cmake
+  script:
+    - mkdir -p build
+    - cd build
+    - cmake -DENABLE_UNITTEST=on -DBUILD_DOC=off ..
+    - make unittests
+  artifacts:
+    name: unittest_bin
+    paths:
+      - build/common/test/unittests
+    expire_in: 2 days
+
+test:single_exec:
+  variables:
+    GIT_STRATEGY: none
+  stage: test
+  script:
+    - ./build/common/test/unittests --gtest_output="xml:report.xml"
+  dependencies:
+    - build:unittests
+  artifacts:
+    reports:
+      junit: report.xml
+    when: on_success
+    expire_in: 2 weeks
+
+test:many_exec:
+  variables:
+    GIT_STRATEGY: none
+  stage: test
+  script:
+    - ./build/common/test/unittests --gtest_repeat=1000 --gtest_shuffle --gtest_random_seed=42 > unittest.log
+    - tail -n 20 unittest.log
+  dependencies:
+    - build:unittests
+  artifacts:
+    name: unittest_log
+    paths:
+      - unittest.log
+    when: on_failure
+    expire_in: 2 weeks
