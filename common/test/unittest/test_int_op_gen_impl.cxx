@@ -167,6 +167,15 @@ BinaryParam binary_params[] =
     [](const unsigned a, const unsigned b) -> unsigned {
       return a + b;
     }
+  },
+  {
+    "WallaceMultiplier",
+    [](const CiBitVector& a, const CiBitVector& b) -> CiBitVector {
+      return WallaceMultiplier()(a,b);
+    },
+    [](const unsigned a, const unsigned b) -> unsigned {
+      return a * b;
+    }
   }
 };
 

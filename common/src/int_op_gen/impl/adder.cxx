@@ -22,7 +22,7 @@ CiBitVector RippleCarryAdder::oper(const CiBitVector& lhs, const CiBitVector& rh
   return res;
 }
 
-namespace 
+namespace
 {
   void pre_computation( std::vector<CiBitVector>& P,  std::vector<CiBitVector>& G, const CiBitVector& lhs, const CiBitVector& rhs) {
     const int size = lhs.size();
@@ -47,8 +47,8 @@ namespace
   CiBitVector post_computation( std::vector<CiBitVector>& P, std::vector<CiBitVector>& G, int size) {
     CiBitVector res(size);
     res[0] = P[0][0];
-    for ( int i = 1; i < size;  ++i) 
-      res[i] = P[i][i] ^ G[i-1][0];  
+    for ( int i = 1; i < size;  ++i)
+      res[i] = P[i][i] ^ G[i-1][0];
     return res;
   }
 }
@@ -69,7 +69,7 @@ CiBitVector SklanskyAdder::oper(const CiBitVector& lhs, const CiBitVector& rhs) 
   for (int step = 1; step <= num_steps; ++step ) {
     int row = 0;
     int col = 0;
-    /* shift row */ 
+    /* shift row */
     row +=  (int) pow(2,step-1);
     /*   do while the size of enter is not reach*/
     while (row < size) {
@@ -77,7 +77,7 @@ CiBitVector SklanskyAdder::oper(const CiBitVector& lhs, const CiBitVector& rhs) 
       col = (int) floor(row/pow(2,step)) * (int) pow(2,step);
       for (int i = 0; i <(int) pow(2,step-1); ++i) {
         evaluate_G(P, G, row, col, step);
-        if (col != 0) 
+        if (col != 0)
           evaluate_P(P, G, row, col, step);
         /* increment row value */
         row += 1;

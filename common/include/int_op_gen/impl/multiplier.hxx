@@ -1,6 +1,7 @@
 #ifndef MULTIPLIER_OPER
 #define MULTIPLIER_OPER
 
+#include <cassert>
 #include <int_op_gen/impl/operator.hxx>
 
 namespace cingulata
@@ -9,25 +10,21 @@ namespace cingulata
   {
 
     /**
-     * @brief      Multiplier implementations
+     * @brief      Wallace Multiplier implementations
      */
-    class Multiplier : public BinaryOper {
+    class WallaceMultiplier : public BinaryOper {
       /**
-       * @brief      Implementation
+       * @brief      Wallace multiplier
+       *
+       * @details    lhs and rhs have the same length in bits
        *
        * @param[in]  lhs   The left hand side
        * @param[in]  rhs   The right hand side
        *
-       * @return     Product between inputs
+       * @return     Product between inputs, having the same bit length as inputs
        */
-      CiBitVector oper(const CiBitVector& lhs, const CiBitVector& rhs) const override {
-        const int size = lhs.size();
-        CiBitVector res(size);
-
-        /** @todo implement */
-        return res;
-      }
-    };
+      CiBitVector oper(const CiBitVector& lhs, const CiBitVector& rhs) const override;
+   };
   }
 }
 
