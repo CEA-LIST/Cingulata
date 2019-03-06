@@ -41,6 +41,7 @@ test:many_exec:
   stage: test
   script:
     - ./build/common/test/unittests --gtest_repeat=1000 --gtest_shuffle --gtest_random_seed=42 > unittest.log
+    - tail -n 20 unittest.log
   dependencies:
     - build:unittests
   artifacts:

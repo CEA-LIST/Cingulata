@@ -13,22 +13,23 @@ using namespace cingulata;
   ASSERT_EQ(v_size, (v).size());      \
 }                                     \
 
-#define RAND_CIBITV(v)                               \
-{                                                    \
-  unsigned int bv_size = rand() % 128;               \
-  vector<CiBit> bv;                                  \
-  RAND_BITV(bv, bv_size);                            \
-  (v) = CiBitVector(bv);                             \
-  ASSERT_EQ((v).size(), bv_size);                    \
-}                                                    \
+#define RAND_CIBITV(v)                                \
+{                                                     \
+  unsigned int bv_size = rand() % 128;                \
+  vector<CiBit> bv;                                   \
+  RAND_BITV(bv, bv_size);                             \
+  (v) = CiBitVector(bv);                              \
+  ASSERT_EQ((v).size(), bv_size);                     \
+}                                                     \
 
-#define RAND_CIBITV_LEN(v, l)                        \
-{                                                    \
-  vector<CiBit> bv;                                  \
-  RAND_BITV(bv, (l));                                \
-  (v) = CiBitVector(bv);                             \
-  ASSERT_EQ((v).size(), (l));                        \
-}                                                    \
+#define RAND_CIBITV_LEN(v, l)                         \
+{                                                     \
+  auto ll = (l);                                      \
+  vector<CiBit> bv;                                   \
+  RAND_BITV(bv, ll);                                  \
+  (v) = CiBitVector(bv);                              \
+  ASSERT_EQ((v).size(), ll);                          \
+}                                                     \
 
 #define ASSERT_EQ_CIBITV(v1, v2)                      \
 {                                                     \
@@ -113,7 +114,7 @@ TEST(CiBitVector, assign_from_ci_bit_vector) {
 
 TEST(CiBitVector, resize) {
   CiBitVector v1;
-  RAND_CIBITV(v1);
+  RAND_CIBITV_LEN(v1, rand()%128+1);
   CiBitVector v2(v1);
   unsigned int delta = rand() % v2.size();
 
@@ -143,7 +144,7 @@ TEST(CiBitVector, at) {
 
 TEST(CiBitVector, slice) {
   CiBitVector v1;
-  RAND_CIBITV(v1);
+  RAND_CIBITV_LEN(v1, rand()%128+2);
 
   unsigned int idx1 = rand() % ((v1.size())/2);
   unsigned int idx2 = 2 * idx1;
@@ -223,7 +224,7 @@ TEST(CiBitVector, not_operand) {
 
 TEST(CiBitVector, op_and) {
   CiBitVector v1;
-  RAND_CIBITV(v1);
+  RAND_CIBITV_LEN(v1,rand()%128+1);
   CiBitVector v2 = v1;
   CiBitVector v3;
   unsigned int v3_size = rand() % v2.size();
@@ -255,7 +256,7 @@ TEST(CiBitVector, op_and) {
 
 TEST(CiBitVector, op_nand) {
   CiBitVector v1;
-  RAND_CIBITV(v1);
+  RAND_CIBITV_LEN(v1, rand()%128+1);
   CiBitVector v2 = v1;
   CiBitVector v3;
   unsigned int v3_size = rand() % v2.size();
@@ -287,7 +288,7 @@ TEST(CiBitVector, op_nand) {
 
 TEST(CiBitVector, op_or) {
   CiBitVector v1;
-  RAND_CIBITV(v1);
+  RAND_CIBITV_LEN(v1, rand()%128+1);
   CiBitVector v2 = v1;
   CiBitVector v3;
   unsigned int v3_size = rand() % v2.size();
@@ -319,7 +320,7 @@ TEST(CiBitVector, op_or) {
 
 TEST(CiBitVector, op_nor) {
   CiBitVector v1;
-  RAND_CIBITV(v1);
+  RAND_CIBITV_LEN(v1, rand()%128+1);
   CiBitVector v2 = v1;
   CiBitVector v3;
   unsigned int v3_size = rand() % v2.size();
@@ -351,7 +352,7 @@ TEST(CiBitVector, op_nor) {
 
 TEST(CiBitVector, op_xor) {
   CiBitVector v1;
-  RAND_CIBITV(v1);
+  RAND_CIBITV_LEN(v1, rand()%128+1);
   CiBitVector v2 = v1;
   CiBitVector v3;
   unsigned int v3_size = rand() % v2.size();
@@ -383,7 +384,7 @@ TEST(CiBitVector, op_xor) {
 
 TEST(CiBitVector, op_xnor) {
   CiBitVector v1;
-  RAND_CIBITV(v1);
+  RAND_CIBITV_LEN(v1, rand()%128+1);
   CiBitVector v2 = v1;
   CiBitVector v3;
   unsigned int v3_size = rand() % v2.size();
@@ -415,7 +416,7 @@ TEST(CiBitVector, op_xnor) {
 
 TEST(CiBitVector, op_andny) {
   CiBitVector v1;
-  RAND_CIBITV(v1);
+  RAND_CIBITV_LEN(v1, rand()%128+1);
   CiBitVector v2 = v1;
   CiBitVector v3;
   unsigned int v3_size = rand() % v2.size();
@@ -450,7 +451,7 @@ TEST(CiBitVector, op_andny) {
 
 TEST(CiBitVector, op_andyn) {
   CiBitVector v1;
-  RAND_CIBITV(v1);
+  RAND_CIBITV_LEN(v1, rand()%128+1);
   CiBitVector v2 = v1;
   CiBitVector v3;
   unsigned int v3_size = rand() % v2.size();
@@ -485,7 +486,7 @@ TEST(CiBitVector, op_andyn) {
 
 TEST(CiBitVector, op_orny) {
   CiBitVector v1;
-  RAND_CIBITV(v1);
+  RAND_CIBITV_LEN(v1, rand()%128+1);
   CiBitVector v2 = v1;
   CiBitVector v3;
   unsigned int v3_size = rand() % v2.size();
@@ -520,7 +521,7 @@ TEST(CiBitVector, op_orny) {
 
 TEST(CiBitVector, op_oryn) {
   CiBitVector v1;
-  RAND_CIBITV(v1);
+  RAND_CIBITV_LEN(v1, rand()%128+1);
   CiBitVector v2 = v1;
   CiBitVector v3;
   unsigned int v3_size = rand() % v2.size();
@@ -555,7 +556,7 @@ TEST(CiBitVector, op_oryn) {
 
 TEST(CiBitVector, rol) {
   CiBitVector v1;
-  RAND_CIBITV(v1);
+  RAND_CIBITV_LEN(v1, rand()%128+1);
   CiBitVector v2 = v1;
   int delta = rand() % v1.size();
 
@@ -573,7 +574,7 @@ TEST(CiBitVector, rol) {
 
 TEST(CiBitVector, ror) {
   CiBitVector v1;
-  RAND_CIBITV(v1);
+  RAND_CIBITV_LEN(v1, rand()%128+1);
   CiBitVector v2 = v1;
   int delta = rand() % v1.size();
 
@@ -591,7 +592,7 @@ TEST(CiBitVector, ror) {
 
 TEST(CiBitVector, shl) {
   CiBitVector v1;
-  RAND_CIBITV(v1);
+  RAND_CIBITV_LEN(v1, rand()%128+1);
   CiBitVector v2 = v1;
   int delta = rand() % v1.size();
 
@@ -624,7 +625,7 @@ TEST(CiBitVector, shl) {
 
 TEST(CiBitVector, shr) {
   CiBitVector v1;
-  RAND_CIBITV(v1);
+  RAND_CIBITV_LEN(v1, rand()%128+1);
   CiBitVector v2 = v1;
   int delta = rand() % v1.size();
 
@@ -657,7 +658,7 @@ TEST(CiBitVector, shr) {
 
 TEST(CiBitVector, left_shift) {
   CiBitVector v1;
-  RAND_CIBITV(v1);
+  RAND_CIBITV_LEN(v1, rand()%128+1);
   CiBitVector v2 = v1;
   int delta = rand() % v1.size();
 
@@ -681,7 +682,7 @@ TEST(CiBitVector, left_shift) {
 
 TEST(CiBitVector, right_shift) {
   CiBitVector v1;
-  RAND_CIBITV(v1);
+  RAND_CIBITV_LEN(v1, rand()%128+1);
   CiBitVector v2 = v1;
   int delta = rand() % v1.size();
 
