@@ -78,7 +78,6 @@ TEST(IntOpGen, Mux) {
   ASSERT_EQ_BV_INT(out, vals_m_int[cond_int]);
 }
 
-
 /*-------------------------------------------------------------------------*/
 /**
  * Multiple implementations operators
@@ -284,3 +283,78 @@ INSTANTIATE_TEST_CASE_P(
   ::testing::ValuesIn(comp_params),
   get_oper_name<ComparatorParam>
 );
+
+
+/*-------------------------------------------------------------------------*/
+/**
+ * Unary operator tests
+ */
+/*-------------------------------------------------------------------------*/
+
+using UnaryParam =
+tuple<
+  string,
+  function<UnaryOper::signature>,
+  function<unsigned (const unsigned)>
+>;
+
+class Unary : public ::testing::TestWithParam<UnaryParam> {
+public:
+  string name;
+  function<UnaryOper::signature> op_ct;
+  function<unsigned (const unsigned)> op_pt;
+
+  virtual void SetUp() {
+    auto tmp = GetParam();
+    name = get<0>(tmp);
+    op_ct = get<1>(tmp);
+    op_pt = get<2>(tmp);
+  }
+};
+
+#define TEST_UNARY_OP(a_int, a_bv) \
+{                                   \
+  auto r_int = op_pt(a_int);        \
+  auto r_bv = op_ct(a_bv);          \
+  /* inputs did not changed */      \
+  ASSERT_EQ_BV_INT(a_bv, a_int);    \
+  /* output is valid */             \
+  ASSERT_EQ_BV_INT(r_bv, r_int);    \
+}
+
+TEST_P(Unary, non_zero_inp) {
+  const unsigned n = rand() % 32 + 1;
+
+  GEN_RAND_BV(a, n, rand());
+
+  TEST_UNARY_OP(a_int, a_bv);
+}
+
+TEST_P(Unary, zero_inp) {
+  const unsigned n = rand() % 32 + 1;
+
+  GEN_RAND_BV(a, n, 0);
+
+  TEST_UNARY_OP(a_int, a_bv);
+}
+
+UnaryParam unary_params[] =
+{
+  {
+    "Negate",
+    [](const CiBitVector& a) -> CiBitVector {
+      return Negate(RippleCarryAdder())(a);
+    },
+    [](const unsigned a) -> unsigned {
+      return -a;
+    }
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(
+  IntOpGen,
+  Unary,
+  ::testing::ValuesIn(unary_params),
+  get_oper_name<UnaryParam>
+);
+
