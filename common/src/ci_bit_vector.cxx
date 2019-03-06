@@ -243,26 +243,6 @@ unsigned CiBitVector::idx_clip(int idx) const {
   return idx;
 }
 
-vector<CiBit>::iterator CiBitVector::begin(void) {
-  return m_vec.begin();
-}
-
-vector<CiBit>::iterator CiBitVector::end(void) {
-  return m_vec.end();
-}
-
-void CiBitVector::insert(vector<CiBit>::iterator pos, const CiBit& p_bit) {
-  m_vec.insert(pos, p_bit);
-}
-
-void CiBitVector::insert(vector<CiBit>::iterator pos, size_t n, const CiBit& p_bit) {
-  m_vec.insert(pos, n, p_bit);
-}
-
-void CiBitVector::insert(vector<CiBit>::iterator pos, vector<CiBit>::iterator first, vector<CiBit>::iterator last) {
-  m_vec.insert(pos, first, last);
-}
-
 CiBitVector cingulata::operator~(CiBitVector lhs) {
   return lhs.op_not();
 }
@@ -324,3 +304,4 @@ ostream& cingulata::operator<<(ostream& out, CiBitVector& val) {
   val.write();
   return out;
 }
+
