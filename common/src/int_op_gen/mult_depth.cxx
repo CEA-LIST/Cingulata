@@ -5,9 +5,8 @@ using namespace cingulata;
 
 IntOpGenDepth::IntOpGenDepth()
 :
-  m_neg {
-    m_add
-  },
+  m_neg { m_add },
+  m_mul { m_add },
   m_lower { m_equal }
 {
 };
