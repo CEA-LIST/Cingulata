@@ -35,24 +35,23 @@ namespace
 }
 
 CiBitVector WallaceMultiplier::oper(const CiBitVector& lhs, const CiBitVector& rhs) const {
-  const unsigned out_size = lhs.size();
-  std::vector<CiBitVector> tree;
-
-  for (unsigned int i = 0; i < out_size; ++i) {
-    if (lhs[i].get_val() == 0) {
-      tree.push_back(CiBitVector(out_size, CiBit::zero));
-    }
-    else {
-      tree.push_back(CiBitVector(rhs >> i));
-    }
+  if (lhs.size() == 1) {
+    CiBitVector res = lhs & rhs;
+    return res;
   }
+  else {
+    std::vector<CiBitVector> tree;
 
-  while (tree.size() >= 3) {
-    tree = reduce(tree);
+    for (unsigned int i = 0; i < lhs.size(); ++i) {
+        tree.push_back((rhs >> i) & lhs[i]);
+    }
+
+    while (tree.size() >= 3) {
+      tree = reduce(tree);
+    }
+
+    CiBitVector res = adder(tree[0], tree[1]);
+
+    return res;
   }
-
-  BinaryOper *adder = new SklanskyAdder();
-  CiBitVector res = (*adder)(tree[0], tree[1]);
-
-  return res;
 }

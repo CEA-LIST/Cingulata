@@ -1,8 +1,10 @@
 #ifndef MULTIPLIER_OPER
 #define MULTIPLIER_OPER
 
-#include <cassert>
 #include <int_op_gen/impl/operator.hxx>
+
+#include <functional>
+#include <cassert>
 
 namespace cingulata
 {
@@ -13,6 +15,10 @@ namespace cingulata
      * @brief      Wallace Multiplier implementations
      */
     class WallaceMultiplier : public BinaryOper {
+      public:
+        WallaceMultiplier(const std::function<BinaryOper::signature>& adder_p) : adder(adder_p) {}
+
+      private:
       /**
        * @brief      Wallace multiplier
        *
@@ -24,6 +30,8 @@ namespace cingulata
        * @return     Product between inputs, having the same bit length as inputs
        */
       CiBitVector oper(const CiBitVector& lhs, const CiBitVector& rhs) const override;
+
+      std::function<BinaryOper::signature> adder;
    };
   }
 }

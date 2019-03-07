@@ -4,7 +4,8 @@ using namespace cingulata;
 
 IntOpGenSize::IntOpGenSize()
 :
-  m_neg{m_add}
+  m_neg{m_add},
+  m_mul{m_add}
 {}
 
 CiBitVector IntOpGenSize::add(const CiBitVector& lhs, const CiBitVector& rhs) const
