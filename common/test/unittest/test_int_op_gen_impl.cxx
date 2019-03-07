@@ -171,7 +171,7 @@ BinaryParam binary_params[] =
   {
     "WallaceMultiplier",
     [](const CiBitVector& a, const CiBitVector& b) -> CiBitVector {
-      return WallaceMultiplier()(a,b);
+      return WallaceMultiplier(SklanskyAdder())(a,b);
     },
     [](const unsigned a, const unsigned b) -> unsigned {
       return a * b;
