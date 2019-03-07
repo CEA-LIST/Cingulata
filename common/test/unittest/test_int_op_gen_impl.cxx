@@ -27,7 +27,8 @@ T to_binary(unsigned val, int n) {
   auto pt_vec = to_binary<vector<int>>((pt_int),  \
     ct_vec.size());                               \
   for (int i = 0; i < ct_vec.size(); ++i) {       \
-    ASSERT_EQ(ct_vec[i].get_val(), pt_vec[i]);    \
+    ASSERT_EQ(ct_vec[i].get_val(), pt_vec[i]) <<  \
+      ct_vec.size() << " " << pt_int << " " << i; \
   }                                               \
 }
 
@@ -42,7 +43,7 @@ TEST(IntOpGen, Decoder) {
   ASSERT_EQ_BV_INT(inp_bv, inp_int);
 
   /* output is valid */
-  ASSERT_EQ(out.size(), (1<<n));
+  ASSERT_EQ(out.size(), (1<<n)) << n;
   for (unsigned i = 0; i < out.size(); ++i) {
     if (i == inp_int)
       ASSERT_TRUE(out[i].get_val());
@@ -128,7 +129,7 @@ public:
   ASSERT_EQ_BV_INT(r_bv, r_int);                              \
 }
 
-TEST_P(Binary, non_zero_inps) {
+TEST_P(Binary, random_inps) {
   const unsigned n = rand() % 32 + 1;
 
   GEN_RAND_BV(a, n, rand());
@@ -138,11 +139,21 @@ TEST_P(Binary, non_zero_inps) {
   TEST_BINARY_OP(b_int, b_bv, a_int, a_bv);
 }
 
-TEST_P(Binary, one_zero_inp) {
+TEST_P(Binary, zero_and_random_inp) {
   const unsigned n = rand() % 32 + 1;
 
   GEN_RAND_BV(a, n, rand());
   GEN_RAND_BV(b, n, 0);
+
+  TEST_BINARY_OP(a_int, a_bv, b_int, b_bv);
+  TEST_BINARY_OP(b_int, b_bv, a_int, a_bv);
+}
+
+TEST_P(Binary, 1bit_random_inps) {
+  const unsigned n = 1;
+
+  GEN_RAND_BV(a, n, rand());
+  GEN_RAND_BV(b, n, rand());
 
   TEST_BINARY_OP(a_int, a_bv, b_int, b_bv);
   TEST_BINARY_OP(b_int, b_bv, a_int, a_bv);
@@ -226,7 +237,7 @@ public:
   ASSERT_EQ(r_ct.get_val(), r_pt);              \
 }
 
-TEST_P(Comparator, non_zero_inps) {
+TEST_P(Comparator, random_inps) {
   const unsigned n = rand() % 32 + 1;
 
   GEN_RAND_BV(a, n, rand());
@@ -236,11 +247,21 @@ TEST_P(Comparator, non_zero_inps) {
   TEST_COMP_OP(b_int, b_bv, a_int, a_bv);
 }
 
-TEST_P(Comparator, one_zero_inp) {
+TEST_P(Comparator, zero_and_random_inp) {
   const unsigned n = rand() % 32 + 1;
 
   GEN_RAND_BV(a, n, rand());
   GEN_RAND_BV(b, n, 0);
+
+  TEST_COMP_OP(a_int, a_bv, b_int, b_bv);
+  TEST_COMP_OP(b_int, b_bv, a_int, a_bv);
+}
+
+TEST_P(Comparator, 1bit_random_inps) {
+  const unsigned n = 1;
+
+  GEN_RAND_BV(a, n, rand());
+  GEN_RAND_BV(b, n, rand());
 
   TEST_COMP_OP(a_int, a_bv, b_int, b_bv);
   TEST_COMP_OP(b_int, b_bv, a_int, a_bv);
@@ -331,7 +352,7 @@ public:
   ASSERT_EQ_BV_INT(r_bv, r_int);    \
 }
 
-TEST_P(Unary, non_zero_inp) {
+TEST_P(Unary, random_inp) {
   const unsigned n = rand() % 32 + 1;
 
   GEN_RAND_BV(a, n, rand());
@@ -343,6 +364,14 @@ TEST_P(Unary, zero_inp) {
   const unsigned n = rand() % 32 + 1;
 
   GEN_RAND_BV(a, n, 0);
+
+  TEST_UNARY_OP(a_int, a_bv);
+}
+
+TEST_P(Unary, 1bit_random_inp) {
+  const unsigned n = 1;
+
+  GEN_RAND_BV(a, n, rand());
 
   TEST_UNARY_OP(a_int, a_bv);
 }

@@ -29,6 +29,9 @@ namespace
     CiBit test();
     for (int i = 0; i < size; ++i) {
       P[i][i] = lhs[i] ^ rhs[i];
+    }
+    /* G[size-1][size-1] will be unused */
+    for (int i = 0; i < size-1; ++i){
       G[i][i] = lhs[i] & rhs[i];
     }
   }
@@ -60,7 +63,9 @@ CiBitVector SklanskyAdder::oper(const CiBitVector& lhs, const CiBitVector& rhs) 
   int size = lhs.size();
   std::vector<CiBitVector> P(size, CiBitVector(size));
   std::vector<CiBitVector> G(size, CiBitVector(size));
-  int num_steps = (int) floor(log2((double) size )) + 1;
+  int num_steps = 0;
+  if (size > 1)
+    num_steps = (int) floor(log2((double) size - 1 )) + 1;
 
   /* compute initial G and P*/
   pre_computation(P, G, lhs, rhs);
@@ -72,7 +77,7 @@ CiBitVector SklanskyAdder::oper(const CiBitVector& lhs, const CiBitVector& rhs) 
     /* shift row */
     row +=  (int) pow(2,step-1);
     /*   do while the size of enter is not reach*/
-    while (row < size) {
+    while (row < size -1) {
       /* define column value */
       col = (int) floor(row/pow(2,step)) * (int) pow(2,step);
       for (int i = 0; i <(int) pow(2,step-1); ++i) {
@@ -82,7 +87,7 @@ CiBitVector SklanskyAdder::oper(const CiBitVector& lhs, const CiBitVector& rhs) 
         /* increment row value */
         row += 1;
         /* case size is not multiple of 2 */
-        if (row == size)
+        if (row == size-1)
           break;
       }
       row +=  (int) pow(2,step-1);
