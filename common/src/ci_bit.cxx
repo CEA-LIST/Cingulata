@@ -64,6 +64,7 @@ CiBit& CiBit::clr_name() {
 }
 
 CiBit::bit_plain_t CiBit::get_val() const {
+  assert(is_plain());
   return pt_val;
 }
 
