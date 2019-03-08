@@ -17,8 +17,11 @@ namespace
       res.push_back(sum);
 
       CiBitVector carry(tree[3*i].size(), CiBit::zero);
-      for (unsigned int j = 0; j < (tree[3*i].size() - 1); ++j) {
-        carry[j+1] = ((tree[3*i][j] ^ tree[3*i+2][j]) & (tree[3*i+1][j] ^ tree[3*i+2][j])) ^ tree[3*i+2][j];
+      for (unsigned int j = 1; j < (tree[3*i].size() - 1); ++j) {
+        if (j == 1)
+          carry[j+1] = tree[3*i][j] & tree[3*i+1][j];
+        else
+          carry[j+1] = ((tree[3*i][j] ^ tree[3*i+2][j]) & (tree[3*i+1][j] ^ tree[3*i+2][j])) ^ tree[3*i+2][j];
       }
       res.push_back(carry);
     }
