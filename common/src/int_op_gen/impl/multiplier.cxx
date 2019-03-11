@@ -1,60 +1,56 @@
 #include <int_op_gen/impl/adder.hxx>
 #include <int_op_gen/impl/multiplier.hxx>
 
+#include <queue>
+#include <tuple>
+
+using namespace std;
 using namespace cingulata;
 using namespace cingulata::int_ops;
 
-namespace
-{
-  std::vector<CiBitVector> reduce(const std::vector<CiBitVector>& tree) {
-    const unsigned iter = (unsigned int)(tree.size() / 3);
-    const unsigned mod = tree.size() % 3;
-    std::vector<CiBitVector> res;
-
-    for (unsigned int i = 0; i < iter; ++i) {
-      auto sum = tree[3*i];
-      sum ^= (tree[3*i+1] ^ tree[3*i+2]);
-      res.push_back(sum);
-
-      CiBitVector carry(tree[3*i].size(), CiBit::zero);
-      for (unsigned int j = 1; j < (tree[3*i].size() - 1); ++j) {
-        if (j == 1)
-          carry[j+1] = tree[3*i][j] & tree[3*i+1][j];
-        else
-          carry[j+1] = ((tree[3*i][j] ^ tree[3*i+2][j]) & (tree[3*i+1][j] ^ tree[3*i+2][j])) ^ tree[3*i+2][j];
-      }
-      res.push_back(carry);
-    }
-
-    if (mod != 0) {
-      res.insert(res.end(), tree.end()-mod, tree.end());
-    }
-
-    const unsigned res_size = 2 * iter + mod;
-    assert(res.size() == res_size);
-
-    return res;
-  }
-}
-
-CiBitVector WallaceMultiplier::oper(const CiBitVector& lhs, const CiBitVector& rhs) const {
+CiBitVector WallaceMultiplier::oper(const CiBitVector &lhs,
+                                    const CiBitVector &rhs) const {
   if (lhs.size() == 1) {
     CiBitVector res = lhs & rhs;
     return res;
-  }
-  else {
-    std::vector<CiBitVector> tree;
+  } else {
+    using T = tuple<int, CiBitVector>;
+    priority_queue<T, vector<T>, function<bool(const T &, const T &)>>
+    elems_sorted_by_depth(
+        [](const T &a, const T &b) -> bool { return get<0>(a) > get<0>(b); });
 
-    for (unsigned int i = 0; i < lhs.size(); ++i) {
-        tree.push_back((rhs >> i) & lhs[i]);
+    for (unsigned int i = 0; i < lhs.size(); ++i)
+      elems_sorted_by_depth.push(forward_as_tuple(1, (rhs >> i) & lhs[i]));
+
+    while (elems_sorted_by_depth.size() > 2) {
+      int da, db, dc;
+      CiBitVector a, b, c;
+
+      tie(da, a) = elems_sorted_by_depth.top();
+      elems_sorted_by_depth.pop();
+      tie(db, b) = elems_sorted_by_depth.top();
+      elems_sorted_by_depth.pop();
+      tie(dc, c) = elems_sorted_by_depth.top();
+      elems_sorted_by_depth.pop();
+
+      CiBitVector tmp1 = a ^ b ^ c;
+      a >>= 1;
+      b >>= 1;
+      c >>= 1;
+      CiBitVector tmp2 = ((a ^ c) & (b ^ c)) ^ c;
+
+      elems_sorted_by_depth.push(forward_as_tuple(dc, tmp1));
+      elems_sorted_by_depth.push(forward_as_tuple(dc + 1, tmp2));
     }
 
-    while (tree.size() >= 3) {
-      tree = reduce(tree);
-    }
+    int da, db;
+    CiBitVector a, b;
 
-    CiBitVector res = adder(tree[0], tree[1]);
+    tie(da, a) = elems_sorted_by_depth.top();
+    elems_sorted_by_depth.pop();
+    tie(db, b) = elems_sorted_by_depth.top();
+    elems_sorted_by_depth.pop();
 
-    return res;
+    return adder(a, b);
   }
 }
