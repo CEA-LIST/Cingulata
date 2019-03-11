@@ -4,8 +4,7 @@
 using namespace cingulata;
 
 int main() {
-  IBitExec* be = new BitTracker();
-  CiBit::set_bit_exec(be);
+  CiBit::set_bit_exec(new BitTracker());
 
   CiBit a;
   a.encrypt();
@@ -16,5 +15,5 @@ int main() {
 
   d.write();
 
-  static_cast<BitTracker*>(be)->export_blif(std::cout, "lala");
+  CiBit::get_bit_exec<BitTracker>()->export_blif(std::cout, "lala");
 }
