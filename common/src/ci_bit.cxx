@@ -1,21 +1,11 @@
 #include "ci_bit.hxx"
+#include "ci_context.hxx"
 
 #include <cassert>
 
 using namespace std;
 using namespace cingulata;
 
-
-IBitExec *const CiBit::bit_exec() {
-  assert(m_bit_exec);
-  return m_bit_exec;
-}
-
-void CiBit::set_bit_exec(IBitExec *const p_bit_exec) {
-  m_bit_exec = p_bit_exec;
-}
-
-IBitExec* CiBit::m_bit_exec = nullptr;
 uint CiBit::unique_name_cnt = 2; // start at 2 for legacy
 
 const CiBit CiBit::zero(0);
@@ -75,7 +65,7 @@ CiBit& CiBit::set_val(const bit_plain_t p_pt_val) {
 }
 
 CiBit& CiBit::read() {
-  obj_hdl = m_bit_exec->read(get_name("i_"));
+  obj_hdl = CiContext::get_bit_exec()->read(get_name("i_"));
   return *this;
 }
 
@@ -85,8 +75,8 @@ CiBit& CiBit::read(const std::string& p_name) {
 
 CiBit& CiBit::write() {
   if (is_plain())
-    obj_hdl = m_bit_exec->encode(get_val());
-  m_bit_exec->write(obj_hdl, get_name("o_"));
+    obj_hdl = CiContext::get_bit_exec()->encode(get_val());
+  CiContext::get_bit_exec()->write(obj_hdl, get_name("o_"));
   return *this;
 }
 
@@ -95,13 +85,13 @@ CiBit& CiBit::write(const std::string& p_name) {
 }
 
 CiBit& CiBit::encrypt() {
-  obj_hdl = m_bit_exec->encrypt(get_val());
+  obj_hdl = CiContext::get_bit_exec()->encrypt(get_val());
   return *this;
 }
 
 CiBit::bit_plain_t CiBit::decrypt() {
   if (not is_plain())
-    set_val(m_bit_exec->decrypt(obj_hdl));
+    set_val(CiContext::get_bit_exec()->decrypt(obj_hdl));
   return get_val();
 }
 
@@ -113,7 +103,7 @@ CiBit& CiBit::op_not() {
   if (is_plain())
     pt_val = negate(pt_val);
   else
-    obj_hdl = m_bit_exec->op_not(obj_hdl);
+    obj_hdl = CiContext::get_bit_exec()->op_not(obj_hdl);
   return *this;
 }
 
@@ -150,7 +140,7 @@ CiBit& CiBit::NAME(const CiBit& rhs) { \
     SAME_HDL_CODE;\
   } \
   else { \
-    obj_hdl = m_bit_exec->NAME(obj_hdl, rhs.obj_hdl); \
+    obj_hdl = CiContext::get_bit_exec()->NAME(obj_hdl, rhs.obj_hdl); \
   } \
   return *this; \
 }

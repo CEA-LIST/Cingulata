@@ -5,6 +5,7 @@ set (CMAKE_CXX_STANDARD 11)
 set(SRCS
     bit_exec/interface.cxx
     bit_exec/tracker.cxx
+    ci_context.cxx
     ci_bit.cxx
     ci_int.cxx
     ci_bit_vector.cxx

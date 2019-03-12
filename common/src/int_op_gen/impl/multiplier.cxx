@@ -20,7 +20,7 @@ CiBitVector WallaceMultiplier::oper(const CiBitVector &lhs,
         [](const T &a, const T &b) -> bool { return get<0>(a) > get<0>(b); });
 
     for (unsigned int i = 0; i < lhs.size(); ++i)
-      elems_sorted_by_depth.push(forward_as_tuple(1, (rhs >> i) & lhs[i]));
+      elems_sorted_by_depth.push(forward_as_tuple(1, (rhs >> i) & CiBitVector(rhs.size(), lhs[i])));
 
     while (elems_sorted_by_depth.size() > 2) {
       int da, db, dc;

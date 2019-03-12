@@ -2,6 +2,7 @@
 
 #include <bit_exec/interface.hxx>
 #include <ci_bit.hxx>
+#include <ci_context.hxx>
 
 #include "bit_exec_plain.hxx"
 
@@ -46,7 +47,7 @@ public:
 
   static void SetUpTestCase() {
     be = new BitExecFake();
-    CiBit::set_bit_exec(be);
+    CiContext::set_bit_exec(be);
   }
 
   static void TearDownTestCase() {

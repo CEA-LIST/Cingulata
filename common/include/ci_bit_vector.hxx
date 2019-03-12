@@ -377,17 +377,6 @@ namespace cingulata
    * @}
    */
 
-  /**
-   * @name Bitwise boolean operations with a bit
-   * @{
-   */
-  CiBitVector   operator  ^   (CiBitVector, const CiBit&);
-  CiBitVector   operator  &   (CiBitVector, const CiBit&);
-  CiBitVector   operator  |   (CiBitVector, const CiBit&);
-  /**
-   * @}
-   */
-
   /* Bitwise shift */
   CiBitVector   shl           (CiBitVector lhs, const int pos, const CiBit& p_bit);
   CiBitVector   shr           (CiBitVector lhs, const int pos, const CiBit& p_bit);

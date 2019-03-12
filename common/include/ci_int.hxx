@@ -13,11 +13,12 @@ namespace cingulata
 
   /**
    * @brief      An integer class with @c CiBit elements.
-   * @details    All the operations are performed at bit level. This class
-   *             uses internally a vector of type @c CiBitVector.
+   * @details    All the operations are performed at bit level. This class uses
+   *             internally a vector of type @c CiBitVector.
    *  - The bit-size and signedness cannot be changed once the object has been
-   *    created. Utility functions (#resize, #cast, #change_sign etc.) are
-   *    provided to obtain new objects with different bit-sizes and signs.
+   *    created. Utility functions (#resize, #alter, #change_sign, #to_signed
+   *    and #to_unsigned.) are provided to obtain new objects with different
+   *    bit-sizes and signedness.
    *  - Indexing functions (#operator[]) use python style indexing: 0 is the
    *    LSB, 1 the second LSB, etc. and -1 is the MSB, -2 the second MSB, etc.
    *  - Two's complement representations is used for signed integers.
@@ -26,27 +27,30 @@ namespace cingulata
   {
   public:
     /**
-     * @brief      Set bit-wise integer operation generator
-     *
-     * @param      p_int_op_gen  The generator
-     */
-    static void set_int_op_gen(IIntOpGen const* p_int_op_gen);
-
-    /**
-     * @brief      Return the current integer operation generator
-     *
-     * @return     a const pointer to integer operation generator
-     */
-    static IIntOpGen const* int_op_gen();
-
-  private:
-    static IIntOpGen const* m_int_op_gen;
-
-  public:
-    /**
      * Default value for the @c is_signed parameter used during object creation.
      */
     constexpr static bool default_is_signed = false;
+
+    /**
+     * @name Helper encodings of zero
+     * @{
+     */
+    /**
+     * Zero encoding objects of different sizes and signedness. Provided to
+     * facilitate the creation of native type equivalents of @c CiInt objects.
+     */
+    static const CiInt u8;
+    static const CiInt u16;
+    static const CiInt u32;
+    static const CiInt u64;
+
+    static const CiInt s8;
+    static const CiInt s16;
+    static const CiInt s32;
+    static const CiInt s64;
+    /**
+     * @}
+     */
 
     /**
      * @brief      Construct a new object from an integer with given bit count
@@ -84,18 +88,6 @@ namespace cingulata
     );
 
     /**
-     * @brief      Construct a new integer from a list of bits
-     * @note       First bit of vector is the least significant one
-     *
-     * @param      p_bits       vector of bits
-     * @param      p_is_signed  signedness of new object
-     */
-    CiInt(
-      const std::initializer_list<CiBit>& p_bits,
-      const bool p_is_signed = default_is_signed
-    );
-
-    /**
      * @brief      Construct an object from a vector of bits
      * @note       First bit of vector is the least significant one
      *
@@ -129,6 +121,11 @@ namespace cingulata
 
     /**
      * @brief      Assign a @c CiInt object to current object
+     * @details    Copy bits from @c other object to current one. Size and
+     *             signedness of current object **do not change**. If @c other
+     *             object size is larger than the size of the current object
+     *             then only the first #size bits are copied, otherwise @c other
+     *             object is extended to #size bits before copy.
      *
      * @param[in]  other  object to assign from
      *

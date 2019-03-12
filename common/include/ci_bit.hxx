@@ -1,9 +1,8 @@
 #ifndef CI_BIT
 #define CI_BIT
 
-#include <bit_exec/interface.hxx>
-
 #include <string>
+#include <bit_exec/interface.hxx>
 
 namespace cingulata
 {
@@ -15,24 +14,6 @@ namespace cingulata
    */
   class CiBit
   {
-  public:
-    /**
-     * @brief      Get bit executor
-     *
-     * @return     const pointer to current bit executor
-     */
-    static IBitExec *const bit_exec();
-
-    /**
-     * @brief      Set bit executor
-     *
-     * @param[in]  p_bit_exec  bit executor object
-     */
-    static void set_bit_exec(IBitExec *const p_bit_exec);
-
-  private:
-    static IBitExec* m_bit_exec;
-
   public:
     using bit_plain_t = IBitExec::bit_plain_t;
 

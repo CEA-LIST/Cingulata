@@ -1,3 +1,4 @@
+#include <ci_context.hxx>
 #include <ci_int.hxx>
 
 #include <gtest/gtest.h>
@@ -50,22 +51,26 @@ using namespace cingulata;
   }                                               \
 }
 
-#define ASSERT_EQ_CI_CI(a, b)                         \
-{                                                     \
-  auto& aa = (a);                                     \
-  auto& bb = (b);                                     \
-  if ((a).size() > (b).size()) {                      \
-    aa = (b);                                         \
-    bb = (a);                                         \
-  }                                                   \
-  for (int i = 0; i < a.size(); ++i) {                \
-    ASSERT_EQ(aa[i].get_val(), bb[i].get_val());      \
-  }                                                   \
-  for (int i = aa.size(); i < bb.size(); ++i) {       \
-    ASSERT_EQ(aa.sign().get_val(), bb[i].get_val());  \
-  }                                                   \
-}
+#define ASSERT_EQ_CI_CI_S(a, b)                                                \
+  {                                                                            \
+    auto &aa = (a);                                                            \
+    auto &bb = (b);                                                            \
+    for (int i = 0; i < aa.size(); ++i) {                                      \
+      ASSERT_EQ(aa[i].get_val(), bb[i].get_val());                             \
+    }                                                                          \
+    for (int i = aa.size(); i < bb.size(); ++i) {                              \
+      ASSERT_EQ(aa.sign().get_val(), bb[i].get_val());                         \
+    }                                                                          \
+  }
 
+#define ASSERT_EQ_CI_CI(a, b)                                                  \
+  {                                                                            \
+    if ((a).size() < (b).size()) {                                             \
+      ASSERT_EQ_CI_CI_S((a), (b))                                              \
+    } else {                                                                   \
+      ASSERT_EQ_CI_CI_S((b), (a))                                              \
+    }                                                                          \
+  }
 
 TEST(CiInt, constructor_from_ci_bit) {
   CiBit b(rand() % 2);
@@ -133,13 +138,15 @@ TEST(CiInt, alter) {
   unsigned y_size = rand() % 64;
   bool y_is_signed = rand() % 2;
 
-  CiInt y = x.alter(y_size, y_is_signed);
+  CiInt y{x.alter(y_size, y_is_signed)};
 
   ASSERT_CI_PARAM(x, x_size, x_is_signed);
   ASSERT_EQ_CI_L(x, x_val);
 
   ASSERT_CI_PARAM(y, y_size, y_is_signed);
-  ASSERT_EQ_CI_CI(x, y);
+
+  CiInt xx{x.cast(y_size)};
+  ASSERT_EQ_CI_CI(xx, y);
 }
 
 TEST(CiInt, is_signed) {
@@ -159,15 +166,16 @@ TEST(CiInt, resize) {
   GEN_RAND_CI_L(x, rand() % 64, rand() % 2);
 
   unsigned y_size = rand() % 64;
-  CiInt y = x.resize(y_size);
+  CiInt y{x.resize(y_size)};
 
   ASSERT_CI_PARAM(x, x_size, x_is_signed);
   ASSERT_EQ_CI_L(x, x_val);
 
   ASSERT_CI_PARAM(y, y_size, x_is_signed);
-  ASSERT_EQ_CI_CI(x, y);
-}
 
+  CiInt xx{x.cast(y_size)};
+  ASSERT_EQ_CI_CI(xx, y);
+}
 
 TEST(CiInt, lsb) {
   CiInt x(rand(), rand() % 32+1, rand() % 2);
@@ -183,8 +191,8 @@ TEST(CiInt, sign) {
   CiInt x(255, 8, false);
   ASSERT_EQ(x.sign().get_val(), 0);
 
-  x = CiInt(255, 8, true);
-  ASSERT_EQ(x.sign().get_val(), 1);
+  CiInt y = CiInt(255, 8, true);
+  ASSERT_EQ(y.sign().get_val(), 1);
 }
 
 TEST(CiInt, cast) {
@@ -365,12 +373,12 @@ protected:
 
   void SetUp() override {
     m_op_gen = new IntOpGenT();
-    CiInt::set_int_op_gen(m_op_gen);
+    CiContext::set_int_op_gen(m_op_gen);
   }
 
   void TearDown() override {
     delete m_op_gen;
-    CiInt::set_int_op_gen(nullptr);
+    CiContext::set_int_op_gen(nullptr);
   }
 };
 
