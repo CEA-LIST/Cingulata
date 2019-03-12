@@ -1,10 +1,11 @@
 #include <bit_exec/tracker.hxx>
 #include <ci_bit.hxx>
+#include <ci_context.hxx>
 
 using namespace cingulata;
 
 int main() {
-  CiBit::set_bit_exec(new BitTracker());
+  CiContext::set_bit_exec(new BitTracker());
 
   CiBit a;
   a.encrypt();
@@ -15,5 +16,5 @@ int main() {
 
   d.write();
 
-  CiBit::get_bit_exec<BitTracker>()->export_blif(std::cout, "lala");
+  CiContext::get_bit_exec_t<BitTracker>()->export_blif(std::cout, "lala");
 }

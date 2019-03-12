@@ -1,9 +1,8 @@
 #ifndef CI_BIT
 #define CI_BIT
 
-#include <bit_exec_man.hxx>
-
 #include <string>
+#include <bit_exec/interface.hxx>
 
 namespace cingulata
 {
@@ -13,7 +12,7 @@ namespace cingulata
    *             null. Operations between plain-text and cihper-text values are
    *             automatically optimized.
    */
-  class CiBit : public internal::BitExecMan
+  class CiBit
   {
   public:
     using bit_plain_t = IBitExec::bit_plain_t;

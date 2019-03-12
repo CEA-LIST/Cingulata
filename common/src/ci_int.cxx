@@ -1,5 +1,5 @@
 #include <ci_int.hxx>
-#include <int_op_gen/size.hxx>
+#include <ci_context.hxx>
 
 #include <cassert>
 
@@ -12,26 +12,19 @@ using namespace cingulata;
 template<>
 string IoNameVec<CiInt>::m_name_fmt{ "%s_%d" };
 
-void CiInt::set_int_op_gen(IIntOpGen const* p_int_op_gen) {
-  m_int_op_gen = p_int_op_gen;
-}
+const CiInt CiInt::u8   {0,  8, false};
+const CiInt CiInt::u16  {0, 16, false};
+const CiInt CiInt::u32  {0, 32, false};
+const CiInt CiInt::u64  {0, 64, false};
 
-IIntOpGen const* CiInt::int_op_gen() {
-  assert(m_int_op_gen);
-  return m_int_op_gen;
-}
-
-IIntOpGen const* CiInt::m_int_op_gen{ nullptr };
+const CiInt CiInt::s8   {0,  8, true };
+const CiInt CiInt::s16  {0, 16, true };
+const CiInt CiInt::s32  {0, 32, true };
+const CiInt CiInt::s64  {0, 64, true };
 
 CiInt::CiInt(const CiBit& p_bit, const unsigned p_bit_cnt, const bool p_is_signed)
 :
   m_bits(p_bit_cnt, p_bit),
-  m_is_signed(p_is_signed)
-{}
-
-CiInt::CiInt(const initializer_list<CiBit>& p_bits, const bool p_is_signed)
-:
-  m_bits(p_bits),
   m_is_signed(p_is_signed)
 {}
 
@@ -49,8 +42,7 @@ CiInt::CiInt(const CiBitVector& p_bits, const bool p_is_signed)
 
 CiInt& CiInt::operator= (const CiInt& other) {
   if (this != &other) {
-    m_bits = other.m_bits;
-    m_is_signed = other.m_is_signed;
+    m_bits = other.cast(m_bits.size());
   }
   return *this;
 }
@@ -134,7 +126,7 @@ CiInt CiInt::operator+() const {
 }
 
 CiInt CiInt::operator-() const {
-  return CiInt(m_int_op_gen->neg(cast()), is_signed());
+  return CiInt(CiContext::get_int_op_gen()->neg(cast()), is_signed());
 }
 
 CiInt& CiInt::operator+=(const CiInt& other) {
@@ -268,7 +260,7 @@ CiInt cingulata::operator+(const CiInt& lhs, const CiInt& rhs) {
     unsigned res_size = result_size(lhs, rhs);
     bool res_is_signed = result_is_signed(lhs, rhs);
 
-    auto res = CiInt::int_op_gen()->add(
+    auto res = CiContext::get_int_op_gen()->add(
       lhs.cast(res_size),
       rhs.cast(res_size));
     return CiInt(res, res_is_signed);
@@ -283,7 +275,7 @@ CiInt cingulata::operator-(const CiInt& lhs, const CiInt& rhs) {
     unsigned res_size = result_size(lhs, rhs);
     bool res_is_signed = result_is_signed(lhs, rhs);
 
-    auto res = CiInt::int_op_gen()->sub(
+    auto res = CiContext::get_int_op_gen()->sub(
       lhs.cast(res_size),
       rhs.cast(res_size));
     return CiInt(res, res_is_signed);
@@ -293,12 +285,12 @@ CiInt cingulata::operator-(const CiInt& lhs, const CiInt& rhs) {
 CiInt cingulata::operator*(const CiInt& lhs, const CiInt& rhs) {
   if (&lhs == &rhs) {
     /** < when @c lhs and @c rhs are the same square @c lhs */
-    return CiInt(CiInt::int_op_gen()->square(lhs.cast()), lhs.is_signed());
+    return CiInt(CiContext::get_int_op_gen()->square(lhs.cast()), lhs.is_signed());
   } else {
     unsigned res_size = result_size(lhs, rhs);
     bool res_is_signed = result_is_signed(lhs, rhs);
 
-    auto res = CiInt::int_op_gen()->mul(
+    auto res = CiContext::get_int_op_gen()->mul(
       lhs.cast(res_size),
       rhs.cast(res_size));
     return CiInt(res, res_is_signed);
@@ -354,7 +346,7 @@ CiBit cingulata::OP_NAME(const CiInt& lhs, const CiInt& rhs) { \
     SAME_OPERANDS_CODE; \
   } else { \
     unsigned res_size = result_size(lhs, rhs); \
-    return CiInt::int_op_gen()->OP_FUNC( \
+    return CiContext::get_int_op_gen()->OP_FUNC( \
       lhs.cast(res_size), \
       rhs.cast(res_size)); \
   } \
