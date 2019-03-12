@@ -259,18 +259,6 @@ CiBitVector cingulata::operator|(CiBitVector lhs, const CiBitVector& rhs) {
   return lhs |= rhs;
 }
 
-CiBitVector cingulata::operator^(CiBitVector lhs, const CiBit& rhs) {
-  return lhs ^= rhs;
-}
-
-CiBitVector cingulata::operator&(CiBitVector lhs, const CiBit& rhs) {
-  return lhs &= rhs;
-}
-
-CiBitVector cingulata::operator|(CiBitVector lhs, const CiBit& rhs) {
-  return lhs |= rhs;
-}
-
 CiBitVector cingulata::shl(CiBitVector lhs, const int pos, const CiBit& p_bit) {
   return lhs.shl(pos, p_bit);
 }

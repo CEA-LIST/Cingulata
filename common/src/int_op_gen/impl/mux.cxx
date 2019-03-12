@@ -13,7 +13,7 @@ CiBitVector MuxDepth::oper(const CiBitVector& cond, const vector<CiBitVector>& i
 
   CiBitVector res(n, 0);
   for (unsigned i = 0; i < dec_cond.size(); ++i) {
-    res ^= inps[i] & dec_cond[i];
+    res ^= inps[i] & CiBitVector(n, dec_cond[i]);
   }
 
   return res;
