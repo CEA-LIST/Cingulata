@@ -1,5 +1,6 @@
 #include <int_op_gen/interface.hxx>
 
+using namespace std;
 using namespace cingulata;
 
 CiBitVector IIntOpGen::sub(const CiBitVector& lhs, const CiBitVector& rhs) const {
@@ -24,4 +25,13 @@ CiBit IIntOpGen::lower_equal(const CiBitVector& lhs, const CiBitVector& rhs) con
 
 CiBit IIntOpGen::greater_equal(const CiBitVector& lhs, const CiBitVector& rhs) const {
   return !lower(lhs, rhs);
+}
+
+CiBitVector IIntOpGen::mux(const CiBit &cond, const CiBitVector &a,
+                           const CiBitVector &b) const {
+  return mux(CiBitVector{1, cond}, {a, b});
+}
+
+CiBitVector IIntOpGen::mux(const CiBitVector &cond, const vector<CiBitVector> &inps) const {
+  return m_mux(cond, inps);
 }

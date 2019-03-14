@@ -2,6 +2,7 @@
 
 #include <int_op_gen/impl/operator.hxx>
 
+using namespace std;
 using namespace cingulata;
 using namespace cingulata::int_ops;
 
@@ -25,11 +26,18 @@ CiBit CompOper::operator()(const CiBitVector& lhs, const CiBitVector& rhs) const
   return oper(lhs, rhs);
 }
 
-CiBitVector MuxOper::operator()(const CiBitVector& cond, const std::vector<CiBitVector>& inps) const {
-  /* all inputs has same bit-size */
-  auto s = inps[0].size();
+CiBitVector MuxOper::operator()(const CiBitVector& cond, const vector<CiBitVector>& p_inps) const {
+  /* resize inputs to same bit-size */
+  vector<CiBitVector> inps = p_inps;
+
+  int max_size = 0;
   for (const auto& inp: inps)
-    assert(inp.size() == s);
+    if (max_size < (int)inp.size())
+      max_size = inp.size();
+  assert(max_size > 0);
+
+  for (auto& inp: inps)
+    inp.resize(max_size);
 
   assert((1U<<cond.size()) == inps.size());
 

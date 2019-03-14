@@ -3,7 +3,6 @@
 
 #include <ci_bit.hxx>
 #include <ci_bit_vector.hxx>
-#include <int_op_gen/interface.hxx>
 #include <io_name_vec.hxx>
 
 #include <vector>

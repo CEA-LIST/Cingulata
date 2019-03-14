@@ -3,6 +3,10 @@
 
 #include <ci_bit.hxx>
 #include <ci_bit_vector.hxx>
+#include <int_op_gen/impl/all.hxx>
+#include <int_op_gen/interface.hxx>
+
+#include <vector>
 
 namespace cingulata
 {
@@ -48,6 +52,16 @@ namespace cingulata
 
     virtual CiBit greater       ( const CiBitVector& lhs,
                                   const CiBitVector& rhs) const;
+
+    virtual CiBitVector mux     ( const CiBit &cond,
+                                  const CiBitVector &a,
+                                  const CiBitVector &b) const;
+
+    virtual CiBitVector mux     ( const CiBitVector &cond,
+                                  const std::vector<CiBitVector> &inps) const;
+
+  private:
+    int_ops::MuxDepth           m_mux;
   };
 }
 
