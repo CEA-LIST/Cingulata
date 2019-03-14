@@ -39,15 +39,21 @@ $APPS_DIR/generate_keys
 echo "Input encryption"
 NR_THREADS=1
 
-$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i_ --idx-places 0 5 3`
+# Encrypt input "a"
+TMP=`$APPS_DIR/helper --bit-cnt 8 --prefix input/a_ --idx-places 0 --start-idx 0 5`
+$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
+
+# Encrypt input "b"
+TMP=`$APPS_DIR/helper --bit-cnt 8 --prefix input/b_ --idx-places 0 --start-idx 0 3`
+$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
 
 echo "Homomorphic execution..."
-time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS # -v 
+time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS # -v
 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`
-$APPS_DIR/helper --from-bin --bit-cnt 8 --msb-first `$APPS_DIR/decrypt --secret-key fhe_key.sk $OUT_FILES`
+$APPS_DIR/helper --from-bin --bit-cnt 16 `$APPS_DIR/decrypt --secret-key fhe_key.sk $OUT_FILES`
 
 
 
- 
+
