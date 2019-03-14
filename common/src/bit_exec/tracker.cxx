@@ -1,5 +1,7 @@
 #include <bit_exec/tracker.hxx>
 
+#include <fstream>
+
 using namespace std;
 using namespace cingulata;
 
@@ -232,4 +234,14 @@ void BitTracker::export_blif(ostream& stream, const string& model_name) {
   }
 
   stream << ".end" << endl;
+}
+
+void BitTracker::export_blif(const std::string& file_name,
+                             const std::string& model_name) {
+  ofstream file(file_name);
+  if (file.is_open()) {
+    export_blif(file, model_name);
+  } else {
+    fprintf(stderr, "Error: Unable to open file '%s'\n", file_name.c_str());
+  }
 }

@@ -55,6 +55,9 @@ namespace cingulata
     void        export_blif (std::ostream& stream,
                               const std::string& model_name = "CIRCUIT");
 
+    void        export_blif (const std::string& file_name,
+                              const std::string& model_name = "CIRCUIT");
+
   protected:
     void*       new_obj     ()                                                override;
     void        del_obj     (void * obj_ptr)                                  override;
