@@ -28,7 +28,6 @@ import utils
 
 # Set ABC path
 ABC_PATH='@ABC_PATH@'
-ABC_SRC_PATH='@ABC_SRC_PATH@'
 ABC_LIB_PATH='{}/lib_red.genlib'.format(os.path.dirname(os.path.realpath(__file__)))
 
 DEFAULT_OPTIM_CMDS = [
@@ -40,7 +39,7 @@ DEFAULT_OPTIM_CMDS = [
 
 def build_opt_cmd(cmd, input_file, output_file, lib_file=ABC_LIB_PATH):
   cmd_prefix = 'r {};r {}'.format(lib_file, input_file)
-  cmd_suffix = 'write_blif {}'.format(output_file) 
+  cmd_suffix = 'write_blif {}'.format(output_file)
 
   cmd = ';' + cmd + ';map;unmap'
   cmd = cmd.replace(';',';ps;')   #add verbose instructions
@@ -49,7 +48,7 @@ def build_opt_cmd(cmd, input_file, output_file, lib_file=ABC_LIB_PATH):
   return cmd_prefix + cmd + cmd_suffix
 
 def abc_init():
-  shutil.copyfile('{}/abc.rc'.format(ABC_SRC_PATH), 'abc.rc')
+  shutil.copyfile('{}/abc.rc'.format(ABC_PATH), 'abc.rc')
 
 def abc_end():
   os.remove('abc.rc')
@@ -69,6 +68,14 @@ if __name__ == '__main__':
   parser.add_argument('-v', action="store_true", default=False, dest="verbose")
   args = parser.parse_args()
 
+  #input circuit multiplicative depth
+  circuit = utils.readBlifFile(args.input_file)
+  min_mult_depth = utils.getMultiplicativeDepth(circuit)
+  shutil.copyfile(args.input_file, args.output_file)
+
+  if args.verbose:
+    print('Input circuit multiplicative depth {}\n'.format(min_mult_depth), end='')
+
   #optimization commands
   optim_cmds = DEFAULT_OPTIM_CMDS
   if args.opt_cmd:
@@ -77,19 +84,18 @@ if __name__ == '__main__':
   #execute optimization commands
   abc_init()
 
-  min_mult_depth = None
   for k,cmd in enumerate(optim_cmds):
     if args.verbose:
       print('Executing optimization command "{}"'.format(cmd))
 
     temp_output_file = '{}.{}'.format(k, args.output_file)
-    cmd_full = build_opt_cmd(cmd, input_file=args.input_file, 
+    cmd_full = build_opt_cmd(cmd, input_file=args.input_file,
       output_file=temp_output_file)
     abc_exec_opt_cmd(cmd_full, verbose=args.verbose)
 
     if (os.path.isfile(temp_output_file)):
       circuit = utils.readBlifFile(temp_output_file)
-      mult_depth = max(utils.getMultiplicativeDepths(circuit).values())
+      mult_depth = utils.getMultiplicativeDepth(circuit)
 
       if args.verbose:
         print('\tmultiplicative depth {}'.format(mult_depth), end='')
@@ -106,6 +112,6 @@ if __name__ == '__main__':
 
       os.remove(temp_output_file)
     else:
-      print('\t!!! something went wrong !!!', file=sys.stderr)
+      print('\t!!! ABC optimization: something went wrong !!!', file=sys.stderr)
 
   abc_end()
