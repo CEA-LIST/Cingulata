@@ -53,7 +53,3 @@ time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS # -v
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`
 $APPS_DIR/helper --from-bin --bit-cnt 16 `$APPS_DIR/decrypt --secret-key fhe_key.sk $OUT_FILES`
-
-
-
-

@@ -4,16 +4,23 @@ project(cingulata VERSION 0.3.0 LANGUAGES CXX)
 
 option(ENABLE_UNITTEST "Enable unit tests using googletest" ON)
 option(BUILD_DOC "Build documentation" ON)
-
+option(BUILD_ONLY_COMMON "Build only common interface (when only unittests are needed)" OFF)
 set(USE_ABC ON CACHE BOOL INTERNAL)
 
 add_subdirectory(submodules)
 add_subdirectory(common)
-add_subdirectory(optim)
-add_subdirectory(runtime)
 
-include_directories(common/include)
-add_subdirectory(tests)
+message("ENABLE_UNITTEST    " ${ENABLE_UNITTEST})
+message("BUILD_DOC          " ${BUILD_DOC})
+message("BUILD_ONLY_COMMON  " ${BUILD_ONLY_COMMON})
+message("USE_ABC            " ${USE_ABC})
 
+if(NOT ${BUILD_ONLY_COMMON})
+  add_subdirectory(optim)
+  add_subdirectory(runtime)
+
+  include_directories(common/include)
+  add_subdirectory(tests)
+endif()
 
 
