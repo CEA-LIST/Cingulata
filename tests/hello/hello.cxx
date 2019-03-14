@@ -18,27 +18,37 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-/* compiler includes */
-#include <iostream>
-#include <fstream>
+#include <cstdint>
 
 /* local includes */
-#include <integer.hxx>
+#include <bit_exec/tracker.hxx>
+#include <ci_context.hxx>
+#include <ci_int.hxx>
+#include <int_op_gen/mult_depth.hxx>
 
 /* namespaces */
 using namespace std;
+using namespace cingulata;
 
-int main()
-{
-	Integer8 a,b,c;
+int main() {
+  /* Set context to bit tracker and multiplicative depth minimized integer
+   * operations */
+  CiContext::set_config(new BitTracker(), new IntOpGenDepth());
 
-	cin>>a;
-	cin>>b;
-	
-	c=a+b;
+  CiInt a{CiInt::u8};     // create from unsigned 8-bit template
+  CiInt b{0, 8, false};   // manually specify value, size and signedness
+  CiInt c{(uint16_t)-1};  // automatically determine size and signedness from value
 
-	cout<<c;
-	
-	FINALIZE_CIRCUIT(blif_name);
+  a.read("a");            // read variable a and set name
+
+  b.set_name("b");        // set name and ...
+  cin >> b;               //  read variable b
+
+  c = a + b;
+
+  cout << c.set_name("c");// set name and write variable
+  // c.write("c");           //  or do it at once
+
+  /* Export to file the "tracked" circuit */
+  CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name, "hello");
 }
-

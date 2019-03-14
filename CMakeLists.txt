@@ -12,8 +12,8 @@ add_subdirectory(common)
 add_subdirectory(optim)
 add_subdirectory(runtime)
 
-# include_directories(common/include)
-# add_subdirectory(tests)
+include_directories(common/include)
+add_subdirectory(tests)
 
 
 
