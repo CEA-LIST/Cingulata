@@ -34,41 +34,10 @@ def printMultDepthPerOut():
   print ('\n'.join(map(lambda out: out + ': ' + str(multDepths[out]), outputs)))
 
 def printMultGateCount():
-  cnt = 0
-  if 'and' in nodeCountPerType:
-    cnt += nodeCountPerType['and']
-  if 'or' in nodeCountPerType:
-    cnt += nodeCountPerType['or']
-
-  cnt_cc = 0
-  if 'and_cc' in nodeCountPerType:
-    cnt_cc += nodeCountPerType['and_cc']
-  if 'or_cc' in nodeCountPerType:
-    cnt_cc += nodeCountPerType['or_cc']
-
-  if cnt_cc:
-    print ("%d (%d)" % (cnt + cnt_cc, cnt_cc))
-  else:
-    print (cnt)
-
+  print (utils.getMultiplicativeNodeCnt(circuit))
 
 def printAddGateCount():
-  cnt = 0
-  if 'xor' in nodeCountPerType:
-    cnt += nodeCountPerType['xor']
-  if 'or' in nodeCountPerType:
-    cnt += 2 * nodeCountPerType['or']
-
-  cnt_cc = 0
-  if 'not' in nodeCountPerType:
-    cnt_cc += nodeCountPerType['not']
-  if 'or_cc' in nodeCountPerType:
-    cnt_cc += 2 * nodeCountPerType['or']
-
-  if cnt_cc:
-    print ("%d (%d)" % (cnt + cnt_cc, cnt_cc))
-  else:
-    print (cnt)
+  print (utils.getAdditiveNodeCnt(circuit))
 
 def printGateCount():
   print ('\n'.join(map(lambda e: e[0] + ': '+ str(e[1]), nodeCountPerType.items())))
@@ -78,7 +47,7 @@ def printInputCount():
 
 def printInputs():
   print (" ".join(sorted(utils.getInputNodes(circuit))))
-  
+
 def printOutputCount():
   print (len(utils.getOutputNodes(circuit)))
 
@@ -91,7 +60,6 @@ def readClearInps(fileName):
   clearInps = dict(zip(tokens[::2], map(lambda i: bool(int(i)), tokens[1::2])))
   f.close()
   return clearInps
-
 
 allChoices = {
   'mult_depth_max': ('Maximal multiplicative depth', printMultDepthMax),
@@ -135,7 +103,7 @@ if 'mult_depth_max' in choices or 'mult_depth_per_out' in choices:
   multDepths = utils.getMultiplicativeDepths(circuit)
 
 if 'mult_gate_cnt' in choices or 'add_gate_cnt' in choices or 'gate_cnt' in choices:
-  nodeCountPerType = utils.getNodeCountPerType(circuit)
+  nodeCountPerType = dict(sorted(utils.getNodeCountPerType(circuit).items(), key=lambda e: e[0]))
 
 for k, (desc, func) in choices.items():
   if args.verbose:

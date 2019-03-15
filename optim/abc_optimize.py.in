@@ -60,6 +60,11 @@ def abc_exec_opt_cmd(cmd, verbose=False):
   exec_cmd.append(cmd)
   return_code = subprocess.call(exec_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
+def get_circuit_vals(circuit):
+  return (utils.getMultiplicativeDepth(circuit),
+    utils.getMultiplicativeNodeCnt(circuit),
+    utils.getAdditiveNodeCnt(circuit))
+
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Optimize BLIF circuit using ABC')
   parser.add_argument('-i', type=str, dest='input_file', help='input BLIF file')
@@ -70,11 +75,11 @@ if __name__ == '__main__':
 
   #input circuit multiplicative depth
   circuit = utils.readBlifFile(args.input_file)
-  min_mult_depth = utils.getMultiplicativeDepth(circuit)
+  min_vals = None
   shutil.copyfile(args.input_file, args.output_file)
 
   if args.verbose:
-    print('Input circuit multiplicative depth {}\n'.format(min_mult_depth), end='')
+    print('Înput circuit\n\tx depth {}, x gates {}, + gates {}'.format(*get_circuit_vals(circuit)))
 
   #optimization commands
   optim_cmds = DEFAULT_OPTIM_CMDS
@@ -95,14 +100,14 @@ if __name__ == '__main__':
 
     if (os.path.isfile(temp_output_file)):
       circuit = utils.readBlifFile(temp_output_file)
-      mult_depth = utils.getMultiplicativeDepth(circuit)
+      vals = get_circuit_vals(circuit)
 
       if args.verbose:
-        print('\tmultiplicative depth {}'.format(mult_depth), end='')
+        print('\tx depth {}, x gates {}, + gates {}'.format(*vals), end='')
 
       #smaller multiplicative depth obtained? keep circuit as output
-      if min_mult_depth is None or min_mult_depth > mult_depth:
-        min_mult_depth = mult_depth
+      if min_vals is None or min_vals > vals:
+        min_vals = vals
         shutil.copyfile(temp_output_file, args.output_file)
         if args.verbose:
           print(' *', end='')
