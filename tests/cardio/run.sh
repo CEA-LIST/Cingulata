@@ -40,18 +40,28 @@ echo "Input formatting & encryption"
 NR_THREADS=1
 
 #encrypt client data
-$APPS_DIR/helper --bit-cnt 8 --prefix i_ --suffix '' --msb-first --start-idx 2 --idx-places 0 15 55 50 80 80 45 4 > clear_data.data
-sed -i 's/\(i_[0-9]* [0-9] \)/\1\n/g' clear_data.data
+$APPS_DIR/helper --bit-cnt 5 --prefix %flags_        --start-idx 0 --suffix '' 254 > clear_data.data
+$APPS_DIR/helper --bit-cnt 8 --prefix %age_          --start-idx 0 --suffix '' 229 >> clear_data.data
+$APPS_DIR/helper --bit-cnt 8 --prefix %hdl_          --start-idx 0 --suffix '' 211 >> clear_data.data
+$APPS_DIR/helper --bit-cnt 8 --prefix %height_       --start-idx 0 --suffix '' 139 >> clear_data.data
+$APPS_DIR/helper --bit-cnt 8 --prefix %weight_       --start-idx 0 --suffix '' 12 >> clear_data.data
+$APPS_DIR/helper --bit-cnt 8 --prefix %physical_act_ --start-idx 0 --suffix '' 6 >> clear_data.data
+$APPS_DIR/helper --bit-cnt 8 --prefix %drinking_     --start-idx 0 --suffix '' 193  >> clear_data.data
+sed -i 's/%/\n/g' clear_data.data
+sed -i '/^$/d' clear_data.data
 
-#encrypt 7*8-bit kreyvium ciphered inputs and homomorphically mined kreyvium key
-$APPS_DIR/encrypt --public-key fhe_key.pk -v --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 8 --prefix input/i_ --msb-first --start-idx 58 --idx-places 0 241 210 225 219 92 43 197`
+# encrypt 7*8-bit kreyvium ciphered inputs and homomorphically mined kreyvium key
+KS=(241 210 225 219 92 43 197)
+for (( i = 0; i < ${#KS[@]}; i++ )); do
+  TMP=`$APPS_DIR/helper --bit-cnt 8 --prefix "input/ks_"$i"_" --start-idx 0 ${KS[i]}`
+  $APPS_DIR/encrypt --public-key fhe_key.pk -v --threads $NR_THREADS $TMP
+done
 
 echo "FHE execution"
-time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS --clear-inps clear_data.data #-v
+time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS --clear-inps clear_data.data -v
 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`
 $APPS_DIR/helper --from-bin --bit-cnt 8 --msb-first `$APPS_DIR/decrypt --secret-key fhe_key.sk $OUT_FILES`
-
 
 

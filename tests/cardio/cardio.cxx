@@ -18,14 +18,18 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-/* compiler includes */
-#include <iostream>
-#include <fstream>
+#include <vector>
 
-#include <integer.hxx>
+/* local includes */
+#include <bit_exec/tracker.hxx>
+#include <ci_context.hxx>
+#include <ci_fncs.hxx>
+#include <ci_int.hxx>
+#include <int_op_gen/mult_depth.hxx>
 
 /* namespaces */
 using namespace std;
+using namespace cingulata;
 
 #define SEX_FIELD 0
 #define ANTECEDENT_FIELD 1
@@ -33,67 +37,69 @@ using namespace std;
 #define DIABETES_FIELD 3
 #define PRESSURE_FIELD 4
 
-int main()
-{
-	Bit flags[8];
+int main() {
+  /* Set context to bit tracker and multiplicative depth minimized integer
+   * operations */
+  CiContext::set_config(new BitTracker(), new IntOpGenDepth());
 
-	for (int i = 0; i < 8; i++)
-		cin >> flags[8-i-1];
+  CiInt flags{0,5}; // 5 flags
+  flags.read("flags");
 
-	Integer8 age, hdl, height=2, weight, physical_act, drinking;
+  CiInt age{CiInt::u8}, hdl{CiInt::u8}, height{CiInt::u8}, weight{CiInt::u8},
+      physical_act{CiInt::u8}, drinking{CiInt::u8};
 
-	cin >> age;
-	cin >> hdl;
-	cin >> height;
-	cin >> weight;
-	cin >> physical_act;
-	cin >> drinking;
+  age.read("age");
+  hdl.read("hdl");
+  height.read("height");
+  weight.read("weight");
+  physical_act.read("physical_act");
+  drinking.read("drinking");
 
-	Integer8 keystream[7];
-	// Read the pre-calculated keystream.
-	for(int i=0;i<7;i++)
-			cin>>keystream[i];
+  vector<CiInt> keystream(7, CiInt::u8);
+  // Read the pre-calculated keystream.
+  for (int i = 0; i < 7; i++)
+    keystream[i].read("ks_" + to_string(i));
 
-	for(int i=0;i<8;i++)
-		flags[i] ^= keystream[0][i];
-	age ^= keystream[1];
-	hdl ^= keystream[2];
-	height ^= keystream[3];
-	weight ^= keystream[4];
-	physical_act ^= keystream[5];
-	drinking ^= keystream[6];
+  for (int i = 0; i < 5; i++)
+    flags[i] ^= keystream[0][i];
+  age ^= keystream[1];
+  hdl ^= keystream[2];
+  height ^= keystream[3];
+  weight ^= keystream[4];
+  physical_act ^= keystream[5];
+  drinking ^= keystream[6];
 
+  CiInt risk{CiInt::u8};
 
-	Integer8 risk = 0;	
+  risk = risk + select((flags[SEX_FIELD]) && (age > 50), 1, 0);
 
-	risk = risk + select((flags[SEX_FIELD]) && (age > Integer8(50)), Integer8(1), Integer8(0));
+  risk = risk + select((!flags[SEX_FIELD]) && (age > 60), 1, 0);
 
-	risk = risk + select((!flags[SEX_FIELD]) && (age > Integer8(60)), Integer8(1), Integer8(0));
+  risk = risk + flags[ANTECEDENT_FIELD];
+  risk = risk + flags[SMOKER_FIELD];
+  risk = risk + flags[DIABETES_FIELD];
+  risk = risk + flags[PRESSURE_FIELD];
 
-	risk = risk + Integer8(flags[ANTECEDENT_FIELD]);
-	risk = risk + Integer8(flags[SMOKER_FIELD]);
-	risk = risk + Integer8(flags[DIABETES_FIELD]);
-	risk = risk + Integer8(flags[PRESSURE_FIELD]);
-	
-	risk = risk + select(hdl < Integer8(40), Integer8(1), Integer8(0));
-		
-	//Integer8 riskH = 0;
-	//Integer8 sum = 2; 
-	//sum = height + Integer8(10);
-	//riskH = select( weight > sum, Integer8(1), Integer8(0));
-	
-	risk = risk + select(weight - Integer8(10) > height, Integer8(1), Integer8(0));	
-	
-	risk = risk + select(physical_act < Integer8(30), Integer8(1), Integer8(0));
-	
-	risk = risk + select((flags[SEX_FIELD]) && (drinking > Integer8(3)), Integer8(1), Integer8(0));
-	risk = risk + select((!flags[SEX_FIELD]) && (drinking > Integer8(2)), Integer8(1), Integer8(0));
-	
-	
-	for (int i = 3; i >= 0; --i)	{
-		cout << risk[i];
-	}
-	
-	FINALIZE_CIRCUIT(blif_name);
+  risk = risk + select(hdl < 40, 1, 0);
+
+  // Integer8 riskH = 0;
+  // Integer8 sum = 2;
+  // sum = height + Integer8(10);
+  // riskH = select( weight > sum, 1, 0);
+
+  risk = risk + select(weight - 10 > height, 1, 0);
+
+  risk = risk + select(physical_act < 30, 1, 0);
+
+  risk = risk + select((flags[SEX_FIELD]) && (drinking > 3),
+                       1, 0);
+  risk = risk + select((!flags[SEX_FIELD]) && (drinking > 2),
+                       1, 0);
+
+  for (int i = 3; i >= 0; --i) {
+    cout << risk[i];
+  }
+
+    /* Export to file the "tracked" circuit */
+  CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name, "cardio");
 }
-

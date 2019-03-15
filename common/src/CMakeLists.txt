@@ -5,21 +5,22 @@ set (CMAKE_CXX_STANDARD 11)
 set(SRCS
     bit_exec/interface.cxx
     bit_exec/tracker.cxx
-    ci_context.cxx
     ci_bit.cxx
-    ci_int.cxx
     ci_bit_vector.cxx
+    ci_context.cxx
+    ci_fncs.cxx
+    ci_int.cxx
+    int_op_gen/impl/adder.cxx
+    int_op_gen/impl/dec.cxx
+    int_op_gen/impl/equal.cxx
+    int_op_gen/impl/lower.cxx
+    int_op_gen/impl/multiplier.cxx
+    int_op_gen/impl/mux.cxx
+    int_op_gen/impl/negate.cxx
+    int_op_gen/impl/operator.cxx
     int_op_gen/interface.cxx
     int_op_gen/mult_depth.cxx
     int_op_gen/size.cxx
-    int_op_gen/impl/operator.cxx
-    int_op_gen/impl/adder.cxx
-    int_op_gen/impl/lower.cxx
-    int_op_gen/impl/negate.cxx
-    int_op_gen/impl/equal.cxx
-    int_op_gen/impl/dec.cxx
-    int_op_gen/impl/mux.cxx
-    int_op_gen/impl/multiplier.cxx
     )
 
 include_directories(${INCLUDE_DIR})
