@@ -34,7 +34,9 @@ CiBitVector MuxOper::operator()(const CiBitVector& cond, const vector<CiBitVecto
   for (const auto& inp: inps)
     if (max_size < (int)inp.size())
       max_size = inp.size();
-  assert(max_size > 0);
+
+  if (max_size == 0)
+    return CiBitVector();
 
   for (auto& inp: inps)
     inp.resize(max_size);

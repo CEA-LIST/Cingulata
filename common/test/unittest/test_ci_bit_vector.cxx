@@ -11,7 +11,8 @@ using namespace cingulata;
     (v).push_back(CiBit(rand() % 2)); \
   }                                   \
   ASSERT_EQ(v_size, (v).size());      \
-}                                     \
+}
+                    \
 
 #define RAND_CIBITV(v)                                \
 {                                                     \
@@ -77,8 +78,8 @@ TEST(CiBitVector, constructor_from_list_initializer) {
   }
   ASSERT_EQ(v1.size(), 8);
 
-  CiBitVector v2 {v1[0].get_val(), v1[1].get_val(), v1[2].get_val(), v1[3].get_val(),
-    v1[4].get_val(), v1[5].get_val(), v1[6].get_val(), v1[7].get_val()};
+  CiBitVector v2 = vector<CiBit>({v1[0].get_val(), v1[1].get_val(), v1[2].get_val(), v1[3].get_val(),
+      v1[4].get_val(), v1[5].get_val(), v1[6].get_val(), v1[7].get_val()});
 
   ASSERT_EQ(v1.size(), v2.size());
   for (unsigned int i = 0; i < 8; ++i) {
