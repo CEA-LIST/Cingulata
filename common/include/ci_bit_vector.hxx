@@ -27,13 +27,6 @@ namespace cingulata
     CiBitVector(const int p_bit_cnt = 0, const CiBit& p_bit = CiBit::zero);
 
     /**
-     * @brief      Construct a bit-vector from a list of bits
-     *
-     * @param[in]  p_bits  initializer list of bits
-     */
-    CiBitVector(const std::initializer_list<CiBit>& p_bits);
-
-    /**
      * @brief      Construct a bit-vector from a vector of bits
      *
      * @param[in]  p_bits  initializer list of bits

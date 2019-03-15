@@ -1,5 +1,8 @@
 #include <int_op_gen/impl/dec.hxx>
 
+#include <vector>
+
+using namespace std;
 using namespace cingulata;
 using namespace cingulata::int_ops;
 
@@ -8,18 +11,18 @@ CiBitVector Decoder::oper(const CiBitVector& c) const {
   CiBitVector res;
 
   if (n == 1) {
-    res = {
+    res = vector<CiBit>({
       op_not  (c[0]),
                c[0]
-    };
+    });
   }
   else if (n == 2) {
-    res = {
+    res = vector<CiBit>({
       op_nor    (c[0], c[1]),
       op_andyn  (c[0], c[1]),
       op_andny  (c[0], c[1]),
       op_and    (c[0], c[1])
-    };
+    });
   }
   else {
     const int n2 = n>>1;
