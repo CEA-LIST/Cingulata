@@ -15,17 +15,15 @@ set(GEN_NAME ${TEST_NAME}-gen)
 
 add_executable(${GEN_NAME} ${SRCS}) 
 
-
-target_link_libraries(${GEN_NAME} generator)
+target_link_libraries(${GEN_NAME} common)
 
 add_custom_command(OUTPUT ${BLIF_NAME}
-  COMMAND ./${GEN_NAME} < /dev/null
+  COMMAND ./${GEN_NAME}
   DEPENDS ${GEN_NAME}) 
 
 add_custom_command(OUTPUT ${BLOP_NAME}
   COMMAND python3 ../../optim/abc_optimize.py -i ${BLIF_NAME} -o ${BLOP_NAME} -v
   DEPENDS abc ${BLIF_NAME})
-
 
 set(XML_PARAMS fhe_params.xml)
 set(MUL_DEPTH_SCRIPT ../../optim/graph_info.py)

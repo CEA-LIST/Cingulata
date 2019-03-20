@@ -1,5 +1,5 @@
 /*
-    (C) Copyright 2017 CEA LIST. All Rights Reserved.
+    (C) Copyright 2019 CEA LIST. All Rights Reserved.
     Contributor(s): Cingulata team (formerly Armadillo team)
  
     This software is governed by the CeCILL-C license under French law and
@@ -19,28 +19,36 @@
 */
 
 /**
- * IPv4 equality test, each IPv4 is represented by one Integer32.
+ * IPv4 equality test, each IPv4 is represented by one 32-bit integer.
  **/
 
-/* compiler includes */
-#include <fstream>
-#include <iostream>
+
+#include <cstdint>
 
 /* local includes */
-#include <integer.hxx>
+#include <bit_exec/tracker.hxx>
+#include <ci_context.hxx>
+#include <ci_int.hxx>
+#include <int_op_gen/mult_depth.hxx>
 
 /* namespaces */
 using namespace std;
+using namespace cingulata;
 
 int main() {
 
-  Integer32 IP1, IP2;
-  cin >> IP1;
-  cin >> IP2;
+  CiContext::set_config(new BitTracker(), new IntOpGenDepth());
+
+  CiInt IP1{CiInt::s32};   // create from signed 32-bit template
+  CiInt IP2{CiInt::s32};
+  CiBit answer;
   
-  // equality test
-  cout << (IP1 == IP2);
+  IP1.read("a");
+  IP2.read("b");
 
-  FINALIZE_CIRCUIT(blif_name);
+  answer = (IP1 == IP2);
+  answer.write("c");
 
+  /* Export to file the "tracked" circuit */
+  CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name, "ipv4");
 }

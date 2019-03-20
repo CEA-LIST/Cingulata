@@ -53,10 +53,20 @@ $APPS_DIR/generate_keys
 echo "Input encryption"
 NR_THREADS=$(nproc)
 
-$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 16 --msb-first --prefix input/i_ --idx-places 0 $(ipv6dec $1) $(ipv6dec $2)`
+# Encrypt IP1
+for (( i = 0; i < 8; i++ )); do
+    TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"a_"$i"_" --idx-places 0 --start-idx 0 $(ipv6dec $1)`
+    $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
+done
+
+# Encrypt IP2
+for (( i = 0; i < 8; i++ )); do
+    TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"b_"$i"_" --idx-places 0 --start-idx 0 $(ipv6dec $2)`
+    $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
+done
 
 echo "Homomorphic execution..."
-time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS # -v 
+time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS
  
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`

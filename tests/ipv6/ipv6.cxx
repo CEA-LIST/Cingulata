@@ -1,5 +1,5 @@
 /*
-    (C) Copyright 2017 CEA LIST. All Rights Reserved.
+    (C) Copyright 2019 CEA LIST. All Rights Reserved.
     Contributor(s): Cingulata team (formerly Armadillo team)
  
     This software is governed by the CeCILL-C license under French law and
@@ -19,39 +19,48 @@
 */
 
 /**
- * IPv6 equality test, each IPv6 is represented by eight Integer16.
+ * IPv6 equality test, each IPv6 is represented by eight 16-bit integers.
  **/
 
-/* compiler includes */
-#include <fstream>
-#include <iostream>
+#include <cstdint>
 
 /* local includes */
-#include <integer.hxx>
+#include <bit_exec/tracker.hxx>
+#include <ci_context.hxx>
+#include <ci_int.hxx>
+#include <int_op_gen/mult_depth.hxx>
 
 /* namespaces */
 using namespace std;
+using namespace cingulata;
 
 int main() {
 
-/** IPv6 can be splitted into 8 integers of 2 octets. **/
-  Integer16 IP1[8]; 
-  Integer16 IP2[8]; 
+    /* Set context to bit tracker and multiplicative depth minimized integer
+    * operations */
+    CiContext::set_config(new BitTracker(), new IntOpGenDepth());
 
-  for (int i = 0; i < 8; i++) {
-    cin >> IP1[i];
-  }
-  for (int i = 0; i < 8; i++) {
-    cin >> IP2[i];
-  }
+    /** IPv6 can be splitted into 8 integers of 2 octets. **/
 
-/** equality test **/
-  cout << (((IP1[0] == IP2[0]) * (IP1[1] == IP2[1])) *
-           ((IP1[2] == IP2[2]) * (IP1[3] == IP2[3]))) *
-          (((IP1[4] == IP2[4]) * (IP1[5] == IP2[5])) *
-           ((IP1[6] == IP2[6]) * (IP1[7] == IP2[7])));
+    vector<CiInt> IP1(8,{CiInt::s16});
+    vector<CiInt> IP2(8,{CiInt::s16});
+    CiBit answer;
 
+    for (int i = 0; i < 8; i++)
+        IP1[i].read("a_" + to_string(i));
 
-  FINALIZE_CIRCUIT(blif_name);
+    for (int i = 0; i < 8; i++)
+        IP2[i].read("b_" + to_string(i));
+
+    /** Bitwise equality test **/
+
+    answer = (((IP1[0] == IP2[0]) * (IP1[1] == IP2[1]))  *
+             ((IP1[2] == IP2[2])  * (IP1[3] == IP2[3]))) *
+             (((IP1[4] == IP2[4]) * (IP1[5] == IP2[5]))  *
+             ((IP1[6] == IP2[6])  * (IP1[7] == IP2[7]))) ;
+    answer.write("c");
+
+    /* Export to file the "tracked" circuit */
+    CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name, "ipv6");
 
 }
