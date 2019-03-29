@@ -6,28 +6,24 @@
 using namespace std;
 using namespace cingulata;
 
-uint CiBit::unique_name_cnt = 2; // start at 2 for legacy
+const CiBit CiBit::zero(0, "_zero");
+const CiBit CiBit::one(1, "_one");
 
-const CiBit CiBit::zero(0);
-const CiBit CiBit::one(1);
+CiBit::CiBit(const bit_plain_t p_pt_val, const string& p_name) : pt_val(p_pt_val), name(p_name) {}
 
-CiBit::CiBit(const bit_plain_t p_pt_val)
-:
-  pt_val(p_pt_val)
-{
-}
+CiBit::CiBit(const CiBit &other)
+    : pt_val(other.pt_val), obj_hdl(other.obj_hdl) {}
 
-CiBit::CiBit(const CiBit& other) {
-  copy(other);
-}
-
-CiBit::CiBit(CiBit&& other) {
-  move(other);
-}
+CiBit::CiBit(CiBit &&other) { move(other); }
 
 CiBit& CiBit::operator=(const CiBit& other) {
-  if (this != &other)
-    copy(other);
+  if (this != &other) {
+    if (other.is_plain())
+      set_val(other.pt_val);
+    else
+      obj_hdl = other.obj_hdl;
+   clr_name();
+  }
   return *this;
 }
 
@@ -37,9 +33,7 @@ CiBit& CiBit::operator=(CiBit&& other) {
   return *this;
 }
 
-std::string CiBit::get_name(const std::string& prefix) {
-  if (name.empty())
-    name = prefix + std::to_string(unique_name_cnt++);
+std::string CiBit::get_name() {
   return name;
 }
 
@@ -65,7 +59,7 @@ CiBit& CiBit::set_val(const bit_plain_t p_pt_val) {
 }
 
 CiBit& CiBit::read() {
-  obj_hdl = CiContext::get_bit_exec()->read(get_name("i_"));
+  obj_hdl = CiContext::get_bit_exec()->read(get_name());
   return *this;
 }
 
@@ -76,7 +70,7 @@ CiBit& CiBit::read(const std::string& p_name) {
 CiBit& CiBit::write() {
   if (is_plain())
     obj_hdl = CiContext::get_bit_exec()->encode(get_val());
-  CiContext::get_bit_exec()->write(obj_hdl, get_name("o_"));
+  CiContext::get_bit_exec()->write(obj_hdl, get_name());
   return *this;
 }
 
@@ -134,7 +128,9 @@ CiBit& CiBit::NAME(const CiBit& rhs) { \
     NAME(rhs.get_val()); \
   } \
   else if (is_plain()) { \
+    const string o_name = get_name(); \
     *this = CiBit(rhs).OPER_NAME_IS_PLAIN(get_val()); \
+    set_name(o_name); \
   } \
   else if (obj_hdl == rhs.obj_hdl) { \
     SAME_HDL_CODE;\
@@ -172,14 +168,6 @@ DEFINE_MEMBER_OPER2(operator ^= , op_xor);
 void CiBit::clear_obj_handle() {
   if (not is_plain())
     obj_hdl = ObjHandle();
-}
-
-void CiBit::copy(const CiBit& other) {
-  if (other.is_plain())
-    set_val(other.pt_val);
-  else
-    obj_hdl = other.obj_hdl;
-  clr_name();
 }
 
 void CiBit::move(const CiBit& other) {

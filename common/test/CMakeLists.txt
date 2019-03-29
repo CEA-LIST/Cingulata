@@ -6,6 +6,7 @@ if(ENABLE_UNITTEST)
   # if gtest_SOURCE_DIR has been set
   if (gtest_SOURCE_DIR AND gmock_SOURCE_DIR)
     set(UNITTEST_SOURCES
+        unittest/test_main.cxx
         unittest/test_ci_bit.cxx
         unittest/test_ci_bit_vector.cxx
         unittest/test_ci_int.cxx

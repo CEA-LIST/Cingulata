@@ -8,9 +8,13 @@ namespace cingulata
 {
   /**
    * @brief      Instrumented bit class
-   * @details    CiBit object can be in clear or in encrypted state when obj_hdl is not
-   *             null. Operations between plain-text and cihper-text values are
-   *             automatically optimized.
+   * @details    - CiBit object can be in clear or in encrypted state when @c
+   *             obj_hdl member is not empty.
+   *             - Operations between plain-text and cipher-text values are
+   *               automatically optimized.
+   *             - A string name can be assigned to a @c CiBit object using
+   *               constructor or @c set_name function. This name follows object
+   *               lifetime.
    */
   class CiBit
   {
@@ -21,14 +25,17 @@ namespace cingulata
     static const CiBit one;
 
     /**
-     * @brief      Construct an object with a given clear value
+     * @brief      Construct an object with a given clear value and a name.
      *
-     * @param[in]  pt_val_p  plain-text value
+     * @param[in]  pt_val_p  plain-text value (optional)
+     * @param[in]  name      name of new object (optional)
      */
-    CiBit(const bit_plain_t pt_val_p = 0);
+    CiBit(const bit_plain_t pt_val_p = 0, const std::string& name = "");
 
     /**
      * @brief      Copy-construct an object
+     * @note       The name of other object is not copied, thus the newly
+     *             created object has an empty name.
      *
      * @param[in]  other  object to copy
      */
@@ -42,7 +49,9 @@ namespace cingulata
     CiBit(CiBit&& other);
 
     /**
-     * @brief      Assignement operator
+     * @brief      Assignment operator
+     * @note       The name of other object is not copied, thus the newly
+     *             created object has an empty name.
      *
      * @param[in]  other  object to copy
      *
@@ -65,15 +74,11 @@ namespace cingulata
     ~CiBit() = default;
 
     /**
-     * @brief      Get bit name.
-     * @details    If no name was set before then a new name is automatically
-     *             generated
-     *
-     * @param[in]  prefix  the prefix to add to name in case it is generated
+     * @brief      Get bit name if set beforehand or empty string otherwise.
      *
      * @return     object name
      */
-    std::string get_name(const std::string& prefix = "n");
+    std::string get_name();
 
     /**
      * @brief      Set bit name
@@ -225,13 +230,6 @@ namespace cingulata
     void clear_obj_handle();
 
     /**
-     * @brief      Copy object to current object
-     *
-     * @param[in]  other  object to copy
-     */
-    void copy(const CiBit& other);
-
-    /**
      * @brief      Move object to current object
      *
      * @param[in]  other  object to move
@@ -248,8 +246,6 @@ namespace cingulata
     static bit_plain_t negate(const bit_plain_t pt_val_p);
 
   protected:
-    static uint unique_name_cnt;
-
     bit_plain_t pt_val;
     ObjHandle obj_hdl;
     std::string name;
