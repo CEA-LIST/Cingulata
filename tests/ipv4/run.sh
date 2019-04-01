@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 #
 #    (C) Copyright 2017 CEA LIST. All Rights Reserved.
@@ -38,7 +38,7 @@ rm -f output/*.ct
 
 
 # Convert an IPv4 adress to its decimal equivalent.
-ipv4dec () 
+ipv4dec ()
 {
 	declare -i a b c d;
 	IFS=. read a b c d <<<"$1";
@@ -53,16 +53,16 @@ echo "Input encryption"
 NR_THREADS=$(nproc)
 
 # Encrypt IP1
-TMP=`$APPS_DIR/helper --bit-cnt 32 --prefix input/a_ --idx-places 0 --start-idx 0 $(ipv4dec $1)`
+TMP=`$APPS_DIR/helper --bit-cnt 32 --prefix input/i:a_ --idx-places 0 --start-idx 0 $(ipv4dec $1)`
 $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
 
 # Encrypt IP2
-TMP=`$APPS_DIR/helper --bit-cnt 32 --prefix input/b_ --idx-places 0 --start-idx 0 $(ipv4dec $2)`
+TMP=`$APPS_DIR/helper --bit-cnt 32 --prefix input/i:b_ --idx-places 0 --start-idx 0 $(ipv4dec $2)`
 $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
 
 echo "Homomorphic execution..."
 time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS
- 
+
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`
 $APPS_DIR/helper --from-bin --bit-cnt 1 --msb-first `$APPS_DIR/decrypt --secret-key fhe_key.sk $OUT_FILES`

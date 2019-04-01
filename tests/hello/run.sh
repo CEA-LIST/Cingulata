@@ -40,11 +40,11 @@ echo "Input encryption"
 NR_THREADS=1
 
 # Encrypt input "a"
-TMP=`$APPS_DIR/helper --bit-cnt 8 --prefix input/a_ --idx-places 0 --start-idx 0 5`
+TMP=`$APPS_DIR/helper --bit-cnt 8 --prefix input/i:a_ --idx-places 0 --start-idx 0 5`
 $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
 
 # Encrypt input "b"
-TMP=`$APPS_DIR/helper --bit-cnt 8 --prefix input/b_ --idx-places 0 --start-idx 0 3`
+TMP=`$APPS_DIR/helper --bit-cnt 8 --prefix input/i:b_ --idx-places 0 --start-idx 0 3`
 $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
 
 echo "Homomorphic execution..."

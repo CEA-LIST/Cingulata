@@ -214,7 +214,8 @@ void BitTracker::export_blif(ostream& stream, const string& model_name) {
   stream << ".inputs ";
   uint cnt = 0;
   for (ObjHandleT<BTI::Node>& node: inputs) {
-    if (node->name.empty()) node->name = "i_" + to_string(cnt++);
+    if (node->name.empty()) node->name = to_string(cnt++);
+    node->name = "i:" + node->name;
     stream << node->name << " ";
   }
   stream << endl;
@@ -222,7 +223,8 @@ void BitTracker::export_blif(ostream& stream, const string& model_name) {
   stream << ".outputs ";
   cnt = 0;
   for (ObjHandleT<BTI::Node>& node: outputs) {
-    if (node->name.empty()) node->name = "o_" + to_string(cnt++);
+    if (node->name.empty()) node->name = to_string(cnt++);
+    node->name = "o:" + node->name;
     stream << node->name << " ";
   }
   stream << endl;
