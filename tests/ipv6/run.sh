@@ -44,40 +44,20 @@ ipv6dec ()
 {
   IFS=: read a b c d e f g h <<< "$1"
   echo "$((0x$a)) $((0x$b)) $((0x$c)) $((0x$d)) $((0x$e)) $((0x$f)) $((0x$g)) $((0x$h)) "; 
-}  
-	
-ipv6dec2 () # print component $2
-{
-  IFS=: read a b c d e f g h <<< "$1"
-  AR=($((0x$a)) $((0x$b)) $((0x$c)) $((0x$d)) $((0x$e)) $((0x$f)) $((0x$g)) $((0x$h)));
-  echo ${AR[$2]} 
 }      
-    
     
 # Generate keys
 echo "FHE key generation"
 $APPS_DIR/generate_keys
 
 echo "Input encryption"
-NR_THREADS=1 #$(nproc)
+NR_THREADS=$(nproc)
 
-## Clean
-#TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:a_" --idx-places 0 --start-idx 0 $(ipv6dec $1)`
-#$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
+TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:" --idx-places 0 --start-idx 0 $(ipv6dec $1)`
+$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
 
-#TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:b_" --idx-places 0 --start-idx 0 $(ipv6dec $2)`
-#$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
-
-
-# Alternative 
-for (( i = 0; i < 8; i++ )); do
-    TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:a_"$i"_" --idx-places 0 --start-idx 0 $(ipv6dec2 $1 $i)`
-    $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
-done
-for (( i = 0; i < 8; i++ )); do
-    TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:b_"$i"_" --idx-places 0 --start-idx 0 $(ipv6dec2 $2 $i)`
-    $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
-done
+TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:" --idx-places 0 --start-idx 128 $(ipv6dec $2)`
+$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
 
 echo "Homomorphic execution..."
 time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS

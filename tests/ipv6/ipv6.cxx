@@ -47,18 +47,10 @@ int main() {
     vector<CiInt> IP2(8,{CiInt::s16});
 
 
-    //Clean 
-    //for (int i = 0; i < 8; i++)
-        //IP1[i].read("a");
-    //for (int i = 0; i < 8; i++)    
-        //IP2[i].read("b");
-    
-    // Alternative
     for (int i = 0; i < 8; i++)
-        IP1[i].read("a_" + to_string(i));
-
-    for (int i = 0; i < 8; i++)
-        IP2[i].read("b_" + to_string(i));
+        IP1[i].read();
+    for (int i = 0; i < 8; i++)    
+        IP2[i].read();
 
     /** Bitwise equality test **/
 
