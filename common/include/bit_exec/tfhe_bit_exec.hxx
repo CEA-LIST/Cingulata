@@ -9,9 +9,9 @@ namespace cingulata {
   /**
    * @brief      Bit executor implemenation for TFHE library.
    */
-  class TfheExecutor : public IBitExec {
+  class TfheBitExec : public IBitExec {
   public:
-    TfheExecutor(
+    TfheBitExec(
         const TFheGateBootstrappingCloudKeySet *const p_pks,
         const TFheGateBootstrappingSecretKeySet *const p_sks = nullptr);
 

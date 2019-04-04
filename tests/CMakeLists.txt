@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.9)
 
 project(tests)
 
+if(TFHE_EXEC)
+  add_subdirectory(tfhe)
+endif(TFHE_EXEC)
+
 add_subdirectory(hello)
 # add_subdirectory(kreyvium)
 # add_subdirectory(trivium)

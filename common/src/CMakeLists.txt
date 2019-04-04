@@ -23,16 +23,16 @@ set(SRCS
     int_op_gen/size.cxx
     )
 
-if (TFHE_EXEC)
-    set(SRCS ${SRCS} bit_exec/tfhe_exec.cxx)
-endif(TFHE_EXEC)
-
 add_library(common ${SRCS})
 
 target_include_directories(common PUBLIC ${INCLUDE_DIR})
 target_compile_options(common PRIVATE -Wall)
 
 if (TFHE_EXEC)
-    target_include_directories(common PRIVATE ${TFHE_INCLUDE_DIR})
-    target_link_libraries(common ${TFHE_LIBRARIES})
+    add_library(exec_tfhe)
+    target_sources(exec_tfhe PRIVATE
+        bit_exec/tfhe_bit_exec.cxx)
+    target_include_directories(exec_tfhe PUBLIC ${INCLUDE_DIR})
+    target_include_directories(exec_tfhe PUBLIC ${TFHE_INCLUDE_DIR})
+    target_link_libraries(exec_tfhe ${TFHE_LIBRARIES})
 endif(TFHE_EXEC)
