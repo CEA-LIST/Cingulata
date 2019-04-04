@@ -25,8 +25,8 @@ This script takes as input two IPv6 adresses and compute if they are equal.
 IPv6 have to be given in full representation, not in compressed one.
 
 Example:
-./run.sh 3ffe:1900:4545:3:200:f8ff:fe21:67cf 3ffe:1900:4545:3:200:f8ff:fe21:67cf
-: ' :
+./run.sh 3ffe:1900:4545:3:200:f8ff:fe21:67cf 3ffe:1900:4545:3:200:f8ff:fe21:67cf   
+: ' :       
 
 CURR_DIR=$PWD
 FILE=ipv6
@@ -40,34 +40,48 @@ mkdir -p output
 rm -f output/*.ct
 
 # Convert an IPv6 number into eight 16-bit integers.
-ipv6dec ()
+ipv6dec () 
 {
   IFS=: read a b c d e f g h <<< "$1"
-  echo "$((0x$a)) $((0x$b)) $((0x$c)) $((0x$d)) $((0x$e)) $((0x$f)) $((0x$g)) $((0x$h)) ";
-}
-
+  echo "$((0x$a)) $((0x$b)) $((0x$c)) $((0x$d)) $((0x$e)) $((0x$f)) $((0x$g)) $((0x$h)) "; 
+}  
+	
+ipv6dec2 () # print component $2
+{
+  IFS=: read a b c d e f g h <<< "$1"
+  AR=($((0x$a)) $((0x$b)) $((0x$c)) $((0x$d)) $((0x$e)) $((0x$f)) $((0x$g)) $((0x$h)));
+  echo ${AR[$2]} 
+}      
+    
+    
 # Generate keys
 echo "FHE key generation"
 $APPS_DIR/generate_keys
 
 echo "Input encryption"
-NR_THREADS=$(nproc)
+NR_THREADS=1 #$(nproc)
 
-# Encrypt IP1
+## Clean
+#TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:a_" --idx-places 0 --start-idx 0 $(ipv6dec $1)`
+#$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
+
+#TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:b_" --idx-places 0 --start-idx 0 $(ipv6dec $2)`
+#$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
+
+
+# Alternative 
 for (( i = 0; i < 8; i++ )); do
-    TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:a_"$i"_" --idx-places 0 --start-idx 0 $(ipv6dec $1)`
+    TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:a_"$i"_" --idx-places 0 --start-idx 0 $(ipv6dec2 $1 $i)`
     $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
 done
-
-# Encrypt IP2
 for (( i = 0; i < 8; i++ )); do
-    TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:b_"$i"_" --idx-places 0 --start-idx 0 $(ipv6dec $2)`
+    TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:b_"$i"_" --idx-places 0 --start-idx 0 $(ipv6dec2 $2 $i)`
     $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
 done
 
 echo "Homomorphic execution..."
 time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS
-
+ 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`
 $APPS_DIR/helper --from-bin --bit-cnt 1 --msb-first `$APPS_DIR/decrypt --secret-key fhe_key.sk $OUT_FILES`

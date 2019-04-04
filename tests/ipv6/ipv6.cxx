@@ -27,6 +27,7 @@
 /* local includes */
 #include <bit_exec/tracker.hxx>
 #include <ci_context.hxx>
+#include <ci_bit.hxx>
 #include <ci_int.hxx>
 #include <int_op_gen/mult_depth.hxx>
 
@@ -44,8 +45,15 @@ int main() {
 
     vector<CiInt> IP1(8,{CiInt::s16});
     vector<CiInt> IP2(8,{CiInt::s16});
-    CiBit answer;
 
+
+    //Clean 
+    //for (int i = 0; i < 8; i++)
+        //IP1[i].read("a");
+    //for (int i = 0; i < 8; i++)    
+        //IP2[i].read("b");
+    
+    // Alternative
     for (int i = 0; i < 8; i++)
         IP1[i].read("a_" + to_string(i));
 
@@ -54,10 +62,10 @@ int main() {
 
     /** Bitwise equality test **/
 
-    answer = (((IP1[0] == IP2[0]) * (IP1[1] == IP2[1]))  *
-             ((IP1[2] == IP2[2])  * (IP1[3] == IP2[3]))) *
-             (((IP1[4] == IP2[4]) * (IP1[5] == IP2[5]))  *
-             ((IP1[6] == IP2[6])  * (IP1[7] == IP2[7]))) ;
+    CiBit answer = ((((IP1[0] == IP2[0]) * (IP1[1] == IP2[1]))  *
+                   ((  IP1[2] == IP2[2]) * (IP1[3] == IP2[3]))) *
+                   ((( IP1[4] == IP2[4]) * (IP1[5] == IP2[5]))  *
+                   ((  IP1[6] == IP2[6]) * (IP1[7] == IP2[7]))));
     answer.write("c");
 
     /* Export to file the "tracked" circuit */
