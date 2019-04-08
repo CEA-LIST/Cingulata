@@ -31,10 +31,10 @@ rm -f input/*.ct
 mkdir -p output
 rm -f output/*.ct
 
-LIST_SIZE=@LIST_SIZE@ 
+LIST_SIZE=@LIST_SIZE@
 
 # Convert an IPv4 adress to its decimal equivalent.
-ipv4dec () 
+ipv4dec ()
 {
 	declare -i a b c d;
 	IFS=. read a b c d <<<"$1";
@@ -48,13 +48,13 @@ $APPS_DIR/generate_keys
 echo "Input encryption"
 NR_THREADS=$(nproc)
 
-$APPS_DIR/encrypt -v --public-key fhe_key.pk   `$APPS_DIR/helper --bit-cnt 32 --msb-first --prefix input/i_ --idx-places 0 $(ipv4dec $1) $(head -$LIST_SIZE plaintext/ipv4.dat | while read IP; do ipv4dec $IP; done  | xargs | sed "s/ ---- /\n---- /g")` --threads $NR_THREADS
+$APPS_DIR/encrypt -v `$APPS_DIR/helper --bit-cnt 32 $(ipv4dec $1) $(head -$LIST_SIZE plaintext/ipv4.dat | while read IP; do ipv4dec $IP; done  | xargs | sed "s/ ---- /\n---- /g")` --threads $NR_THREADS
 
 echo "Homomorphic execution..."
-time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS # -v 
- 
+time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS # -v
+
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`
-$APPS_DIR/helper --from-bin --bit-cnt 8 --msb-first `$APPS_DIR/decrypt --threads $NR_THREADS --secret-key fhe_key.sk $OUT_FILES `
+$APPS_DIR/helper --from-bin --bit-cnt 8 `$APPS_DIR/decrypt --threads $NR_THREADS  $OUT_FILES `
 
 ls -l --human-readable output

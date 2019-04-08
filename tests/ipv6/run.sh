@@ -55,14 +55,14 @@ NR_THREADS=$(nproc)
 
 # Encrypt IP1
 for (( i = 0; i < 8; i++ )); do
-    TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:a_"$i"_" --idx-places 0 --start-idx 0 $(ipv6dec $1)`
-    $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
+    TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:a_"$i"_"   $(ipv6dec $1)`
+    $APPS_DIR/encrypt -v   --threads $NR_THREADS $TMP
 done
 
 # Encrypt IP2
 for (( i = 0; i < 8; i++ )); do
-    TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:b_"$i"_" --idx-places 0 --start-idx 0 $(ipv6dec $2)`
-    $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
+    TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:b_"$i"_"   $(ipv6dec $2)`
+    $APPS_DIR/encrypt -v   --threads $NR_THREADS $TMP
 done
 
 echo "Homomorphic execution..."
@@ -70,4 +70,4 @@ time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS
 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`
-$APPS_DIR/helper --from-bin --bit-cnt 1 --msb-first `$APPS_DIR/decrypt --secret-key fhe_key.sk $OUT_FILES`
+$APPS_DIR/helper --from-bin --bit-cnt 1  `$APPS_DIR/decrypt  $OUT_FILES`

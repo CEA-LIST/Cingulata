@@ -39,6 +39,6 @@ add_custom_command(OUTPUT ${XML_PARAMS}
 set(LAST_DEPEND ${XML_PARAMS})
 
 add_custom_target(${TEST_NAME} ALL
-  DEPENDS ${LAST_DEPEND})
+  DEPENDS ${LAST_DEPEND} runtime)
 
 configure_file("run.sh" "run.sh" COPYONLY)

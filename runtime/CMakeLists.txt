@@ -7,3 +7,7 @@ add_subdirectory(fhe_fv)
 add_subdirectory(fhe_apps)
 
 add_subdirectory(dyn_omp)
+
+
+add_custom_target(runtime
+  DEPENDS fhe_apps dyn_omp)

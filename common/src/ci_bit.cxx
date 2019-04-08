@@ -33,7 +33,7 @@ CiBit& CiBit::operator=(CiBit&& other) {
   return *this;
 }
 
-std::string CiBit::get_name() {
+std::string CiBit::get_name() const {
   return name;
 }
 

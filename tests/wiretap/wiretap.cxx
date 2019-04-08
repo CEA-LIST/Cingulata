@@ -43,7 +43,7 @@ int main()
 	r&=0xf;
 
 	cout<<r;
-	
+
 	FINALIZE_CIRCUIT(blif_name);
 }
 

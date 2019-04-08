@@ -2,12 +2,12 @@ cmake_minimum_required(VERSION 3.0)
 
 set(TEST_NAME intersection)
 
-set(SRCS 
+set(SRCS
     ${TEST_NAME}.cxx
     )
-    
+
 set(FIRST_LIST_SIZE 5)
-set(SECOND_LIST_SIZE 5)    
+set(SECOND_LIST_SIZE 5)
 
 set(BLIF_NAME ${TEST_NAME}.blif)
 set(BLOP_NAME ${TEST_NAME}-opt.blif)
@@ -16,13 +16,13 @@ add_compile_options(-Wall -std=c++11 -Dfirst_list_size=${FIRST_LIST_SIZE} -Dseco
 
 set(GEN_NAME ${TEST_NAME}-gen)
 
-add_executable(${GEN_NAME} ${SRCS}) 
+add_executable(${GEN_NAME} ${SRCS})
 
-target_link_libraries(${GEN_NAME} generator)
+target_link_libraries(${GEN_NAME} common)
 
 add_custom_command(OUTPUT ${BLIF_NAME}
   COMMAND ./${GEN_NAME} < /dev/null
-  DEPENDS ${GEN_NAME}) 
+  DEPENDS ${GEN_NAME})
 
 add_custom_command(OUTPUT ${BLOP_NAME}
   COMMAND python3 ../../optim/abc_optimize.py -i ${BLIF_NAME} -o ${BLOP_NAME} -v
@@ -40,7 +40,7 @@ add_custom_command(OUTPUT ${XML_PARAMS}
 set(LAST_DEPEND ${XML_PARAMS})
 
 add_custom_target(${TEST_NAME} ALL
-  DEPENDS ${LAST_DEPEND})
+  DEPENDS ${XML_PARAMS} runtime)
 
 configure_file("run.sh.in" "run.sh" @ONLY)
 file(COPY "plaintext/" DESTINATION "plaintext/" )

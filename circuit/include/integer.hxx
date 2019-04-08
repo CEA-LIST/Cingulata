@@ -26,20 +26,28 @@
 #include <stdint.h>
 
 /* compilation of the program, integer types are sliced integer types */
-#include <bit-tracker.hxx>
-#include <sliced-integer.hxx>
-typedef SlicedInteger<BitTracker,int8_t>  Integer8;
-typedef SlicedInteger<BitTracker,int16_t> Integer16;
-typedef SlicedInteger<BitTracker,int32_t> Integer32;
-typedef SlicedInteger<BitTracker,int64_t> Integer64;
-typedef BitTracker Bit;
+#include "sliced-integer.hxx"
 
-#define FINALIZE_CIRCUIT(name) \
-  { \
-    ofstream f(name); \
-    BitTracker::record().blif(f); \
-    f.close(); \
+[[deprecated("this class will be removed in next major release")]]
+ typedef SlicedInteger<int8_t>  Integer8;
+[[deprecated("this class will be removed in next major release")]]
+ typedef SlicedInteger<int16_t> Integer16;
+[[deprecated("this class will be removed in next major release")]]
+ typedef SlicedInteger<int32_t> Integer32;
+[[deprecated("this class will be removed in next major release")]]
+ typedef SlicedInteger<int64_t> Integer64;
+[[deprecated("this class will be removed in next major release")]]
+ typedef Integer8::Bit Bit;
+
+#include <ci_context.hxx>
+#include <bit_exec/tracker.hxx>
+
+#define FINALIZE_CIRCUIT(name)                                                 \
+  {                                                                            \
+    cingulata::CiContext::get_bit_exec_t<cingulata::BitTracker>()              \
+        ->export_blif(name);                                                   \
   }
 
 #endif /* !defined(__INTEGER_H__) */
+
 

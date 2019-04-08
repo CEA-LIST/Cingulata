@@ -21,6 +21,7 @@
 /* compiler includes */
 #include <iostream>
 #include <fstream>
+#include <cmath>
 
 #include <integer.hxx>
 
@@ -40,7 +41,7 @@ using namespace std;
 
 /* Rippler-carry adder (for bits) */
 Bit * add
-  (Bit * left_io, 
+  (Bit * left_io,
    const Bit * right_i, unsigned int size)
 {
   /* carry flag for current 1-bit addition */
@@ -96,50 +97,50 @@ Bit* hammingWeightTest(Bit *x, unsigned int &l, unsigned int size) {
 	Bit *inter=new Bit[l+1];
 	for(unsigned int i=0; i<l; i++){
 		inter[i]=x[i];
-	} 
-	
-	
+	}
+
+
 	unsigned int le=l;
 	while(le != ceil(log2(l))){
 			printf("inter \n");
 			for(unsigned int i=0; i<le; i++){
 			cout<<inter[i];
-			} 
+			}
 			unsigned int m=round(le/2);
 			unsigned int n=le-m;
 			Bit *left=new Bit[m+1];
 			Bit *right=new Bit[n+1];
 			printf("left_part ÷\n");
-	
+
 			for(unsigned int i=0; i<m; i++){
 				left[i]=inter[i];
 				cout<<left[i];
 			}
 			printf("right_part \n");
-	
+
 			for(unsigned int i=m; i<m+n; i++){
 				right[i-m]=inter[i];
 				cout<<right[i-m];
 			}
 			printf("zeeddkjz");
-			
+
 			Bit carry_v;
 			for (unsigned index_v=0; index_v < le; ++index_v){
 				inter[index_v]=Bit(false);
 			}
 			for (unsigned index_v=0; index_v < m; ++index_v)
-			  { 
+			  {
 				Bit xor_v1 = left[index_v] ^ carry_v;
 
 				if (index_v < m-1)
-				{ 
+				{
 				Bit xor_v2 = right[index_v] ^ carry_v;
 				  carry_v = (xor_v1 & xor_v2) ^ carry_v;
 				}
-				
+
 				inter[index_v] = right[index_v] ^ xor_v1;
 			  }
-				
+
 			le=ceil(le/2);
 			printf("---------------");
 	}
@@ -152,7 +153,7 @@ Integer8 hammingWeight(Bit *x, unsigned int N){
 //		printf("\n n=1");
 //		cout<<x[N-1];
 //printf("----------");
-	//	cout<<Integer8(x[N-1] ^ Bit(false)); 
+	//	cout<<Integer8(x[N-1] ^ Bit(false));
 		return (Integer8(x[N-1] ^ Bit(false)));
 	}
 	unsigned int m=round(N/2);
@@ -175,14 +176,14 @@ Integer8 hammingWeight(Bit *x, unsigned int N){
 
 /* transform current_value parameter in a binary representation on size bits */
 Bit * transform(unsigned int current_value, unsigned int size){
-	
+
   Bit *current=new Bit[size];
-  
+
   for (unsigned index_v=0; index_v < size; ++index_v)
   {/* set all bits at zero */
     current[index_v] = Bit(false);
   }
-  
+
   /* update with the new current value */
   if (current_value)
   { /* case: some bits are not zero */
@@ -207,8 +208,8 @@ void sort_opt(Integer8 *x, Integer8 *y, unsigned int N){
 					m[j][i]=m[i][j] ^ Bit(true);
 			}
 	}
-	
-	
+
+
 	//compute transpose of the matrix
 	for(unsigned int i=0; i<N; i++) {
 		m[i][i]=Bit(false);
@@ -218,8 +219,8 @@ void sort_opt(Integer8 *x, Integer8 *y, unsigned int N){
 					m[j][i]=aux;
 		}
 	}
-	
-	
+
+
 /*	for(unsigned int i=0; i<N; i++) {
 		for(unsigned int j=0; j<N; j++)
 			cout<<m[i][j]<<endl;
@@ -235,30 +236,29 @@ void sort_opt(Integer8 *x, Integer8 *y, unsigned int N){
 		//printf("\n hamming weight");
 	//	cout<<hamming_weights[i]<<endl;
 	}
-	
-	
+
 	for(unsigned int i=0; i<N; i++) {
 		y[i]=Integer8(0);
 		for(unsigned int j=0; j<N; j++) {
 				Bit z;
-				
+
 				Bit *bi=transform(i, size);
 				z=(is_equal(hamming_weights[j], bi, 0,size-1));
-				y[i] = y[i] ^ (x[j] & z); 
+				y[i] = y[i] ^ (x[j] & z);
 				/*printf("haming \n");
 				for(unsigned int k=0; k< size; k++){
-						cout<<hamming_weights[j][k]; 
+						cout<<hamming_weights[j][k];
 				}
 				printf("binary i \n");
 				for(unsigned int k=0; k< size; k++){
-						cout<<bi[k]; 
+						cout<<bi[k];
 				}
-				
+
 				printf("z \n");cout << z <<endl;*/
-				
+
 				delete[] bi;
 		}
-		
+
 		//cout<<endl;
 	}
 	//cout<<endl;
@@ -277,8 +277,8 @@ void sort(Integer8 *x, Integer8 *y, unsigned int N){
 					m[j][i]=m[i][j] ^ Bit(true);
 			}
 	}
-	
-	
+
+
 	//compute transpose of the matrix
 	for(unsigned int i=0; i<N; i++) {
 		m[i][i]=Bit(false);
@@ -288,8 +288,8 @@ void sort(Integer8 *x, Integer8 *y, unsigned int N){
 					m[j][i]=aux;
 		}
 	}
-	
-	
+
+
 /*	for(unsigned int i=0; i<N; i++) {
 		for(unsigned int j=0; j<N; j++)
 			cout<<m[i][j]<<endl;
@@ -304,8 +304,8 @@ void sort(Integer8 *x, Integer8 *y, unsigned int N){
 		//printf("\n hamming weight");
 		//cout<<hamming_weights[i]<<endl;
 	}
-	
-	
+
+
 	for(unsigned int i=0; i<N; i++) {
 		y[i]=Integer8(0);
 		for(unsigned int j=0; j<N; j++) {
@@ -313,15 +313,15 @@ void sort(Integer8 *x, Integer8 *y, unsigned int N){
 				z=(Integer8(i)==hamming_weights[j]);
 				//cout << z <<endl;
 				//cout<<y[i]<<endl;
-				
-				//cout<<select( (z & Bit(true)), x[j], Integer8(0))<<endl; 
-				
-				//y[i] = (y[i] ^ select( (z & Bit(true)), x[j], Integer8(0))); 
-				y[i] = y[i] ^ (x[j] & z); 
-				
+
+				//cout<<select( (z & Bit(true)), x[j], Integer8(0))<<endl;
+
+				//y[i] = (y[i] ^ select( (z & Bit(true)), x[j], Integer8(0)));
+				y[i] = y[i] ^ (x[j] & z);
+
 				//cout<<y[i] <<endl;
 		}
-		
+
 		//cout<<endl;
 	}
 	//cout<<endl;
@@ -332,17 +332,17 @@ void test_sorting(){
 	// suppose the array to be sorted has a predifined fixed size N
 	unsigned int N; //=4;
 	cin>>N;
-	
+
 	Integer8 x[N];
 	for(unsigned int i=0; i<N; i++) {
 		cin>>x[i];
 	}
-	
+
 	Integer8 y[N];
 	for(unsigned int i=0; i<N; i++) y[i]=Integer8(0);
-	//call function to sort tables 
+	//call function to sort tables
 	sort_opt(x,y,N);
-	
+
 	for (unsigned int i = 0 ; i <N ; i++)	{
 		cout << y[i];// << endl;
 	}

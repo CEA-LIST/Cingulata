@@ -41,20 +41,20 @@ NR_THREADS=1
 
 STATE_BIN='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
 
-$APPS_DIR/encrypt --public-key fhe_key.pk -v --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 1 --prefix input/i_ --msb-first --start-idx 2 --idx-places 0  $STATE_BIN` 
+$APPS_DIR/encrypt -v --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 1 $STATE_BIN`
 
-#./encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS `./helper --bit-cnt 8 --msb-first --prefix input/i_ --idx-places 0 5 3`
+#./encrypt -v   --threads $NR_THREADS `./helper --bit-cnt 8    5 3`
 
 echo "Homomorphic execution..."
-time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS # -v 
+time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS # -v
 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`
-#./helper --from-bin --bit-cnt 8 --msb-first `./decrypt --secret-key fhe_key.sk $OUT_FILES`
-$APPS_DIR/decrypt --secret-key fhe_key.sk $OUT_FILES
+#./helper --from-bin --bit-cnt 8  `./decrypt  $OUT_FILES`
+$APPS_DIR/decrypt  $OUT_FILES
 
 echo "Reference output"
 cat ref.txt
 
 
- 
+

@@ -78,7 +78,7 @@ namespace cingulata
      *
      * @return     object name
      */
-    std::string get_name();
+    std::string get_name() const;
 
     /**
      * @brief      Set bit name

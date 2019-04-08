@@ -29,7 +29,7 @@
 # list contain list_size elements or more but not less
 # request word and items in the list contain EXACTLY nb_char elements not more, not less
 
-NB_CHARS=@NB_CHARS@ #we store data on NB_CHARS Integer8 
+NB_CHARS=@NB_CHARS@ #we store data on NB_CHARS Integer8
 LIST_SIZE=@LIST_SIZE@
 REQUEST=$1
 LIST_FILE="countries$NB_CHARS"
@@ -50,7 +50,7 @@ rm -f output/*.ct
 
 decimal()
 {
- echo -n "$1" | od -A n -t d1 | sed "s/ \+/ /g" | cut -c2-  
+ echo -n "$1" | od -A n -t d1 | sed "s/ \+/ /g" | cut -c2-
 }
 
 words2decimal()
@@ -68,17 +68,17 @@ NR_THREADS=$(nproc)
 
 decimalRequest=$(decimal "$REQUEST")
 
-first_rows="$(sed -n 1,"$LIST_SIZE"p < plaintext/$LIST_FILE)" 
+first_rows="$(sed -n 1,"$LIST_SIZE"p < plaintext/$LIST_FILE)"
 decimalList=$(echo  $(words2decimal))
 
-$APPS_DIR/encrypt -v --public-key fhe_key.pk   `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i_ --idx-places 0  $decimalRequest $decimalList` --threads $NR_THREADS
+$APPS_DIR/encrypt -v `$APPS_DIR/helper --bit-cnt 8 $decimalRequest $decimalList` --threads $NR_THREADS
 
 echo "Homomorphic execution..."
-time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS # -v 
+time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS # -v
 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`
-$APPS_DIR/helper --from-bin --bit-cnt 1 --msb-first `$APPS_DIR/decrypt --threads $NR_THREADS --secret-key fhe_key.sk $OUT_FILES `
+$APPS_DIR/helper --from-bin --bit-cnt 1 `$APPS_DIR/decrypt --threads $NR_THREADS  $OUT_FILES `
 
 # To see size of output ciphertext
 ls -l --human-readable output

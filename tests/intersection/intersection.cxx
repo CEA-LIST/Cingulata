@@ -67,7 +67,8 @@ int main() {
   }
   Integer32 not_member(0);
   for (int i = 0; i < first_list_size; i++) {
-    cout << select(are_equal[i], first_list[i], not_member);
+    Integer32 tmp = select(are_equal[i], first_list[i], not_member);
+    cout << tmp;
   }
 
 	FINALIZE_CIRCUIT(blif_name);

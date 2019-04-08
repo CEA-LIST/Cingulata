@@ -40,21 +40,21 @@ echo "Input formatting & encryption"
 NR_THREADS=1
 
 #encrypt client data
-$APPS_DIR/helper --bit-cnt 5 --prefix %i:flags_        --start-idx 0 --suffix '' 254 > clear_data.data
-$APPS_DIR/helper --bit-cnt 8 --prefix %i:age_          --start-idx 0 --suffix '' 229 >> clear_data.data
-$APPS_DIR/helper --bit-cnt 8 --prefix %i:hdl_          --start-idx 0 --suffix '' 211 >> clear_data.data
-$APPS_DIR/helper --bit-cnt 8 --prefix %i:height_       --start-idx 0 --suffix '' 139 >> clear_data.data
-$APPS_DIR/helper --bit-cnt 8 --prefix %i:weight_       --start-idx 0 --suffix '' 12 >> clear_data.data
-$APPS_DIR/helper --bit-cnt 8 --prefix %i:physical_act_ --start-idx 0 --suffix '' 6 >> clear_data.data
-$APPS_DIR/helper --bit-cnt 8 --prefix %i:drinking_     --start-idx 0 --suffix '' 193  >> clear_data.data
+$APPS_DIR/helper --bit-cnt 5 --prefix %i:flags_         --suffix '' 254 > clear_data.data
+$APPS_DIR/helper --bit-cnt 8 --prefix %i:age_           --suffix '' 229 >> clear_data.data
+$APPS_DIR/helper --bit-cnt 8 --prefix %i:hdl_           --suffix '' 211 >> clear_data.data
+$APPS_DIR/helper --bit-cnt 8 --prefix %i:height_        --suffix '' 139 >> clear_data.data
+$APPS_DIR/helper --bit-cnt 8 --prefix %i:weight_        --suffix '' 12 >> clear_data.data
+$APPS_DIR/helper --bit-cnt 8 --prefix %i:physical_act_  --suffix '' 6 >> clear_data.data
+$APPS_DIR/helper --bit-cnt 8 --prefix %i:drinking_      --suffix '' 193  >> clear_data.data
 sed -i 's/%/\n/g' clear_data.data
 sed -i '/^$/d' clear_data.data
 
 # encrypt 7*8-bit kreyvium ciphered inputs and homomorphically mined kreyvium key
 KS=(241 210 225 219 92 43 197)
 for (( i = 0; i < ${#KS[@]}; i++ )); do
-  TMP=`$APPS_DIR/helper --bit-cnt 8 --prefix "input/i:ks_"$i"_" --start-idx 0 ${KS[i]}`
-  $APPS_DIR/encrypt --public-key fhe_key.pk -v --threads $NR_THREADS $TMP
+  TMP=`$APPS_DIR/helper --bit-cnt 8 --prefix "input/i:ks_"$i"_"  ${KS[i]}`
+  $APPS_DIR/encrypt  -v --threads $NR_THREADS $TMP
 done
 
 echo "FHE execution"
@@ -62,6 +62,6 @@ time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS --clear-inps clear
 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`
-$APPS_DIR/helper --from-bin --bit-cnt 8 `$APPS_DIR/decrypt --secret-key fhe_key.sk $OUT_FILES`
+$APPS_DIR/helper --from-bin --bit-cnt 8 `$APPS_DIR/decrypt  $OUT_FILES`
 
 

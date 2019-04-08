@@ -23,19 +23,19 @@
 
 # To search an ASCII  word in a list of y ASCII words (sensitive-case, truncation). All words are represented on x bytes (integer8) (possibly partially with truncature).
 
-# ./search_max_length.sh word 
+# ./search_max_length.sh word
 # The values x and y are defined in CMakeLists.txt
 
 # Example with a file containing a list of countries
 # ./search_max_length.sh France
-# ./search_max_length.sh azerty 
+# ./search_max_length.sh azerty
 # ./search_max_length.sh "Cote D'ivoire"   #work with ASCII characters not only alphabetic ones, if there are spaces, put ""
 
 # Requirements
 # list do not contain several times the same item
 # list contain list_size elements or more but not less
 
-NB_CHARS=@NB_CHARS@ #we store data on NB_CHARS Integer8 
+NB_CHARS=@NB_CHARS@ #we store data on NB_CHARS Integer8
 LIST_SIZE=@LIST_SIZE@
 REQUEST=$1
 LIST_FILE="countries"
@@ -56,14 +56,14 @@ rm -f output/*.ct
 # Precomputation consists in transforming words into x Integer8 using ASCII encoding, zero padding and truncation
 
 #echo "padding: with null character (and trucation if necessary) to get a constant lenght word"
-padding() 
+padding()
 {
-	unpadded_length=${#1} 
+	unpadded_length=${#1}
 	padded_length=$2
 	nb_missing_char=$((padded_length - unpadded_length))
 	prefix=$(printf "$1" |xxd -p)
 	suffix=$(printf '%*s' $nb_missing_char | tr ' ' '\0' |xxd -p)
-	hexdump="$prefix$suffix" 
+	hexdump="$prefix$suffix"
 	echo ${hexdump:0:$((2*$padded_length))} | \grep -o .. | tr '\n' ' ' ; echo
 }
 
@@ -88,17 +88,17 @@ NR_THREADS=$(nproc)
 decimalRequest=$(echo $(hex2dec "$(padding "$REQUEST" $NB_CHARS)"))
 
 # select first rows of list file
-first_rows="$(sed -n 1,"$LIST_SIZE"p < plaintext/$LIST_FILE)"  
-decimalList=$(echo $(hex2dec "$(echo  $(words2padding $NB_CHARS))")) 
+first_rows="$(sed -n 1,"$LIST_SIZE"p < plaintext/$LIST_FILE)"
+decimalList=$(echo $(hex2dec "$(echo  $(words2padding $NB_CHARS))"))
 
-$APPS_DIR/encrypt -v --public-key fhe_key.pk   `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i_ --idx-places 0 $decimalRequest $decimalList` --threads $NR_THREADS
+$APPS_DIR/encrypt -v `$APPS_DIR/helper --bit-cnt 8    $decimalRequest $decimalList` --threads $NR_THREADS
 
 echo "Homomorphic execution..."
-time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS # -v 
+time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS # -v
 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`
-$APPS_DIR/helper --from-bin --bit-cnt 1 --msb-first `$APPS_DIR/decrypt --threads $NR_THREADS --secret-key fhe_key.sk $OUT_FILES `
+$APPS_DIR/helper --from-bin --bit-cnt 1 `$APPS_DIR/decrypt --threads $NR_THREADS  $OUT_FILES `
 
 # To see size of output ciphertext
 ls -l --human-readable output

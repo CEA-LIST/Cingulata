@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 
 set(TEST_NAME ASCII)
 
-set(SRCS 
+set(SRCS
     ${TEST_NAME}.cxx
     )
 
@@ -16,13 +16,13 @@ add_compile_options(-Wall -std=c++11 -Dnb_chars=${NB_CHARS} -Dlist_size=${LIST_S
 
 set(GEN_NAME ${TEST_NAME}-gen)
 
-add_executable(${GEN_NAME} ${SRCS}) 
+add_executable(${GEN_NAME} ${SRCS})
 
-target_link_libraries(${GEN_NAME} generator)
+target_link_libraries(${GEN_NAME} common)
 
 add_custom_command(OUTPUT ${BLIF_NAME}
   COMMAND ./${GEN_NAME} < /dev/null
-  DEPENDS ${GEN_NAME}) 
+  DEPENDS ${GEN_NAME})
 
 add_custom_command(OUTPUT ${BLOP_NAME}
   COMMAND python3 ../../optim/abc_optimize.py -i ${BLIF_NAME} -o ${BLOP_NAME} -v
@@ -40,7 +40,7 @@ add_custom_command(OUTPUT ${XML_PARAMS}
 set(LAST_DEPEND ${XML_PARAMS})
 
 add_custom_target(${TEST_NAME} ALL
-  DEPENDS ${LAST_DEPEND})
+  DEPENDS ${XML_PARAMS} runtime)
 
 configure_file("search_fixed_length.sh.in" "search_fixed_length.sh" @ONLY)
 configure_file("search_max_length.sh.in" "search_max_length.sh" @ONLY)

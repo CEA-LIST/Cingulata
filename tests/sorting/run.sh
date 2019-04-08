@@ -39,7 +39,7 @@ $APPS_DIR/generate_keys
 echo "Input encryption"
 NR_THREADS=1
 
-$APPS_DIR/encrypt --public-key fhe_key.pk -v --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 8 --prefix input/i_    --msb-first --start-idx 2 --idx-places 0 42 7 37 2`
+$APPS_DIR/encrypt -v --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 8 42 7 37 2`
 
 echo "FHE execution..."
 $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS
@@ -47,9 +47,9 @@ $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS
 echo "Output decryption"
 #decrypt 8-bit output
 OUT_FILES=`ls -v output/*`
-$APPS_DIR/helper --from-bin --bit-cnt 8 --msb-first `$APPS_DIR/decrypt --secret-key fhe_key.sk $OUT_FILES`
+$APPS_DIR/helper --from-bin --bit-cnt 8  `$APPS_DIR/decrypt  $OUT_FILES`
 
 
 
 
- 
+
