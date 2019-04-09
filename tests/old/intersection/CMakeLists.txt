@@ -1,15 +1,18 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(TEST_NAME ipv6)
+set(TEST_NAME intersection)
 
 set(SRCS
     ${TEST_NAME}.cxx
     )
 
+set(FIRST_LIST_SIZE 5)
+set(SECOND_LIST_SIZE 5)
+
 set(BLIF_NAME ${TEST_NAME}.blif)
 set(BLOP_NAME ${TEST_NAME}-opt.blif)
 
-add_compile_options(-Wall -std=c++11 -Dblif_name="${BLIF_NAME}")
+add_compile_options(-Wall -std=c++11 -Dfirst_list_size=${FIRST_LIST_SIZE} -Dsecond_list_size=${SECOND_LIST_SIZE} -Dblif_name="${BLIF_NAME}")
 
 set(GEN_NAME ${TEST_NAME}-gen)
 
@@ -18,12 +21,13 @@ add_executable(${GEN_NAME} ${SRCS})
 target_link_libraries(${GEN_NAME} common)
 
 add_custom_command(OUTPUT ${BLIF_NAME}
-  COMMAND ./${GEN_NAME}
+  COMMAND ./${GEN_NAME} < /dev/null
   DEPENDS ${GEN_NAME})
 
 add_custom_command(OUTPUT ${BLOP_NAME}
   COMMAND python3 ${OPTIM_DIR}/abc_optimize.py -i ${BLIF_NAME} -o ${BLOP_NAME} -v
   DEPENDS abc ${BLIF_NAME})
+
 
 set(XML_PARAMS fhe_params.xml)
 set(MUL_DEPTH_SCRIPT ${OPTIM_DIR}/graph_info.py)
@@ -39,6 +43,6 @@ add_custom_target(${TEST_NAME} ALL
   DEPENDS ${XML_PARAMS} runtime)
 
 set(APPS_DIR ${CMAKE_BINARY_DIR}/apps)
-configure_file("run.sh.in" "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/run.sh" @ONLY)
-file(COPY "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/run.sh" DESTINATION . FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+configure_file("run.sh.in" "run.sh" @ONLY)
+file(COPY "plaintext/" DESTINATION "plaintext/" )
 file(COPY "README.md" DESTINATION .)
