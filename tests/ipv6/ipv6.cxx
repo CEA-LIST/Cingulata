@@ -41,24 +41,18 @@ int main() {
     * operations */
     CiContext::set_config(new BitTracker(), new IntOpGenDepth());
 
-    /** IPv6 can be splitted into 8 integers of 2 octets. **/
+   /** ipv6 contains 128 bits **/
+    CiInt IP1(0,128,false);  // CiInt is a vector of CiBit 
+    CiInt IP2(0,128,false);
+    
+    for (int i = 0; i < 128; i++)
+    {
+        IP1[i].read("a" + to_string(i));  
+        IP2[i].read("b" + to_string(i));
+    }
 
-    vector<CiInt> IP1(8,{CiInt::s16});
-    vector<CiInt> IP2(8,{CiInt::s16});
+    CiBit answer=(IP1==IP2).write("c");
 
-
-    for (int i = 0; i < 8; i++)
-        IP1[i].read();
-    for (int i = 0; i < 8; i++)    
-        IP2[i].read();
-
-    /** Bitwise equality test **/
-
-    CiBit answer = ((((IP1[0] == IP2[0]) * (IP1[1] == IP2[1]))  *
-                   ((  IP1[2] == IP2[2]) * (IP1[3] == IP2[3]))) *
-                   ((( IP1[4] == IP2[4]) * (IP1[5] == IP2[5]))  *
-                   ((  IP1[6] == IP2[6]) * (IP1[7] == IP2[7]))));
-    answer.write("c");
 
     /* Export to file the "tracked" circuit */
     CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name, "ipv6");

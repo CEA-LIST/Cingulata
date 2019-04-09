@@ -51,12 +51,12 @@ echo "FHE key generation"
 $APPS_DIR/generate_keys
 
 echo "Input encryption"
-NR_THREADS=$(nproc)
+NR_THREADS=1
 
-TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:" --idx-places 0 --start-idx 0 $(ipv6dec $1)`
+TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:a" --idx-places 0 --start-idx 0 $(ipv6dec $1)`
 $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
 
-TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:" --idx-places 0 --start-idx 128 $(ipv6dec $2)`
+TMP=`$APPS_DIR/helper --bit-cnt 16 --prefix input/"i:b" --idx-places 0 --start-idx 0 $(ipv6dec $2)`
 $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS $TMP
 
 echo "Homomorphic execution..."
