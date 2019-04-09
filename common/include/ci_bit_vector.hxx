@@ -383,7 +383,7 @@ namespace cingulata
    * @{
    */
   std::istream& operator>>(std::istream&, CiBitVector&);
-  std::ostream& operator<<(std::ostream&, CiBitVector&);
+  std::ostream& operator<<(std::ostream&, const CiBitVector&);
   /**
    * @}
    */

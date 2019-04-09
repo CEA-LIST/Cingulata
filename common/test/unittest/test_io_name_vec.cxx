@@ -14,7 +14,7 @@ public:
   MOCK_METHOD0(clr_name, void ());
   MOCK_METHOD0(read, void ());
   MOCK_METHOD1(read, void (const string& p_name));
-  MOCK_METHOD0(write, void ());
+  MOCK_CONST_METHOD0(write, void ());
   MOCK_METHOD1(write, void (const string& p_name));
   MOCK_METHOD0(encrypt, void ());
   MOCK_METHOD0(decrypt, void ());
@@ -30,7 +30,7 @@ public:
       m_vec.push_back(make_shared<MockVecElem>());
   }
 
-  unsigned size() { return m_vec.size(); }
+  unsigned size() const { return m_vec.size(); }
 
   const MockVecElem& operator [] (const int idx) const { return *m_vec[idx]; }
   MockVecElem& operator [] (const int idx) { return *m_vec[idx]; }

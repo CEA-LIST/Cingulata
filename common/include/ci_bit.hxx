@@ -78,7 +78,7 @@ namespace cingulata
      *
      * @return     object name
      */
-    std::string get_name();
+    std::string get_name() const;
 
     /**
      * @brief      Set bit name
@@ -137,7 +137,7 @@ namespace cingulata
      *
      * @return     reference to current object
      */
-    CiBit& write();
+    const CiBit& write() const;
 
     /**
      * @brief      Set name and write bit
@@ -315,7 +315,7 @@ namespace cingulata
    * @{
    */
   std::istream& operator>>(std::istream&, CiBit&);
-  std::ostream& operator<<(std::ostream&, CiBit&);
+  std::ostream& operator<<(std::ostream&, const CiBit&);
   /**
    * @}
    */
