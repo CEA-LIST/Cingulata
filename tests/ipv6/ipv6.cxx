@@ -45,12 +45,8 @@ int main() {
     CiInt IP1(0,128,false);  // CiInt is a vector of CiBit
     CiInt IP2(0,128,false);
 
-<<<<<<< HEAD
-    (IP1==IP2).write("c");
-=======
     IP1.read("a");
     IP2.read("b");
->>>>>>> 195aa6a1f14d0342bb4842867c79014cb44b16b0
 
     (IP1==IP2).write("c");
 
