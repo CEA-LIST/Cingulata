@@ -365,7 +365,7 @@ istream& cingulata::operator>>(istream& inp, CiInt& val) {
   return inp;
 }
 
-ostream& cingulata::operator<<(ostream& out, CiInt& val) {
+ostream& cingulata::operator<<(ostream& out, const CiInt& val) {
   val.write();
   return out;
 }

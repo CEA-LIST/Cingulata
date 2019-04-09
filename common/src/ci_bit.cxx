@@ -33,7 +33,7 @@ CiBit& CiBit::operator=(CiBit&& other) {
   return *this;
 }
 
-std::string CiBit::get_name() {
+std::string CiBit::get_name() const {
   return name;
 }
 
@@ -67,15 +67,17 @@ CiBit& CiBit::read(const std::string& p_name) {
   return set_name(p_name).read();
 }
 
-CiBit& CiBit::write() {
+const CiBit& CiBit::write() const {
+  ObjHandle hdl = obj_hdl;
   if (is_plain())
-    obj_hdl = CiContext::get_bit_exec()->encode(get_val());
-  CiContext::get_bit_exec()->write(obj_hdl, get_name());
+    hdl = CiContext::get_bit_exec()->encode(get_val());
+  CiContext::get_bit_exec()->write(hdl, get_name());
   return *this;
 }
 
 CiBit& CiBit::write(const std::string& p_name) {
-  return set_name(p_name).write();
+  set_name(p_name).write();
+  return *this;
 }
 
 CiBit& CiBit::encrypt() {
@@ -226,7 +228,7 @@ istream& cingulata::operator>>(istream& inp, CiBit& val) {
   return inp;
 }
 
-ostream& cingulata::operator<<(ostream& out, CiBit& val) {
+ostream& cingulata::operator<<(ostream& out, const CiBit& val) {
   val.write();
   return out;
 }
