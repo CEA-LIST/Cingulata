@@ -41,13 +41,11 @@ int main() {
 
   CiInt IP1{CiInt::s32};   // create from signed 32-bit template
   CiInt IP2{CiInt::s32};
-  CiBit answer;
   
   IP1.read("a");
   IP2.read("b");
 
-  answer = (IP1 == IP2);
-  answer.write("c");
+  (IP1 == IP2).write("c");
 
   /* Export to file the "tracked" circuit */
   CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name, "ipv4");

@@ -51,7 +51,7 @@ int main() {
         IP2[i].read("b" + to_string(i));
     }
 
-    CiBit answer=(IP1==IP2).write("c");
+    (IP1==IP2).write("c");
 
 
     /* Export to file the "tracked" circuit */
