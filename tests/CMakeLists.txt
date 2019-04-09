@@ -4,7 +4,7 @@ project(tests)
 
 add_subdirectory(hello)
 # add_subdirectory(kreyvium)
-# add_subdirectory(trivium)
+add_subdirectory(trivium)
 # add_subdirectory(flip)
 add_subdirectory(cardio)
 # add_subdirectory(wiretap)

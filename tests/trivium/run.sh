@@ -44,15 +44,17 @@ KEY_BIN='0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1
 IV_BIN='0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1'
 
 echo "KEY encryption"
-$APPS_DIR/encrypt --public-key fhe_key.pk -v --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 1 --prefix input/i_ --msb-first --start-idx 2 --idx-places 0  $KEY_BIN` 
+TMP=`$APPS_DIR/helper --bit-cnt 1 --prefix input/"i:k" --msb-first --start-idx 0 --idx-places 0  $KEY_BIN`
+$APPS_DIR/encrypt --public-key fhe_key.pk -v --threads $NR_THREADS $TMP
 
 echo "IV formatting"
-$APPS_DIR/encrypt --public-key fhe_key.pk -v --threads $NR_THREADS --clear `$APPS_DIR/helper --bit-cnt 1 --prefix input/i_ --msb-first --start-idx 82 --idx-places 0  $IV_BIN`
+TMP=`$APPS_DIR/helper --bit-cnt 1 --prefix input/"i:v" --msb-first --start-idx 0 --idx-places 0  $IV_BIN`
+$APPS_DIR/encrypt --public-key fhe_key.pk -v --threads $NR_THREADS --clear $TMP
 
 echo "FHE execution"
 time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS #-v > out.log
 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`
-$APPS_DIR/helper --from-bin --bit-cnt 8 --msb-first `$APPS_DIR/decrypt --secret-key fhe_key.sk $OUT_FILES`
+$APPS_DIR/helper --from-bin --bit-cnt 1 --msb-first `$APPS_DIR/decrypt --secret-key fhe_key.sk $OUT_FILES`
 
