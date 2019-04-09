@@ -283,7 +283,7 @@ istream& cingulata::operator>>(istream& inp, CiBitVector& val) {
   return inp;
 }
 
-ostream& cingulata::operator<<(ostream& out, CiBitVector& val) {
+ostream& cingulata::operator<<(ostream& out, const CiBitVector& val) {
   val.write();
   return out;
 }

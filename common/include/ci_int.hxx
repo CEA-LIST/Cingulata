@@ -467,7 +467,7 @@ namespace cingulata
    * @{
    */
   std::istream& operator>>(std::istream&, CiInt&);
-  std::ostream& operator<<(std::ostream&, CiInt&);
+  std::ostream& operator<<(std::ostream&, const CiInt&);
   /**
    * @}
    */

@@ -105,8 +105,8 @@ namespace cingulata
      *
      * @return     reference to current object
      */
-    T& write() {
-      T& ref = *static_cast<T*>(this);
+    const T& write() const {
+      const T& ref = *static_cast<const T*>(this);
       for (unsigned i = 0; i < ref.size(); ++i) {
         ref[i].write();
       }
@@ -121,7 +121,8 @@ namespace cingulata
      * @return     reference to current object
      */
     T& write(const std::string& p_name) {
-      return set_name(p_name).write();
+      set_name(p_name).write();
+      return *static_cast<T*>(this);
     }
 
     /**
