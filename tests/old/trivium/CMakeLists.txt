@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(TEST_NAME ipv6)
+set(TEST_NAME trivium_old)
 
 set(SRCS
-    ${TEST_NAME}.cxx
+    trivium.cxx
     )
 
 set(BLIF_NAME ${TEST_NAME}.blif)
@@ -22,7 +22,7 @@ add_custom_command(OUTPUT ${BLIF_NAME}
   DEPENDS ${GEN_NAME})
 
 add_custom_command(OUTPUT ${BLOP_NAME}
-  COMMAND python3 ${OPTIM_DIR}/abc_optimize.py -i ${BLIF_NAME} -o ${BLOP_NAME} -v
+  COMMAND python3 ${OPTIM_DIR}/abc_optimize.py -i ${BLIF_NAME} -o ${BLOP_NAME} -c ';' -v  # no optimization
   DEPENDS abc ${BLIF_NAME})
 
 set(XML_PARAMS fhe_params.xml)
@@ -33,12 +33,8 @@ add_custom_command(OUTPUT ${XML_PARAMS}
   COMMAND python3 ${GEN_PARAM_SCRIPT} --lambda_p 128 --mult_depth `python3 ${MUL_DEPTH_SCRIPT} ${BLOP_NAME} --mult_depth_max` --cyclotomic_poly_index 1024 --output_xml ${XML_PARAMS}
   DEPENDS ${BLOP_NAME})
 
-set(LAST_DEPEND ${XML_PARAMS})
-
 add_custom_target(${TEST_NAME} ALL
   DEPENDS ${XML_PARAMS} runtime)
 
 set(APPS_DIR ${CMAKE_BINARY_DIR}/apps)
-configure_file("run.sh.in" "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/run.sh" @ONLY)
-file(COPY "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/run.sh" DESTINATION . FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-file(COPY "README.md" DESTINATION .)
+configure_file("run.sh.in" "run.sh" @ONLY)

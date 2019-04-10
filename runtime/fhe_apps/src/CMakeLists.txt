@@ -4,15 +4,15 @@ add_compile_options(-std=c++11 -Wall)
 
 add_executable(encrypt encrypt.cxx)
 target_link_libraries(encrypt fhe_fv)
-set_target_properties(encrypt PROPERTIES 
-                    COMPILE_FLAGS ${OpenMP_CXX_FLAGS} 
+set_target_properties(encrypt PROPERTIES
+                    COMPILE_FLAGS ${OpenMP_CXX_FLAGS}
                     LINK_FLAGS ${OpenMP_CXX_FLAGS})
 
 
 add_executable(decrypt decrypt.cxx)
 target_link_libraries(decrypt fhe_fv)
-set_target_properties(decrypt PROPERTIES 
-                    COMPILE_FLAGS ${OpenMP_CXX_FLAGS} 
+set_target_properties(decrypt PROPERTIES
+                    COMPILE_FLAGS ${OpenMP_CXX_FLAGS}
                     LINK_FLAGS ${OpenMP_CXX_FLAGS})
 
 
@@ -26,3 +26,6 @@ target_link_libraries(pack fhe_fv)
 
 add_executable(helper helper.cxx)
 target_link_libraries(helper)
+
+add_custom_target(fhe_apps
+  DEPENDS encrypt decrypt generate_keys pack helper)
