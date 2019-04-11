@@ -42,4 +42,5 @@ add_custom_target(${TEST_NAME} ALL
   DEPENDS ${LAST_DEPEND} runtime)
 
 set(APPS_DIR ${CMAKE_BINARY_DIR}/apps)
+set(CIRCUIT ${BLOP_NAME})
 configure_file("run.sh.in" "run.sh" @ONLY)

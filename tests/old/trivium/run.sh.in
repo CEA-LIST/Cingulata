@@ -21,8 +21,7 @@
 #
 #
 
-FILE=trivium
-
+CIRCUIT=@CIRCUIT@
 APPS_DIR=@APPS_DIR@
 
 mkdir -p input
@@ -49,7 +48,7 @@ echo "IV formatting"
 $APPS_DIR/encrypt  -v --threads $NR_THREADS --clear `$APPS_DIR/helper --bit-cnt 1 --start-idx 80 $IV_BIN`
 
 echo "FHE execution"
-time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS #-v > out.log
+time $APPS_DIR/dyn_omp $CIRCUIT --threads $NR_THREADS #-v > out.log
 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`

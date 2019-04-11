@@ -21,8 +21,7 @@
 #
 
 
-FILE=intersection
-
+CIRCUIT=@CIRCUIT@
 APPS_DIR=@APPS_DIR@
 
 mkdir -p input
@@ -68,7 +67,7 @@ NR_THREADS=$(nproc)
 $APPS_DIR/encrypt -v --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 32  $(head -$FIRST_LIST_SIZE plaintext/ipv4.dat | while read IP; do ipv4dec $IP; done  | xargs | sed "s/ ---- /\n---- /g") $(head -$SECOND_LIST_SIZE plaintext/ipv4-2.dat | while read IP; do ipv4dec $IP; done  | xargs | sed "s/ ---- /\n---- /g")`
 
 echo "Homomorphic execution..."
-time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS  #-v
+time $APPS_DIR/dyn_omp $CIRCUIT --threads $NR_THREADS  #-v
 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`

@@ -43,6 +43,7 @@ add_custom_target(${TEST_NAME} ALL
   DEPENDS ${XML_PARAMS} runtime)
 
 set(APPS_DIR ${CMAKE_BINARY_DIR}/apps)
+set(CIRCUIT ${BLOP_NAME})
 configure_file("search_fixed_length.sh.in" "search_fixed_length.sh" @ONLY)
 configure_file("search_max_length.sh.in" "search_max_length.sh" @ONLY)
 file(COPY "plaintext/countries" DESTINATION "plaintext" )

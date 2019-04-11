@@ -21,8 +21,7 @@
 #
 #
 
-FILE=trivium
-
+CIRCUIT=@CIRCUIT@
 APPS_DIR=@APPS_DIR@
 
 mkdir -p input
@@ -51,7 +50,7 @@ TMP=`$APPS_DIR/helper --bit-cnt 1 --prefix input/"i:v" --msb-first $IV_BIN`
 $APPS_DIR/encrypt --public-key fhe_key.pk -v --threads $NR_THREADS --clear $TMP
 
 echo "FHE execution"
-time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS #-v > out.log
+time $APPS_DIR/dyn_omp $CIRCUIT --threads $NR_THREADS #-v > out.log
 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`

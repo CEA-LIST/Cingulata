@@ -36,7 +36,7 @@ LIST_FILE="countries$NB_CHARS"
 
 echo NB_CHARS=$NB_CHARS REQUEST=$REQUEST LIST_FILE=$LIST_FILE LIST_SIZE=$LIST_SIZE
 
-FILE=ASCII
+CIRCUIT=@CIRCUIT@
 APPS_DIR=@APPS_DIR@
 
 mkdir -p input
@@ -73,7 +73,7 @@ decimalList=$(echo  $(words2decimal))
 $APPS_DIR/encrypt -v `$APPS_DIR/helper --bit-cnt 8 $decimalRequest $decimalList` --threads $NR_THREADS
 
 echo "Homomorphic execution..."
-time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS # -v
+time $APPS_DIR/dyn_omp $CIRCUIT --threads $NR_THREADS # -v
 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`

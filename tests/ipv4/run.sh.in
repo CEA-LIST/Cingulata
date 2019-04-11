@@ -27,8 +27,7 @@ Example:
 ./run.sh 192.168.3.5 192.168.3.5
 : ' :
 
-FILE=ipv4
-
+CIRCUIT=@CIRCUIT@
 APPS_DIR=@APPS_DIR@
 mkdir -p input
 rm -f input/*.ct
@@ -60,7 +59,7 @@ TMP=`$APPS_DIR/helper --bit-cnt 32 --prefix input/i:b_   $(ipv4dec $2)`
 $APPS_DIR/encrypt -v   --threads $NR_THREADS $TMP
 
 echo "Homomorphic execution..."
-time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS
+time $APPS_DIR/dyn_omp $CIRCUIT --threads $NR_THREADS
 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`

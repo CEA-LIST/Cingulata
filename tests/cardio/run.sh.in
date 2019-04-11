@@ -21,8 +21,7 @@
 #
 #
 
-FILE=cardio
-
+CIRCUIT=@CIRCUIT@
 APPS_DIR=@APPS_DIR@
 
 mkdir -p input
@@ -57,7 +56,7 @@ for (( i = 0; i < ${#KS[@]}; i++ )); do
 done
 
 echo "FHE execution"
-time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS --clear-inps clear_data.data -v
+time $APPS_DIR/dyn_omp $CIRCUIT --threads $NR_THREADS --clear-inps clear_data.data # -v
 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`

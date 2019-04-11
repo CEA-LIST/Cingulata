@@ -21,8 +21,7 @@
 #
 #
 
-FILE=sorting
-
+CIRCUIT=@CIRCUIT@
 APPS_DIR=@APPS_DIR@
 
 mkdir -p input
@@ -41,7 +40,7 @@ NR_THREADS=1
 $APPS_DIR/encrypt -v --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 8 42 7 37 2`
 
 echo "FHE execution..."
-$APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS
+$APPS_DIR/dyn_omp $CIRCUIT --threads $NR_THREADS
 
 echo "Output decryption"
 #decrypt 8-bit output

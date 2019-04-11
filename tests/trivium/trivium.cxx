@@ -33,7 +33,7 @@
 using namespace std;
 using namespace cingulata;
 
-#define OUT_BITCNT 8 //depth 12
+#define OUT_BITCNT 57 //depth 12
 
 void readKeyAndRunTrivium(void)
 {
