@@ -59,6 +59,18 @@ namespace cingulata
     operator ObjHandleT<T> () const {
       return std::static_pointer_cast<T>(*this);
     }
+
+    /**
+     * @brief      Return stored pointer casted to type T
+     *
+     * @tparam     T     type of pointer to get
+     *
+     * @return     pointer of type T
+     */
+    template<typename T>
+    T* get() const {
+      return ((ObjHandleT<T>)*this).get();
+    }
   };
 }
 
