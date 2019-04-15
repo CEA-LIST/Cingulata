@@ -421,7 +421,7 @@ OP_GEN_ARITH_1_INP( sub_same_inp,
                     [] (const CiInt& a) -> CiInt {return a-a;},
                     [] (const long& a) -> long {return 0L;});
 
-OP_GEN_ARITH_1_INP( DISABLED_mul_same_inp,
+OP_GEN_ARITH_1_INP( mul_same_inp,
                     [] (const CiInt& a) -> CiInt {return a*a;},
                     [] (const long& a) -> long {return a*a;});
 
@@ -457,7 +457,7 @@ OP_GEN_ARITH_2_INP( sub,
                     [] (const CiInt& a, const CiInt& b) -> CiInt {return a-b;},
                     [] (const long& a, const long& b) -> long {return a-b;});
 
-OP_GEN_ARITH_2_INP( DISABLED_mul,
+OP_GEN_ARITH_2_INP( mul,
                     [] (const CiInt& a, const CiInt& b) -> CiInt {return a*b;},
                     [] (const long& a, const long& b) -> long {return a*b;});
 
