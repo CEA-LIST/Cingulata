@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(TEST_NAME multiplicity)
+set(TEST_NAME old-multiplicity)
 
 set(SRCS
-    ${TEST_NAME}.cxx
+    multiplicity.cxx
     )
 
 set(LIST_SIZE 10)

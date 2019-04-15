@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(TEST_NAME kreyvium)
+set(TEST_NAME old-kreyvium)
 
 set(SRCS
-    ${TEST_NAME}.cxx
+    kreyvium.cxx
     )
 
 set(BLIF_NAME ${TEST_NAME}.blif)

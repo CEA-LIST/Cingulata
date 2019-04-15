@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(TEST_NAME wiretap)
+set(TEST_NAME old-wiretap)
 
 set(SRCS
-    ${TEST_NAME}.cxx
+    wiretap.cxx
     )
 
 set(BLIF_NAME ${TEST_NAME}.blif)

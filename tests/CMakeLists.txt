@@ -5,20 +5,21 @@ project(tests)
 set(OPTIM_DIR ${CMAKE_CURRENT_BINARY_DIR}/../optim)
 set(RUNTIME_DIR ${CMAKE_CURRENT_BINARY_DIR}/../runtime)
 
-# common interface
-add_subdirectory(hello)
-add_subdirectory(trivium)
-add_subdirectory(cardio)
-add_subdirectory(ipv4)
-add_subdirectory(ipv6)
+# common interface tests
+set(test_names
+  hello
+  trivium
+  cardio
+  ipv4
+  ipv6
+)
+foreach (name IN ITEMS ${test_names})
+  add_subdirectory(${name})
+endforeach()
 
 add_custom_target(tests ALL
   DEPENDS
-    hello
-    trivium
-    cardio
-    ipv4
-    ipv6
+    ${test_names}
 )
 
 # deprecated circuit frontend tests

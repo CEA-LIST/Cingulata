@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(TEST_NAME flip)
+set(TEST_NAME old-flip)
 
 set(SRCS
-    ${TEST_NAME}.cxx
+    flip.cxx
     )
 
 set(BLIF_NAME ${TEST_NAME}.blif)

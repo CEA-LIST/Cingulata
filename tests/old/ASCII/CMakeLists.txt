@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(TEST_NAME ASCII)
+set(TEST_NAME old-ASCII)
 
 set(SRCS
-    ${TEST_NAME}.cxx
+    ASCII.cxx
     )
 
 set(NB_CHARS 6)
