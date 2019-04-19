@@ -9,7 +9,7 @@ IntOpGenDepth::IntOpGenDepth()
   m_mul { m_add },
   m_lower { m_equal }
 {
-};
+}
 
 CiBitVector IntOpGenDepth::add(const CiBitVector& lhs, const CiBitVector& rhs) const
 {

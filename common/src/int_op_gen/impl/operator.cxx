@@ -45,3 +45,10 @@ CiBitVector MuxOper::operator()(const CiBitVector& cond, const vector<CiBitVecto
 
   return oper(cond, inps);
 }
+
+std::vector<CiBitVector> SortOper::operator()(const std::vector<CiBitVector>& v_cbv) const {
+  auto s = v_cbv[0].size();
+  for (const auto& cbv: v_cbv)
+    assert(cbv.size() == s);
+  return oper(v_cbv);
+}

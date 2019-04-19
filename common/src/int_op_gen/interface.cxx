@@ -3,6 +3,15 @@
 using namespace std;
 using namespace cingulata;
 
+/*Sergiu needs to add a comment here
+*  His genius can't be understood by common mortals
+*/
+IIntOpGen::IIntOpGen() :
+m_sort{bind(&IIntOpGen::lower,this,placeholders::_1,placeholders::_2),
+	   bind(&IIntOpGen::equal,this,placeholders::_1,placeholders::_2),
+	   bind(&IIntOpGen::add,this,placeholders::_1,placeholders::_2)}
+{}
+
 CiBitVector IIntOpGen::sub(const CiBitVector& lhs, const CiBitVector& rhs) const {
   return add(lhs, neg(rhs));
 }
@@ -34,4 +43,8 @@ CiBitVector IIntOpGen::mux(const CiBit &cond, const CiBitVector &a,
 
 CiBitVector IIntOpGen::mux(const CiBitVector &cond, const vector<CiBitVector> &inps) const {
   return m_mux(cond, inps);
+}
+
+std::vector<CiBitVector> IIntOpGen::sort (const std::vector<CiBitVector> &v_cbv) const{
+  return m_sort(v_cbv);
 }

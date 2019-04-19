@@ -3,6 +3,7 @@
 
 #include <ci_bit.hxx>
 #include <ci_bit_vector.hxx>
+#include <ci_int.hxx>
 #include <int_op_gen/impl/all.hxx>
 #include <int_op_gen/interface.hxx>
 
@@ -12,6 +13,8 @@ namespace cingulata
 {
   class IIntOpGen {
   public:
+    IIntOpGen();
+
     /**
      * @brief      Add integers represented as vectors of bits. The output
      *             vector size is equal to the @c lhs input vector size
@@ -60,8 +63,12 @@ namespace cingulata
     virtual CiBitVector mux     ( const CiBitVector &cond,
                                   const std::vector<CiBitVector> &inps) const;
 
+
+    virtual std::vector<CiBitVector> sort (const std::vector<CiBitVector> &v_cbv) const;
+
   private:
     int_ops::MuxDepth           m_mux;
+    int_ops::SortDepth          m_sort;
   };
 }
 

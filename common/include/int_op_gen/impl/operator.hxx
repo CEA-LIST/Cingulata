@@ -3,6 +3,7 @@
 
 #include <ci_bit.hxx>
 #include <ci_bit_vector.hxx>
+#include <ci_int.hxx>
 
 #include <vector>
 
@@ -78,6 +79,18 @@ namespace cingulata
 
     private:
       virtual CiBitVector oper(const CiBitVector& cond, const std::vector<CiBitVector>& inps) const = 0;
+    };
+
+
+    class SortOper
+    {
+    public:
+      using signature = std::vector<CiBitVector&>& (const std::vector<const CiBitVector&>& v_cbv);
+
+      std::vector<CiBitVector> operator()(const std::vector< CiBitVector>& v_cbv) const;
+
+    private:
+      virtual std::vector<CiBitVector> oper(const std::vector<CiBitVector>& v_cbv) const = 0;
     };
   }
 }
