@@ -90,14 +90,18 @@ public:
    */
 
   /**
-   * @brief      Copy elements pointed by another slice to current slice
-   * @note       sizes of @c other and current object must be the same
+   * @brief      Copy elements pointed by another slice to current slice.
+   * @note       Only the first @c min(size(),other.size()) elements are copied.
    *
    * @param[in]  other  Slice object.
    *
    * @return     reference to current object
    */
   Slice& operator=(const Slice& other);
+
+  /**
+   * @copydoc operator=
+   */
   Slice& operator=(const CSlice<list_t>& other);
 
   /**

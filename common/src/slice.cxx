@@ -37,7 +37,10 @@ Slice<list_t>::Slice(list_t& p_obj, const optional<int> &p_start,
 namespace {
 template <typename T1, typename T2>
 T1 &assign(T1 &to, const T2 &from) {
-  for (int i = 0; i < (int)to.size(); ++i) {
+  int n = to.size();
+  if (n > (int)from.size())
+    n = from.size();
+  for (int i = 0; i < n; ++i) {
     to[i] = from[i];
   }
   return to;
@@ -46,13 +49,11 @@ T1 &assign(T1 &to, const T2 &from) {
 
 template <typename list_t>
 Slice<list_t>& Slice<list_t>::operator=(const Slice& other) {
-  assert(size() == other.size());
   return assign(*this, other);
 }
 
 template <typename list_t>
 Slice<list_t>& Slice<list_t>::operator=(const CSlice<list_t>& other) {
-  assert(size() == other.size());
   return assign(*this, other);
 }
 
