@@ -5,6 +5,8 @@
 using namespace std;
 using namespace cingulata;
 
+/* Base slice */
+
 SliceBase::SliceBase(const int p_list_size, const optional<int>& p_start,
         const optional<int>& p_end, const optional<int>& p_stride) {
   m_stride = p_stride.value_or(1);
@@ -19,9 +21,12 @@ unsigned SliceBase::size() const {
   return m_size;
 }
 
-unsigned SliceBase::map_idx(const unsigned idx) const {
-  return m_start + idx * m_stride;
+unsigned SliceBase::abs_idx(const unsigned rel_idx) const {
+  return m_start + rel_idx * m_stride;
 }
+
+
+/* Slice */
 
 template <typename list_t>
 Slice<list_t>::Slice(list_t& p_obj, const optional<int> &p_start,
@@ -29,36 +34,41 @@ Slice<list_t>::Slice(list_t& p_obj, const optional<int> &p_start,
     : SliceBase(p_obj.size(), p_start, p_end, p_stride), m_obj(p_obj) {
 }
 
-template <typename list_t>
-typename list_t::elem_t& Slice<list_t>::operator[](const unsigned idx) {
-  assert(idx < size());
-  return m_obj.at(map_idx(idx));
+namespace {
+template <typename T1, typename T2>
+T1 &assign(T1 &to, const T2 &from) {
+  for (int i = 0; i < (int)to.size(); ++i) {
+    to[i] = from[i];
+  }
+  return to;
 }
-
-template <typename list_t>
-const typename list_t::elem_t& Slice<list_t>::operator[](const unsigned idx) const {
-  assert(idx < size());
-  return m_obj.at(map_idx(idx));
-}
+} // namespace
 
 template <typename list_t>
 Slice<list_t>& Slice<list_t>::operator=(const Slice& other) {
   assert(size() == other.size());
-  for (int i = 0; i < (int)size(); ++i) {
-    (*this)[i] = other[i];
-  }
-  return *this;
+  return assign(*this, other);
 }
 
 template <typename list_t>
 Slice<list_t>& Slice<list_t>::operator=(const CSlice<list_t>& other) {
   assert(size() == other.size());
-  for (int i = 0; i < (int)size(); ++i) {
-    (*this)[i] = other[i];
-  }
-  return *this;
+  return assign(*this, other);
 }
 
+template <typename list_t>
+typename list_t::elem_t& Slice<list_t>::operator[](const unsigned idx) {
+  assert(idx < size());
+  return m_obj.at(abs_idx(idx));
+}
+
+template <typename list_t>
+const typename list_t::elem_t& Slice<list_t>::operator[](const unsigned idx) const {
+  assert(idx < size());
+  return m_obj.at(abs_idx(idx));
+}
+
+/* Constant slice */
 
 template <typename list_t>
 CSlice<list_t>::CSlice(const list_t& p_obj, const optional<int> &p_start,
@@ -73,7 +83,7 @@ CSlice<list_t>::CSlice(const Slice<list_t> &other)
 template <typename list_t>
 const typename list_t::elem_t& CSlice<list_t>::operator[](const unsigned idx) const {
   assert(idx < size());
-  return m_obj.at(map_idx(idx));
+  return m_obj.at(abs_idx(idx));
 }
 
 #include <ci_bit_vector.hxx>
