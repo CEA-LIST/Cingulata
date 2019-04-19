@@ -30,6 +30,12 @@ CiBitVector::CiBitVector(const Slice<CiBitVector>& slice) {
   }
 }
 
+CiBitVector::CiBitVector(const CSlice<CiBitVector>& slice) {
+  for (int i = 0; i < (int)slice.size(); ++i) {
+    m_vec.push_back(slice[i]);
+  }
+}
+
 CiBitVector& CiBitVector::operator= (const CiBitVector& other) {
   if (this != &other) {
     m_vec = other.m_vec;
@@ -78,10 +84,10 @@ Slice<CiBitVector> CiBitVector::slice(const optional<int> &start,
   return Slice<CiBitVector>(*this, start, end, stride);
 }
 
-const Slice<CiBitVector> CiBitVector::slice(const optional<int> &start,
+const CSlice<CiBitVector> CiBitVector::slice(const optional<int> &start,
                                             const optional<int> &end,
                                             const optional<int> &stride) const {
-  return Slice<CiBitVector>(*this, start, end, stride);
+  return CSlice<CiBitVector>(*this, start, end, stride);
 }
 
 Slice<CiBitVector> CiBitVector::
@@ -89,7 +95,7 @@ operator[](const tuple<optional<int>, optional<int>, optional<int>> &idx) {
   return slice(get<0>(idx), get<1>(idx), get<2>(idx));
 }
 
-const Slice<CiBitVector> CiBitVector::operator[](
+const CSlice<CiBitVector> CiBitVector::operator[](
     const tuple<optional<int>, optional<int>, optional<int>> &idx) const {
   return slice(get<0>(idx), get<1>(idx), get<2>(idx));
 }

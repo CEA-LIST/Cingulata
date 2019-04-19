@@ -3,7 +3,7 @@
 
 #include <ci_bit.hxx>
 #include <io_name_vec.hxx>
-#include <ci_slice.hxx>
+#include <slice.hxx>
 
 #include <vector>
 #include <optional>
@@ -19,6 +19,8 @@ namespace cingulata
   class CiBitVector : public IoNameVec<CiBitVector>
   {
   public:
+    typedef CiBit elem_t;
+
     /**
      * @brief      Construct an object containing @c p_bit_cnt copies of @c
      *             p_bit.
@@ -40,7 +42,8 @@ namespace cingulata
      *
      * @param[in]  slice  slice object
      */
-    CiBitVector(const Slice<CiBitVector>& slice);
+    CiBitVector(const Slice<CiBitVector> &slice);
+    CiBitVector(const CSlice<CiBitVector> &slice);
 
     /**
      * @brief      Copy constructor -- use default
@@ -174,9 +177,10 @@ namespace cingulata
     /**
      * @copydoc slice()
      */
-    const Slice<CiBitVector> slice(const std::optional<int> &start = {},
-                                   const std::optional<int> &end = {},
-                                   const std::optional<int> &stride = {}) const;
+    const CSlice<CiBitVector>
+    slice(const std::optional<int> &start = {},
+          const std::optional<int> &end = {},
+          const std::optional<int> &stride = {}) const;
 
     /**
      * @copybrief slice()
@@ -187,7 +191,7 @@ namespace cingulata
      */
     Slice<CiBitVector>
     operator[](const std::tuple<std::optional<int>, std::optional<int>,
-                                std::optional<int>>& idx);
+                                std::optional<int>> &idx);
 
     /**
      * @copybrief slice()
@@ -196,9 +200,9 @@ namespace cingulata
      *
      * @return     A const slice object with selected bits
      */
-    const Slice<CiBitVector>
+    const CSlice<CiBitVector>
     operator[](const std::tuple<std::optional<int>, std::optional<int>,
-                                std::optional<int>>& idx) const;
+                                std::optional<int>> &idx) const;
 
     /**
      * @}

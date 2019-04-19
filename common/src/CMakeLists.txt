@@ -8,6 +8,7 @@ set(SRCS
     ci_context.cxx
     ci_fncs.cxx
     ci_int.cxx
+    slice.cxx
     int_op_gen/impl/adder.cxx
     int_op_gen/impl/dec.cxx
     int_op_gen/impl/equal.cxx
