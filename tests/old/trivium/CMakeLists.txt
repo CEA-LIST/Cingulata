@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(TEST_NAME trivium_old)
+set(TEST_NAME old-trivium)
 
 set(SRCS
     trivium.cxx

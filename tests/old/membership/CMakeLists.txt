@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(TEST_NAME membership)
+set(TEST_NAME old-membership)
 
 set(SRCS
-    ${TEST_NAME}.cxx
+    membership.cxx
     )
 
 set(LIST_SIZE 10)

@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(TEST_NAME intersection)
+set(TEST_NAME old-intersection)
 
 set(SRCS
-    ${TEST_NAME}.cxx
+    intersection.cxx
     )
 
 set(FIRST_LIST_SIZE 5)

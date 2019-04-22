@@ -1,18 +1,15 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(TEST_NAME old-ASCII)
+set(TEST_NAME kreyvium)
 
 set(SRCS
-    ASCII.cxx
+    kreyvium.cxx
     )
-
-set(NB_CHARS 6)
-set(LIST_SIZE 10)
 
 set(BLIF_NAME ${TEST_NAME}.blif)
 set(BLOP_NAME ${TEST_NAME}-opt.blif)
 
-add_compile_options(-Wall -std=c++11 -Dnb_chars=${NB_CHARS} -Dlist_size=${LIST_SIZE} -Dblif_name="${BLIF_NAME}")
+add_compile_options(-Wall -std=c++11 -Dblif_name="${BLIF_NAME}")
 
 set(GEN_NAME ${TEST_NAME}-gen)
 
@@ -25,9 +22,8 @@ add_custom_command(OUTPUT ${BLIF_NAME}
   DEPENDS ${GEN_NAME})
 
 add_custom_command(OUTPUT ${BLOP_NAME}
-  COMMAND python3 ${OPTIM_DIR}/abc_optimize.py -i ${BLIF_NAME} -o ${BLOP_NAME} -v
+  COMMAND python3 ${OPTIM_DIR}/abc_optimize.py -i ${BLIF_NAME} -o ${BLOP_NAME} -c ';' -v # no optimization
   DEPENDS abc ${BLIF_NAME})
-
 
 set(XML_PARAMS fhe_params.xml)
 set(MUL_DEPTH_SCRIPT ${OPTIM_DIR}/graph_info.py)
@@ -44,8 +40,4 @@ add_custom_target(${TEST_NAME} ALL
 
 set(APPS_DIR ${CMAKE_BINARY_DIR}/apps)
 set(CIRCUIT ${BLOP_NAME})
-configure_file("search_fixed_length.sh.in" "search_fixed_length.sh" @ONLY)
-configure_file("search_max_length.sh.in" "search_max_length.sh" @ONLY)
-file(COPY "plaintext/countries" DESTINATION "plaintext" )
-file(COPY "plaintext/countries${NB_CHARS}" DESTINATION "plaintext" )
-file(COPY "README.md" DESTINATION .)
+configure_file("run.sh.in" "run.sh" @ONLY)

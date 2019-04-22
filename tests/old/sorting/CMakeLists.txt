@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(TEST_NAME sorting)
+set(TEST_NAME old-sorting)
 
 set(SRCS
-    ${TEST_NAME}.cxx
+    sorting.cxx
     )
 
 set(BLIF_NAME ${TEST_NAME}.blif)
