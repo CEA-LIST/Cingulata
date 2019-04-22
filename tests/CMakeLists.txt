@@ -12,6 +12,7 @@ set(test_names
   cardio
   ipv4
   ipv6
+  kreyvium
 )
 foreach (name IN ITEMS ${test_names})
   add_subdirectory(${name})
