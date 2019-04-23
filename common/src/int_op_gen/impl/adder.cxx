@@ -1,7 +1,11 @@
 #include <int_op_gen/impl/adder.hxx>
-#include <math.h>
-#include <iostream>
 
+#include <cmath>
+#include <iostream>
+#include <queue>
+#include <tuple>
+
+using namespace std;
 using namespace cingulata;
 using namespace cingulata::int_ops;
 
@@ -100,4 +104,37 @@ CiBitVector SklanskyAdder::oper(const CiBitVector& lhs, const CiBitVector& rhs) 
   return res;
 }
 
+MultiInputAdder::MultiInputAdder(const std::function<BinaryOper::signature> &p_bin_adder)
+    : bin_adder(p_bin_adder) {}
+
+CiBitVector MultiInputAdder::oper(const std::vector<CiBitVector> &inps) const {
+  using T = tuple<int, CiBitVector>;
+
+  priority_queue<T, vector<T>, function<bool(const T &, const T &)>>
+  elems_sorted_by_size(
+      [](const T &a, const T &b) -> bool { return get<0>(a) > get<0>(b); });
+
+  for (const CiBitVector& inp: inps)
+    elems_sorted_by_size.push(forward_as_tuple(inp.size(), inp));
+
+  while (elems_sorted_by_size.size() > 1) {
+    int sa, sb;
+    CiBitVector a, b;
+
+    tie(sa, a) = elems_sorted_by_size.top();
+    elems_sorted_by_size.pop();
+    tie(sb, b) = elems_sorted_by_size.top();
+    elems_sorted_by_size.pop();
+
+    int sr = (sa > sb ? sa : sb) + 1;
+    a.resize(sr);
+    b.resize(sr);
+
+    CiBitVector r = bin_adder(a,b);
+
+    elems_sorted_by_size.push(forward_as_tuple(r.size(), r));
+  }
+
+  return get<1>(elems_sorted_by_size.top());
+}
 

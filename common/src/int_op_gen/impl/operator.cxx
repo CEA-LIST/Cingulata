@@ -19,6 +19,16 @@ CiBitVector BinaryOper::operator()(const CiBitVector& lhs, const CiBitVector& rh
   return oper(lhs, rhs);
 }
 
+CiBitVector NaryOper::operator()(const vector<CiBitVector>& inps) const {
+  if (inps.size() == 0) {
+    return CiBitVector();
+  } else if (inps.size() == 1) {
+    return inps[0];
+  } else {
+    return oper(inps);
+  }
+}
+
 CiBit CompOper::operator()(const CiBitVector& lhs, const CiBitVector& rhs) const {
   assert(lhs.size() == rhs.size());
   assert(lhs.size() > 0);
