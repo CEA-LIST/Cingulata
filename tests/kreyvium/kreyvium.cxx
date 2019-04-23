@@ -1,5 +1,5 @@
 /*
-    (C) Copyright 2017 CEA LIST. All Rights Reserved.
+    (C) Copyright 2019 CEA LIST. All Rights Reserved.
     Contributor(s): Cingulata team (formerly Armadillo team)
 
     This software is governed by the CeCILL-C license under French law and
@@ -19,121 +19,117 @@
 */
 
 /* compiler includes */
-#include <iostream>
 #include <fstream>
-
+#include <iostream>
 
 /* local includes */
-#include <integer.hxx>
+#include <bit_exec/tracker.hxx>
+#include <ci_bit.hxx>
+#include <ci_context.hxx>
+#include <ci_int.hxx>
+#include <int_op_gen/mult_depth.hxx>
 
 /* namespaces */
 using namespace std;
+using namespace cingulata;
 
-#define OUT_BITCNT 46 //depth 12
+#define OUT_BITCNT 46 // depth 12
 
-void readKeyAndRunKreyvium(void)
-{
+void kreyvium_warm(CiBitVector &state, CiBitVector &RKEY, CiBitVector &RIV,
+                   const CiBitVector &key, const CiBitVector &iv) {
+  RKEY.resize(128);
+  RIV.resize(128);
 
-	Bit key[128],iv[128],s[288];
+  // Internal state setup.
+  state.resize(288, CiBit::one);
 
-	Bit RKEY[128],RIV[128]; // The two additional LFSR.
-	
-	for(int i=0;i<128;i++)
-		cin>>key[i];
-	for(int i=0;i<128;i++)
-		cin>>iv[i];
-		
-	// Internal state setup.
-	for(int i=0;i<288;i++)
-		s[i]=true;
-	// Insert the first 93 key bits @ position 0 (1 in the paper).
-	for(int i=0;i<93;i++)
-		s[i]=key[i];
-	// Insert the first 84 iv bits @ position 93 (94 in the paper).
-	for(int i=0;i<84;i++)
-		s[i+93]=iv[i];
-	// Insert the remaining iv bits @ position 177 (178 in the paper).
-	for(int i=0;i<44;i++)
-		s[i+177]=iv[i+84];
-	// Set pos 287 to 0 (288 in the paper).	
-	s[287]=false;
-	
-	// RKEY register set up.
-	for(int i=0;i<128;i++)
-		RKEY[i]=key[128-i-1];
-	// RIV register setup.
-	for(int i=0;i<128;i++)
-		RIV[i]=iv[128-i-1];
+  // Insert the first 93 key bits @ position 0 (1 in the paper).
+  state.slice() = key.slice(0, 93);
 
-	// Internal state warm up.
-	for(int i=0;i<4*288;i++)
-	{
-		Bit t1=s[65]+s[90]*s[91]+s[92]+s[170]+RIV[127-0]; // t1 = s66+s91*s92+s93+s171+RIV[0] (paper).
-		Bit t2=s[161]+s[174]*s[175]+s[176]+s[263]; // t2 = s162+s175*s176+s177+s264 (paper).
-		Bit t3=s[242]+s[285]*s[286]+s[287]+s[68]+RKEY[127-0]; // t3 = s243+s286*s287+s288+s69+RKEY[0] (paper).
-		//Bit t4=RKEY[127-0]+RKEY[127-51]+RKEY[127-93]+RKEY[127-117];
-		//Bit t5=RIV[127-0]+RIV[127-121]+RIV[127-126]+RIV[127-127];
-		Bit t4=RKEY[127-0];
-		Bit t5=RIV[127-0];
-		// Shift the internal state from 1 to the right.
-		for(int j=0;j<287;j++)
-			s[288-j-1]=s[288-j-2];
-		// Then inject the ti's.
-		s[0]=t3; // s1 = t3 (paper).
-		s[93]=t1; // s94 = t1 (paper).
-		s[177]=t2; // s178 = t2 (paper).
-		// Shift RKEY and RIV from 1 to the right.
-		for(int j=0;j<127;j++)
-		{
-			RKEY[128-j-1]=RKEY[128-j-2];
-			RIV[128-j-1]=RIV[128-j-2];
-		}
-		// Then injects t4 and t5.
-		RKEY[0]=t4;
-		RIV[0]=t5;
-	}
-	
-	// Keystream generation.
-	for(int i=0;i<OUT_BITCNT;i++)
-	{
-		Bit t1=s[65]+s[92]; // t1 = s66+s93 (paper).
-		Bit t2=s[161]+s[176]; // t2 = s162+s177 (paper).
-		Bit t3=s[242]+s[287]+RKEY[127-0]; // t3 = s243+s288+RKEY[0] (paper).
-		Bit z=t1+t2+t3; // zi = t1+t2+t3 (paper).
-		t1=t1+s[90]*s[91]+s[170]+RIV[127-0]; // t1 = t1+s91*s92+s171 (paper).
-		t2=t2+s[174]*s[175]+s[263]; // t2 = t2+s175*s176+s264 (paper).
-		t3=t3+s[285]*s[286]+s[68]; // t3 = t3+s286*s287+s69 (paper).
-		//Bit t4=RKEY[127-0]+RKEY[127-51]+RKEY[127-93]+RKEY[127-117];
-		//Bit t5=RIV[127-0]+RIV[127-121]+RIV[127-126]+RIV[127-127];
-		Bit t4=RKEY[127-0];
-		Bit t5=RIV[127-0];
-		// Shift the internal state from 1 to the right.
-		for(int j=0;j<287;j++)
-			s[288-j-1]=s[288-j-2];
-		// Then inject the ti's.
-		s[0]=t3; // s1 = t3 (paper).
-		s[93]=t1; // s94 = t1 (paper).
-		s[177]=t2; // s178 = t2 (paper).	
-		// Shift RKEY and RIV from 1 to the right.
-		for(int j=0;j<127;j++)
-		{
-			RKEY[128-j-1]=RKEY[128-j-2];
-			RIV[128-j-1]=RIV[128-j-2];
-		}
-		// Then injects t4 and t5.
-		RKEY[0]=t4;
-		RIV[0]=t5;
+  // Insert the first iv bits @ position 93 (94 in the paper).
+  state.slice(93) = iv;
 
-		cout<<z;
-	}
+  // Set last pos (287) to 0 (288 in the paper).
+  state[-1] = 0;
+
+  // RKEY register set up.
+  RKEY.slice() = key.slice({}, {}, -1);
+
+  // RIV register setup.
+  RIV.slice() = iv.slice({}, {}, -1);
+
+  // Internal state warm up.
+  for (int i = 0; i < 4 * 288; i++) {
+    CiBit t1 = state[65] + state[90] * state[91] + state[92] + state[170] +
+               RIV[-1]; // t1 = s66+s91*s92+s93+s171+RIV[0] (paper).
+    CiBit t2 = state[161] + state[174] * state[175] + state[176] +
+               state[263]; // t2 = s162+s175*s176+s177+s264 (paper).
+    CiBit t3 = state[242] + state[285] * state[286] + state[287] + state[68] +
+               RKEY[-1]; // t3 = s243+s286*s287+s288+s69+RKEY[0] (paper).
+
+    // Shift the internal state from 1 to the right.
+    state.ror(1);
+
+    // Then inject the ti's.
+    state[0] = t3;   // s1 = t3 (paper).
+    state[93] = t1;  // s94 = t1 (paper).
+    state[177] = t2; // s178 = t2 (paper).
+
+    // Shift RKEY and RIV from 1 to the right.
+    RKEY.ror(1);
+    RIV.ror(1);
+  }
 }
 
+CiBitVector kreyvium_stream(CiBitVector &state, CiBitVector &RKEY,
+                            CiBitVector &RIV, const int nb_bits) {
+  CiBitVector bs(nb_bits);
 
+  // Keystream generation.
+  for (int i = 0; i < nb_bits; i++) {
+    CiBit t1 = state[65] + state[92];   // t1 = s66+s93 (paper).
+    CiBit t2 = state[161] + state[176]; // t2 = s162+s177 (paper).
+    CiBit t3 =
+        state[242] + state[287] + RKEY[-1]; // t3 = s243+s288+RKEY[0] (paper).
 
-int main() 
-{
-  readKeyAndRunKreyvium();
+    bs[i] = t1 + t2 + t3; // zi = t1+t2+t3 (paper).
 
-  FINALIZE_CIRCUIT(blif_name);  
+    t1 = t1 + state[90] * state[91] + state[170] +
+         RIV[-1]; // t1 = t1+s91*s92+s171 (paper).
+    t2 = t2 + state[174] * state[175] +
+         state[263]; // t2 = t2+s175*s176+s264 (paper).
+    t3 = t3 + state[285] * state[286] +
+         state[68]; // t3 = t3+s286*s287+s69 (paper).
+
+    // Shift the internal state from 1 to the right.
+    state.ror(1);
+
+    // Then inject the ti's.
+    state[0] = t3;   // s1 = t3 (paper).
+    state[93] = t1;  // s94 = t1 (paper).
+    state[177] = t2; // s178 = t2 (paper).
+
+    // Shift RKEY and RIV from 1 to the right.
+    RKEY.ror(1);
+    RIV.ror(1);
+  }
+
+  return bs;
 }
 
+int main() {
+  CiContext::set_config(new BitTracker(), new IntOpGenDepth());
+
+  CiBitVector key{128}, iv{128};
+
+  key.read("key");
+  iv.read("iv");
+
+  CiBitVector state, RKEY, RIV;
+  kreyvium_warm(state, RKEY, RIV, key, iv);
+
+  CiBitVector bs = kreyvium_stream(state, RKEY, RIV, OUT_BITCNT);
+  bs.write("out");
+
+  CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name, "kreyvium");
+}

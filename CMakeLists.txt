@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.9)
 
 project(cingulata VERSION 0.3.0 LANGUAGES CXX)
 
+set(CMAKE_CXX_STANDARD 17)
+
 option(ENABLE_UNITTEST "Enable unit tests using googletest" ON)
 option(BUILD_DOC "Build documentation" ON)
 option(BUILD_ONLY_COMMON "Build only common interface (when only unittests are needed)" OFF)
@@ -31,6 +33,7 @@ if(NOT ${BUILD_ONLY_COMMON})
   add_subdirectory(optim)
   add_subdirectory(runtime)
 
+  include_directories(circuit/include) # support old circuit interface
   include_directories(${COMMON_INCLUDE_DIR})
   add_subdirectory(tests)
 endif()

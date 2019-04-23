@@ -65,7 +65,11 @@ namespace cingulata
      *
      * @tparam     T            an integral type
      */
-    template<typename T>
+    template
+    <
+        typename T,
+        typename = typename std::enable_if<std::is_integral<T>::value, T>::type
+    >
     CiInt(
       const T p_val,
       const unsigned p_bit_cnt = sizeof(T)*8,
@@ -142,8 +146,12 @@ namespace cingulata
      *
      * @return     reference to current object
      */
-    template<typename T>
-    CiInt& operator= (const T p_val);
+    template
+    <
+        typename T,
+        typename = typename std::enable_if<std::is_integral<T>::value, T>::type
+    >
+    CiInt &operator=(const T p_val);
 
     /**
      * @brief      Destroys the object.
@@ -467,7 +475,7 @@ namespace cingulata
    * @{
    */
   std::istream& operator>>(std::istream&, CiInt&);
-  std::ostream& operator<<(std::ostream&, CiInt&);
+  std::ostream& operator<<(std::ostream&, const CiInt&);
   /**
    * @}
    */
