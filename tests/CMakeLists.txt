@@ -34,6 +34,7 @@ add_subdirectory(old)
 # tfhe tests
 #############################################
 if(TFHE_EXEC)
+  include_directories(${CMAKE_SOURCE_DIR}/runtime/tfhe/include)
   add_subdirectory(tfhe)
 endif(TFHE_EXEC)
 

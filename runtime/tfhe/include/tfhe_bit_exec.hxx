@@ -2,7 +2,6 @@
 #define TFHE_EXECUTOR
 
 #include <bit_exec/interface.hxx>
-#include <tfhe.h>
 
 namespace cingulata {
 
@@ -11,9 +10,12 @@ namespace cingulata {
    */
   class TfheBitExec : public IBitExec {
   public:
-    TfheBitExec(
-        const TFheGateBootstrappingCloudKeySet *const p_pks,
-        const TFheGateBootstrappingSecretKeySet *const p_sks = nullptr);
+    enum KeyType {
+      Secret,
+      Public
+    };
+
+    TfheBitExec(const std::string p_filename, const KeyType p_keytype);
 
     ObjHandle   encode      (const bit_plain_t pt_val)                      override;
     ObjHandle   encrypt     (const bit_plain_t pt_val)                      override;
@@ -40,8 +42,8 @@ namespace cingulata {
     void*       new_obj     ()                                              override;
     void        del_obj     (void * obj_ptr)                                override;
 
-    const TFheGateBootstrappingCloudKeySet *const public_keyset;
-    const TFheGateBootstrappingSecretKeySet *const secret_keyset;
+    class TfheContext;
+    const TfheContext *const tfhe_context;
   };
 };
 

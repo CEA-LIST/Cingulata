@@ -21,7 +21,7 @@
 #include <iostream>
 
 /* local includes */
-#include <bit_exec/tfhe_bit_exec.hxx>
+#include <tfhe_bit_exec.hxx>
 #include <ci_context.hxx>
 #include <ci_int.hxx>
 #include <int_op_gen/size.hxx>
@@ -33,20 +33,17 @@ using namespace cingulata;
 int main() {
   /* Set context to bit tracker and multiplicative depth minimized integer
    * operations */
-  CiContext::set_config(new TfheBitExec(nullptr), new IntOpGenSize());
+  CiContext::set_config(new TfheBitExec("tfhe.pk", TfheBitExec::Public), new IntOpGenSize());
 
   CiInt a{CiInt::u8};     // create from unsigned 8-bit template
   CiInt b{0, 8, false};   // manually specify value, size and signedness
   CiInt c{(uint16_t)-1};  // automatically determine size and signedness from value
 
-  a = 5;
-  a.encrypt();
-
-  b = 3;
-  b.encrypt();
+  a.read("a");
+  b.read("b");
 
   c = a + b;
+  // c = a * a * b - a;
 
-  c.decrypt();
-  cout << c[0].get_val();
+  c.write("c");
 }
