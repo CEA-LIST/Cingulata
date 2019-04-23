@@ -1,4 +1,4 @@
-#include <bit_exec/tfhe_bit_exec.hxx>
+#include <tfhe_bit_exec.hxx>
 
 #include <tfhe_io.h>
 #include <fstream>

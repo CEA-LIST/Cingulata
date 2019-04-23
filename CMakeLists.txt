@@ -16,6 +16,8 @@ if (NOT ("${TFHE_PATH}" STREQUAL ""))
   set(TFHE_EXEC ON)
 endif()
 
+set(COMMON_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/common/include)
+
 add_subdirectory(submodules)
 add_subdirectory(common)
 
@@ -29,7 +31,7 @@ if(NOT ${BUILD_ONLY_COMMON})
   add_subdirectory(optim)
   add_subdirectory(runtime)
 
-  include_directories(common/include)
+  include_directories(${COMMON_INCLUDE_DIR})
   add_subdirectory(tests)
 endif()
 
