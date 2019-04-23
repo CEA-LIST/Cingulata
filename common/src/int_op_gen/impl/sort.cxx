@@ -4,6 +4,8 @@
 #include <int_op_gen/impl/sort.hxx>
 
 #include <math.h>
+#include <iostream>
+#include <cstdint>
 
 using namespace cingulata;
 using namespace cingulata::int_ops;
@@ -17,13 +19,12 @@ CiBitVector SortDepth::hammingWeight(const CiBitVector x, unsigned int l, unsign
     r[0]=x[0];
     return r;
   }
-  m = (int) floor(l/2);
-  n = l-m;
   CiBitVector left(m);
   CiBitVector right(n);
   for(unsigned int i=0; i<m; i++){
     left[i]=x[i];
   }
+
   for(unsigned int i=m; i<m+n; i++){
     right[i-m]=x[i];
   }
@@ -67,12 +68,11 @@ std::vector<CiBitVector>  SortDepth::oper(const std::vector<CiBitVector>& v_cbv)
         CiInt i_ci_int(i);
         CiBitVector i_bit_vec = i_ci_int.cast(size_ham);
         z=(equ(i_bit_vec, hamming_weights[j]));
-
-        res[i] ^=   CiBitVector(N, z) & v_cbv[j];
+        res[i] ^=   CiBitVector(size, z) & v_cbv[j];
 
     }
-
   }
+
   return res;
 }
 

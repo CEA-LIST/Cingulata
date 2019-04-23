@@ -79,6 +79,30 @@ TEST(IntOpGen, Mux) {
   ASSERT_EQ_BV_INT(out, vals_m_int[cond_int]);
 }
 
+TEST(IntOpGen, Sort) {
+  const unsigned size_array = ((rand()%10));
+  const unsigned m = ((rand()%16));
+
+  vector<unsigned> vals_int;
+  vector<CiBitVector> vals_bv;
+  for (unsigned i = 0; i < size_array; ++i) {
+    GEN_RAND_BV(tmp, m, rand());
+    vals_int.push_back(tmp_int);
+    vals_bv.push_back(tmp_bv);
+  }
+
+  for (int i = 0; i < size_array; ++i) {
+    ASSERT_EQ_BV_INT(vals_bv[i], vals_int[i]);
+  }
+
+  sort(vals_int.begin(), vals_int.end());
+
+  vector<CiBitVector> out = SortDepth(LowerCompSize(), EqualSize(), SklanskyAdder())(vals_bv);
+  for (int i = 0; i < size_array; ++i) {
+    ASSERT_EQ_BV_INT(out[i], vals_int[i]);
+  }
+}
+
 /*-------------------------------------------------------------------------*/
 /**
  * Multiple implementations operators
