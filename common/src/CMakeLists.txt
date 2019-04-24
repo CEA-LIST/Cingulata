@@ -6,7 +6,7 @@ set(SRCS
     ci_bit.cxx
     ci_bit_vector.cxx
     ci_context.cxx
-    ci_fncs.cxx
+    ci_int_fncs.cxx
     ci_int.cxx
     slice.cxx
     int_op_gen/impl/adder.cxx
