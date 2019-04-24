@@ -1,6 +1,8 @@
 #include <int_op_gen/impl/all.hxx>
+#include <cmath>
 
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 using namespace cingulata;
 using namespace cingulata::int_ops;
@@ -17,20 +19,19 @@ T to_binary(unsigned val, int n) {
 
 #define mod(val, bc) ((val) & (((bc) < 64) ? ((1UL<<(bc)) - 1) : -1L))
 
-#define GEN_RAND_BV(VAR, n, val)                               \
-  unsigned VAR ## _int = mod(val, n);                           \
-  CiBitVector VAR ## _bv = to_binary<CiBitVector>((VAR ## _int), (n));
+#define GEN_RAND_BV(VAR, n, val)                                               \
+  unsigned VAR##_int = mod(val, n);                                            \
+  CiBitVector VAR##_bv = to_binary<CiBitVector>((VAR##_int), (n));
 
-#define ASSERT_EQ_BV_INT(ct_vec1, pt_int)         \
-{                                                 \
-  auto ct_vec = (ct_vec1);                        \
-  auto pt_vec = to_binary<vector<int>>((pt_int),  \
-    ct_vec.size());                               \
-  for (int i = 0; i < ct_vec.size(); ++i) {       \
-    ASSERT_EQ(ct_vec[i].get_val(), pt_vec[i]) <<  \
-      ct_vec.size() << " " << pt_int << " " << i; \
-  }                                               \
-}
+#define ASSERT_EQ_BV_INT(ct_vec1, pt_int)                                      \
+  {                                                                            \
+    auto ct_vec = (ct_vec1);                                                   \
+    auto pt_vec = to_binary<vector<int>>((pt_int), ct_vec.size());             \
+    vector<int> ct_vec_dec;                                                    \
+    for (int i = 0; i < ct_vec.size(); ++i)                                    \
+      ct_vec_dec.emplace_back(ct_vec[i].get_val());                            \
+    ASSERT_THAT(ct_vec_dec, ::testing::ElementsAreArray(pt_vec));              \
+  }
 
 TEST(IntOpGen, Decoder) {
   const unsigned n = rand() % 12 + 1;
@@ -139,7 +140,7 @@ TEST_P(Binary, random_inps) {
   TEST_BINARY_OP(b_int, b_bv, a_int, a_bv);
 }
 
-TEST_P(Binary, zero_and_random_inp) {
+TEST_P(Binary, zero_and_randomom_inp) {
   const unsigned n = rand() % 32 + 1;
 
   GEN_RAND_BV(a, n, rand());
@@ -149,7 +150,7 @@ TEST_P(Binary, zero_and_random_inp) {
   TEST_BINARY_OP(b_int, b_bv, a_int, a_bv);
 }
 
-TEST_P(Binary, 1bit_random_inps) {
+TEST_P(Binary, 1bit_randomom_inps) {
   const unsigned n = 1;
 
   GEN_RAND_BV(a, n, rand());
@@ -247,7 +248,7 @@ TEST_P(Comparator, random_inps) {
   TEST_COMP_OP(b_int, b_bv, a_int, a_bv);
 }
 
-TEST_P(Comparator, zero_and_random_inp) {
+TEST_P(Comparator, zero_and_randomom_inp) {
   const unsigned n = rand() % 32 + 1;
 
   GEN_RAND_BV(a, n, rand());
@@ -257,7 +258,7 @@ TEST_P(Comparator, zero_and_random_inp) {
   TEST_COMP_OP(b_int, b_bv, a_int, a_bv);
 }
 
-TEST_P(Comparator, 1bit_random_inps) {
+TEST_P(Comparator, 1bit_randomom_inps) {
   const unsigned n = 1;
 
   GEN_RAND_BV(a, n, rand());
@@ -368,7 +369,7 @@ TEST_P(Unary, zero_inp) {
   TEST_UNARY_OP(a_int, a_bv);
 }
 
-TEST_P(Unary, 1bit_random_inp) {
+TEST_P(Unary, 1bit_randomom_inp) {
   const unsigned n = 1;
 
   GEN_RAND_BV(a, n, rand());
@@ -396,3 +397,72 @@ INSTANTIATE_TEST_CASE_P(
   get_oper_name<UnaryParam>
 );
 
+
+void test_multi_input_adder(const unsigned n, const unsigned m) {
+  const unsigned logn = (unsigned)ceil(log2(n));
+
+  vector<unsigned> inps_int;
+  unsigned out_int = 0;
+  vector<CiBitVector> inps_bv;
+  for (unsigned i = 0; i < n; ++i) {
+    GEN_RAND_BV(tmp, m, rand());
+    tmp_int = mod(tmp_int, tmp_bv.size());
+    inps_int.push_back(tmp_int);
+    inps_bv.push_back(tmp_bv);
+    out_int += tmp_int;
+  }
+
+  CiBitVector out_bv = MultiInputAdder(RippleCarryAdder())(inps_bv);
+
+  /* inputs did not changed */
+  for (int i = 0; i < n; ++i) {
+    ASSERT_EQ_BV_INT(inps_bv[i], inps_int[i]);
+  }
+
+  /* output is valid */
+  ASSERT_EQ_BV_INT(out_bv, out_int);
+  int out_size = (n > 1) ? m + logn : (n == 1 ? m : 0);
+  ASSERT_EQ(out_bv.size(), out_size) << " n: " << n << " logn: " << logn << " m: " << m;
+}
+
+TEST(IntOpGen, MultiInputAdder_same_size_single) {
+  test_multi_input_adder(0, 0);
+  test_multi_input_adder(0, 5);
+  test_multi_input_adder(7, 0);
+  test_multi_input_adder(8, 1);
+  test_multi_input_adder(8, 7);
+  test_multi_input_adder(8, 14);
+  test_multi_input_adder(7, 1);
+  test_multi_input_adder(7, 7);
+  test_multi_input_adder(7, 14);
+}
+
+TEST(IntOpGen, MultiInputAdder_same_size) {
+  test_multi_input_adder((rand() % 256) + 1 , (rand() % 16) + 1);
+}
+
+TEST(IntOpGen, MultiInputAdder_diff_size) {
+  const unsigned n = (rand() % 256) +1;
+  const unsigned logn = (unsigned)ceil(log2(n));
+
+  vector<unsigned> inps_int;
+  unsigned out_int = 0;
+  vector<CiBitVector> inps_bv;
+  for (unsigned i = 0; i < n; ++i) {
+    GEN_RAND_BV(tmp, (rand() % 16) + 1, rand());
+    tmp_int = mod(tmp_int, tmp_bv.size());
+    inps_int.push_back(tmp_int);
+    inps_bv.push_back(tmp_bv);
+    out_int += tmp_int;
+  }
+
+  CiBitVector out_bv = MultiInputAdder(RippleCarryAdder())(inps_bv);
+
+  /* inputs did not change */
+  for (int i = 0; i < n; ++i) {
+    ASSERT_EQ_BV_INT(inps_bv[i], inps_int[i]);
+  }
+
+  /* output is valid */
+  ASSERT_EQ_BV_INT(out_bv, out_int);
+}
