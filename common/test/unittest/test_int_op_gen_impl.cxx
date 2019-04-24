@@ -397,7 +397,6 @@ INSTANTIATE_TEST_CASE_P(
   get_oper_name<UnaryParam>
 );
 
-
 void test_multi_input_adder(const unsigned n, const unsigned m) {
   const unsigned logn = (unsigned)ceil(log2(n));
 
@@ -425,7 +424,7 @@ void test_multi_input_adder(const unsigned n, const unsigned m) {
   ASSERT_EQ(out_bv.size(), out_size) << " n: " << n << " logn: " << logn << " m: " << m;
 }
 
-TEST(IntOpGen, MultiInputAdder_same_size_single) {
+TEST(MultiInputAdder, same_size_single) {
   test_multi_input_adder(0, 0);
   test_multi_input_adder(0, 5);
   test_multi_input_adder(7, 0);
@@ -437,11 +436,11 @@ TEST(IntOpGen, MultiInputAdder_same_size_single) {
   test_multi_input_adder(7, 14);
 }
 
-TEST(IntOpGen, MultiInputAdder_same_size) {
+TEST(MultiInputAdder, same_size) {
   test_multi_input_adder((rand() % 256) + 1 , (rand() % 16) + 1);
 }
 
-TEST(IntOpGen, MultiInputAdder_diff_size) {
+TEST(MultiInputAdder, diff_size) {
   const unsigned n = (rand() % 256) +1;
   const unsigned logn = (unsigned)ceil(log2(n));
 

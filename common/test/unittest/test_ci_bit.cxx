@@ -47,7 +47,7 @@ public:
   }
 };
 
-TEST_P(CiBitOper, two_input) {
+TEST_P(CiBitOper, two_input_single) {
   for (int idx = 0; ; ++idx)
   {
     auto& op_name = get<0>(obj_operators[idx]);
@@ -92,7 +92,7 @@ TEST_P(CiBitOper, two_input) {
 }
 
 
-TEST_P(CiBitOper, two_input_pt) {
+TEST_P(CiBitOper, two_input_pt_single) {
   for (int idx = 0; ; ++idx)
   {
     auto& op_name = get<0>(obj_operators[idx]);
@@ -170,7 +170,7 @@ tuple<
   { "", nullptr, {}}
 };
 
-TEST_P(CiBitOper, two_input_ext) {
+TEST_P(CiBitOper, two_input_ext_single) {
   for (int idx = 0; ; ++idx)
   {
     auto& op_name = get<0>(operators[idx]);
@@ -223,7 +223,7 @@ INSTANTIATE_TEST_CASE_P(,
                         ::testing::Combine(::testing::Bool(), ::testing::Bool()));
 
 
-TEST(CiBit, set_name) {
+TEST(CiBit, set_name_single) {
   CiBit a;
   string a_name = "A";
 
@@ -234,7 +234,7 @@ TEST(CiBit, set_name) {
   ASSERT_EQ(a_name + a_name, a.get_name());
 }
 
-TEST(CiBit, clr_name) {
+TEST(CiBit, clr_name_single) {
   CiBit a;
   string a_name = "A";
   a.set_name(a_name);
@@ -242,7 +242,7 @@ TEST(CiBit, clr_name) {
   ASSERT_NE(a_name, a.get_name());
 }
 
-TEST(CiBit, name_new_obj) {
+TEST(CiBit, name_new_obj_single) {
   /** plaintext constructor */
   {
     CiBit a(rand()%2);
@@ -275,7 +275,7 @@ TEST(CiBit, name_new_obj) {
   }
 }
 
-TEST(CiBit, name_assign) {
+TEST(CiBit, name_assign_single) {
   /** assign */
   {
     string a_name = "A";
@@ -316,7 +316,7 @@ tuple<
   { "", nullptr }
 };
 
-TEST(CiBit, name_unchanged) {
+TEST(CiBit, name_unchanged_single) {
   for (int idx = 0; ; ++idx)
   {
     auto& op_name = get<0>(name_fncs[idx]);
@@ -333,7 +333,7 @@ TEST(CiBit, name_unchanged) {
   }
 }
 
-TEST(CiBit, name_change) {
+TEST(CiBit, name_change_single) {
   {
     string a_name = "A";
     string b_name = "B";

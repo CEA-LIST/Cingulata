@@ -1,59 +1,68 @@
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include <ci_bit_vector.hxx>
 
 using namespace std;
 using namespace cingulata;
 
-#define RAND_BITV(v, v_size)          \
-{                                     \
-  for (int i = 0; i < v_size; ++i) {  \
-    (v).push_back(CiBit(rand() % 2)); \
-  }                                   \
-  ASSERT_EQ(v_size, (v).size());      \
-}
-                    \
+#define RAND_BITV(v, v_size)                                                   \
+  {                                                                            \
+    for (int i = 0; i < v_size; ++i) {                                         \
+      (v).push_back(CiBit(rand() % 2));                                        \
+    }                                                                          \
+    ASSERT_EQ(v_size, (v).size());                                             \
+  }
 
-#define RAND_CIBITV(v)                                \
-{                                                     \
-  unsigned int bv_size = rand() % 128;                \
-  vector<CiBit> bv;                                   \
-  RAND_BITV(bv, bv_size);                             \
-  (v) = CiBitVector(bv);                              \
-  ASSERT_EQ((v).size(), bv_size);                     \
-}                                                     \
+#define RAND_CIBITV(v)                                                         \
+  {                                                                            \
+    unsigned int bv_size = rand() % 128;                                       \
+    vector<CiBit> bv;                                                          \
+    RAND_BITV(bv, bv_size);                                                    \
+    (v) = CiBitVector(bv);                                                     \
+    ASSERT_EQ((v).size(), bv_size);                                            \
+  }
 
-#define RAND_CIBITV_LEN(v, l)                         \
-{                                                     \
-  auto ll = (l);                                      \
-  vector<CiBit> bv;                                   \
-  RAND_BITV(bv, ll);                                  \
-  (v) = CiBitVector(bv);                              \
-  ASSERT_EQ((v).size(), ll);                          \
-}                                                     \
+#define RAND_CIBITV_LEN(v, l)                                                  \
+  {                                                                            \
+    auto ll = (l);                                                             \
+    vector<CiBit> bv;                                                          \
+    RAND_BITV(bv, ll);                                                         \
+    (v) = CiBitVector(bv);                                                     \
+    ASSERT_EQ((v).size(), ll);                                                 \
+  }
 
-#define ASSERT_EQ_CIBITV(v1, v2)                      \
-{                                                     \
-  ASSERT_EQ((v1).size(), (v2).size());                \
-  for (int i = 0; i < (v1).size(); ++i) {             \
-    ASSERT_EQ((v1)[i].get_val(), (v2)[i].get_val());  \
-  }                                                   \
-}                                                     \
+#define ASSERT_EQ_CIBITV_LEN(v1, v2, l)                                        \
+  {                                                                            \
+    auto _v1 = (v1);                                                           \
+    auto _v2 = (v2);                                                           \
+    vector<int> v1_dec(l);                                                     \
+    vector<int> v2_dec(l);                                                     \
+    for (int i = 0; i < l; ++i) {                                              \
+      v1_dec[i] = _v1[i].get_val();                                            \
+      v2_dec[i] = _v2[i].get_val();                                            \
+    }                                                                          \
+    ASSERT_THAT(v1_dec, ::testing::ElementsAreArray(v2_dec));                  \
+  }
 
-#define ASSERT_EQ_CIBITV_LEN(v1, v2, l)               \
-{                                                     \
-  for (int i = 0; i < (l); ++i) {                     \
-    ASSERT_EQ((v1)[i].get_val(), (v2)[i].get_val());  \
-  }                                                   \
-}                                                     \
+#define ASSERT_EQ_CIBITV(v1, v2)                                               \
+  {                                                                            \
+    ASSERT_EQ((v1).size(), (v2).size());                                       \
+    ASSERT_EQ_CIBITV_LEN(v1, v2, (v1).size());                                 \
+  }
 
-#define ASSERT_EQ_CIBITV_INTVAL(v, val)               \
-{                                                     \
-  for (int i = 0; i < (v).size(); ++i) {              \
-    ASSERT_EQ((v)[i].get_val(), (val));               \
-  }                                                   \
-}                                                     \
-
+#define ASSERT_EQ_CIBITV_BITVAL(v, val)                                        \
+  {                                                                            \
+    auto _v = (v);                                                             \
+    auto _val = (val);                                                         \
+    vector<int> val_dec(_v.size());                                            \
+    vector<int> v_dec(_v.size());                                              \
+    for (int i = 0; i < _v.size(); ++i) {                                      \
+      val_dec[i] = _val & 1;                                                   \
+      v_dec[i] = _v[i].get_val();                                              \
+    }                                                                          \
+    ASSERT_THAT(val_dec, ::testing::ElementsAreArray(v_dec));                  \
+  }
 
 TEST(CiBitVector, constructor_from_ci_bit) {
   CiBitVector v;
@@ -68,7 +77,7 @@ TEST(CiBitVector, constructor_from_ci_bit) {
   CiBit b(rand() % 2);
   v = CiBitVector(v_size, b);
   ASSERT_EQ(v.size(), v_size);
-  ASSERT_EQ_CIBITV_INTVAL(v, b.get_val());
+  ASSERT_EQ_CIBITV_BITVAL(v, b.get_val());
 }
 
 TEST(CiBitVector, constructor_from_list_initializer) {
@@ -201,7 +210,7 @@ TEST(CiBitVector, xor_operand) {
   CiBitVector v2 = v1;
   v2 ^= v2;
   ASSERT_EQ(v2.size(), v1.size());
-  ASSERT_EQ_CIBITV_INTVAL(v2, 0);
+  ASSERT_EQ_CIBITV_BITVAL(v2, 0);
 
   v2 = v1;
   CiBitVector v3;
