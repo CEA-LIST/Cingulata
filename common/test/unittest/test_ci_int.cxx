@@ -3,6 +3,7 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <cmath>
 
 using namespace std;
 using namespace cingulata;
@@ -26,6 +27,13 @@ using namespace cingulata;
  * @brief      Modulo val to bc bits
  */
 #define mod(val, bc) ((val) & (((bc) < 64) ? ((1UL<<(bc)) - 1) : -1L))
+
+vector<int> decrypt_ci_int(const CiInt& val) {
+  vector<int> res(val.size());
+  for (int i = 0; i < val.size(); ++i)
+    res[i] = val[i].get_val();
+  return res;
+}
 
 #define GEN_RAND_CI_L(VAR, size, is_signed)                 \
   long VAR ## _val = lrand();                               \
@@ -56,7 +64,7 @@ using namespace cingulata;
       v_dec[i] = _v[i].decrypt();                                              \
       val_dec[i] = (_val >> i) & 1;                                            \
     }                                                                          \
-    ASSERT_THAT(val_dec, ::testing::ElementsAreArray(v_dec));                  \
+    ASSERT_THAT(v_dec, ::testing::ElementsAreArray(val_dec));                  \
   }
 
 #define ASSERT_EQ_CI_CI_S(a, b)                                                \
@@ -83,36 +91,66 @@ using namespace cingulata;
 
 TEST(CiInt, constructor_from_ci_bit) {
   CiBit b(rand() % 2);
-  CiInt x(b);
-  ASSERT_EQ(x.is_signed(), false);
-  ASSERT_EQ(x.size(), 1);
-  ASSERT_EQ(x[0].get_val(), b.get_val());
+  b.encrypt();
+  const int n = rand() % 128;
+  CiInt x(b, n);
+  ASSERT_EQ(x.is_signed(), CiInt::default_is_signed);
+  ASSERT_EQ(x.size(), n);
+  for (int i = 0; i < n; ++i)
+    ASSERT_EQ(x[i].decrypt(), b.decrypt());
 }
 
 TEST(CiInt, constructor_from_ci_bit_vector) {
   int size = rand() % 128;
   vector<CiBit> v;
   for (unsigned int j = 0; j < size; j++) {
-    v.push_back(CiBit(rand() % 2));
+    v.push_back(CiBit(rand() % 2).encrypt());
   }
 
   CiInt x(v);
   ASSERT_EQ(x.is_signed(), false);
   ASSERT_EQ(x.size(), size);
   for (unsigned int j = 0; j < size; j++) {
-    ASSERT_EQ(x[j].get_val(), v[j].get_val());
+    ASSERT_EQ(x[j].decrypt(), v[j].decrypt());
   }
 }
 
-TEST(CiInt, encode_plain_val) {
-  GEN_RAND_CI_L(x, rand() % 64, rand() % 2);
-
-  ASSERT_CI_PARAM(x, x_size, x_is_signed);
+template<typename T>
+void test_construct_plain(const T x_val) {
+  CiInt x(x_val);
+  unsigned x_size = (x_val < 0) ? (unsigned)ceil(log2(-x_val+1))+1 : (unsigned)ceil(log2(x_val+1));
+  ASSERT_CI_PARAM(x, x_size, std::is_signed<T>::value);
   ASSERT_EQ_CI_L(x, x_val);
+}
 
-  CiInt z(x_val);
-  ASSERT_CI_PARAM(z, sizeof(long)*8, true);
-  ASSERT_EQ_CI_L(z, x_val);
+template<typename T>
+void test_construct_plain(const T x_val, const int x_size) {
+  CiInt x(x_val, x_size);
+  ASSERT_CI_PARAM(x, x_size, std::is_signed<T>::value);
+  ASSERT_EQ_CI_L(x, x_val);
+}
+
+TEST(CiInt, construct_plain_single) {
+  test_construct_plain((int32_t)15);
+  test_construct_plain((int32_t)-15);
+
+  test_construct_plain((uint32_t)15);
+  test_construct_plain((uint32_t)-15);
+
+  test_construct_plain((int32_t)16);
+  test_construct_plain((int32_t)-16);
+
+  test_construct_plain((int32_t)15, 4);
+  test_construct_plain((int32_t)-15, 4);
+
+  test_construct_plain((int32_t)15, 5);
+  test_construct_plain((int32_t)-15, 5);
+
+  test_construct_plain((uint32_t)15, 4);
+  test_construct_plain((uint32_t)-15, 4);
+
+  test_construct_plain((uint32_t)15, 5);
+  test_construct_plain((uint32_t)-15, 5);
 }
 
 TEST(CiInt, assign_from_ci_int) {
@@ -126,17 +164,77 @@ TEST(CiInt, assign_from_ci_int) {
   ASSERT_EQ_CI_L(y, x_val);
 }
 
-TEST(CiInt, assign_from_value) {
+TEST(CiInt, assign_from_value_single) {
   {
-    int val = rand();
+    const int val = 0;
+    const unsigned val_size = 0;
     CiInt y = val;
-    ASSERT_CI_PARAM(y, sizeof(int)*8, true);
+    ASSERT_CI_PARAM(y, val_size, true);
     ASSERT_EQ_CI_L(y, val);
   }
   {
-    unsigned val = rand();
+    const int val = 1;
+    const unsigned val_size = 1;
     CiInt y = val;
-    ASSERT_CI_PARAM(y, sizeof(unsigned)*8, false);
+    ASSERT_CI_PARAM(y, val_size, true);
+    ASSERT_EQ_CI_L(y, val);
+  }
+  {
+    const int val = -1;
+    const unsigned val_size = 2;
+    CiInt y = val;
+    ASSERT_CI_PARAM(y, val_size, true);
+    ASSERT_EQ_CI_L(y, val);
+  }
+  {
+    const unsigned val = 0;
+    const unsigned val_size = 0;
+    CiInt y = val;
+    ASSERT_CI_PARAM(y, val_size, false);
+    ASSERT_EQ_CI_L(y, val);
+  }
+  {
+    const unsigned val = 1;
+    const unsigned val_size = 1;
+    CiInt y = val;
+    ASSERT_CI_PARAM(y, val_size, false);
+    ASSERT_EQ_CI_L(y, val);
+  }
+  {
+    const unsigned val = -1;
+    const unsigned val_size = sizeof(unsigned)*8;
+    CiInt y = val;
+    ASSERT_CI_PARAM(y, val_size, false);
+    ASSERT_EQ_CI_L(y, val);
+  }}
+
+TEST(CiInt, assign_from_value) {
+  {
+    const int val = rrand(0, 1<<5);
+    const unsigned val_size = (unsigned)ceil(log2(val+1));
+    CiInt y = val;
+    ASSERT_CI_PARAM(y, val_size, true);
+    ASSERT_EQ_CI_L(y, val);
+  }
+  {
+    const int val = rrand(-(1<<5), -1);
+    const unsigned val_size = (unsigned)ceil(log2(-val+1))+1;
+    CiInt y = val;
+    ASSERT_CI_PARAM(y, val_size, true);
+    ASSERT_EQ_CI_L(y, val);
+  }
+  {
+    const unsigned val = rrand(0, 1<<5);
+    const unsigned val_size = (unsigned)ceil(log2(val+1));
+    CiInt y = val;
+    ASSERT_CI_PARAM(y, val_size, false);
+    ASSERT_EQ_CI_L(y, val);
+  }
+  {
+    const unsigned val = rrand(-(1<<5), -1);
+    const unsigned val_size = 8*sizeof(unsigned);
+    CiInt y = val;
+    ASSERT_CI_PARAM(y, val_size, false);
     ASSERT_EQ_CI_L(y, val);
   }
 }
@@ -221,8 +319,13 @@ TEST(CiInt, and_operand) {
 
   CiInt z(rand());
   y &= z;
-  for (unsigned int i = 0; i < y.size(); i++) {
+
+  const int min_size = min(y.size(), z.size());
+  for (unsigned int i = 0; i < min_size; i++) {
     ASSERT_EQ(y[i].get_val(), x[i].get_val() & z[i].get_val());
+  }
+  for (unsigned int i = min_size; i < y.size(); i++) {
+    ASSERT_EQ(y[i].get_val(), x[i].get_val() & z.sign().get_val());
   }
 }
 
@@ -234,8 +337,13 @@ TEST(CiInt, or_operand) {
 
   CiInt z(rand());
   y |= z;
-  for (unsigned int i = 0; i < y.size(); i++) {
+
+  const int min_size = min(y.size(), z.size());
+  for (unsigned int i = 0; i < min_size; i++) {
     ASSERT_EQ(y[i].get_val(), x[i].get_val() | z[i].get_val());
+  }
+  for (unsigned int i = min_size; i < y.size(); i++) {
+    ASSERT_EQ(y[i].get_val(), x[i].get_val() | z.sign().get_val());
   }
 }
 
@@ -248,122 +356,149 @@ TEST(CiInt, xor_operand) {
   CiInt y = x;
   CiInt z(rand());
   y ^= z;
-  for (unsigned int i = 0; i < y.size(); i++) {
+
+  const int min_size = min(y.size(), z.size());
+  for (unsigned int i = 0; i < min_size; i++) {
     ASSERT_EQ(y[i].get_val(), x[i].get_val() ^ z[i].get_val());
+  }
+  for (unsigned int i = min_size; i < y.size(); i++) {
+    ASSERT_EQ(y[i].get_val(), x[i].get_val() ^ z.sign().get_val());
   }
 }
 
 TEST(CiInt, right_shift) {
-  CiInt x(rand());
-  int delta = rand() % (x.size());
-  CiInt y = x;
-  x <<= delta;
-  ASSERT_EQ(x.size(), y.size());
-  for (unsigned int i = 0; i < x.size(); i++) {
-    if (i < delta)
-      ASSERT_EQ(x[i].get_val(), 0);
-    else
-      ASSERT_EQ(x[i].get_val(), y[i - delta].get_val());
-  }
+  const CiInt x(rand());
+  const int n = x.size();
+  int delta = rand() % (n);
+  const auto x_dec = decrypt_ci_int(x);
 
-  CiInt z = y << delta;
-  ASSERT_EQ(z.size(), y.size());
-  for (unsigned int i = 0; i < z.size(); i++) {
-    ASSERT_EQ(x[i].get_val(), z[i].get_val());
+  /* right shift with positive value*/
+  {
+    vector<int> xp_dec(n, x.sign().get_val());
+    for (int i = 0; i < n - delta; ++i)
+      xp_dec[i] = x_dec[i + delta];
+
+    CiInt y(x);
+    y >>= delta;
+
+    ASSERT_THAT(decrypt_ci_int(y), ::testing::ElementsAreArray(xp_dec));
+
+    CiInt z = x >> delta;
+    ASSERT_THAT(decrypt_ci_int(z), ::testing::ElementsAreArray(xp_dec));
   }
 
   /* right shift with a negative value */
-  x = y;
-  x <<= (-delta);
-  ASSERT_EQ(x.size(), y.size());
-  for (unsigned int i = 0; i < x.size(); i++) {
-    if (i < (x.size() - delta))
-      ASSERT_EQ(x[i].get_val(), y[i + delta].get_val());
-    else
-      ASSERT_EQ(x[i].get_val(), y.msb().get_val());
-  }
+  {
+    CiInt y1(x);
+    y1 >>= (-delta);
 
-  z = y << (-delta);
-  ASSERT_EQ(z.size(), y.size());
-  for (unsigned int i = 0; i < z.size(); i++) {
-    ASSERT_EQ(x[i].get_val(), z[i].get_val());
+    CiInt y2(x);
+    y2 <<= (delta);
+
+    ASSERT_THAT(decrypt_ci_int(y1), ::testing::ElementsAreArray(decrypt_ci_int(y2)));
+
+    CiInt z1 = x >> (-delta);
+    CiInt z2 = x << (delta);
+
+    ASSERT_THAT(decrypt_ci_int(z1), ::testing::ElementsAreArray(decrypt_ci_int(z2)));
   }
 }
 
 TEST(CiInt, left_shift) {
-  CiInt x(rand());
-  int delta = rand() % (x.size());
-  CiInt y = x;
-  x >>= delta;
-  ASSERT_EQ(x.size(), y.size());
-  for (unsigned int i = 0; i < x.size(); i++) {
-    if (i < (x.size() - delta))
-      ASSERT_EQ(x[i].get_val(), y[i + delta].get_val());
-    else
-      ASSERT_EQ(x[i].get_val(), y.msb().get_val());
-  }
+  const CiInt x(rand());
+  const int n = x.size();
+  int delta = rand() % (n);
+  const auto x_dec = decrypt_ci_int(x);
 
-  CiInt z = y >> delta;
-  ASSERT_EQ(z.size(), y.size());
-  for (unsigned int i = 0; i < z.size(); i++) {
-    ASSERT_EQ(x[i].get_val(), z[i].get_val());
+  /* left shift with positive value*/
+  {
+    vector<int> xp_dec(n, 0);
+    for (int i = 0; i < n - delta; ++i)
+      xp_dec[i + delta] = x_dec[i];
+
+    CiInt y(x);
+    y <<= delta;
+
+    ASSERT_THAT(decrypt_ci_int(y), ::testing::ElementsAreArray(xp_dec));
+
+    CiInt z = x << delta;
+    ASSERT_THAT(decrypt_ci_int(z), ::testing::ElementsAreArray(xp_dec));
   }
 
   /* left shift with a negative value */
-  x = y;
-  x >>= (-delta);
-  ASSERT_EQ(x.size(), y.size());
-  for (unsigned int i = 0; i < x.size(); i++) {
-    if (i < delta)
-      ASSERT_EQ(x[i].get_val(), 0);
-    else
-      ASSERT_EQ(x[i].get_val(), y[i - delta].get_val());
-  }
+  {
+    CiInt y1(x);
+    y1 <<= (-delta);
 
-  z = y >> (-delta);
-  ASSERT_EQ(z.size(), y.size());
-  for (unsigned int i = 0; i < z.size(); i++) {
-    ASSERT_EQ(x[i].get_val(), z[i].get_val());
+    CiInt y2(x);
+    y2 >>= (delta);
+
+    ASSERT_THAT(decrypt_ci_int(y1), ::testing::ElementsAreArray(decrypt_ci_int(y2)));
+
+    CiInt z1 = x << (-delta);
+    CiInt z2 = x >> (delta);
+
+    ASSERT_THAT(decrypt_ci_int(z1), ::testing::ElementsAreArray(decrypt_ci_int(z2)));
   }
 }
 
 TEST(CiInt, rol) {
-  CiInt x(rand());
-  CiInt y = x;
-  unsigned int x_size = x.size();
-  int delta = rand() % x_size;
+  const CiInt x(rand());
+  const int n = x.size();
+  int delta = rand() % (n);
+  const auto x_dec = decrypt_ci_int(x);
 
-  x.rol(delta);
-  ASSERT_EQ(x_size, y.size());
-  for (unsigned int i = 0; i < x_size; i++) {
-    ASSERT_EQ(y[i].get_val(), x[(i + delta) % x_size].get_val());
+  /* left rotate with positive value*/
+  {
+    vector<int> xp_dec(n, 0);
+    for (int i = 0; i < n; ++i)
+      xp_dec[(i + delta) % n] = x_dec[i];
+
+    CiInt y(x);
+    y.rol(delta);
+
+    ASSERT_THAT(decrypt_ci_int(y), ::testing::ElementsAreArray(xp_dec));
   }
 
-  x = y;
-  x.rol(-delta);
-  ASSERT_EQ(x_size, y.size());
-  for (int i = x_size-1; i >= 0; i--) {
-    ASSERT_EQ(y[i].get_val(), x[(i - delta) % x_size].get_val());
+  /* left rotate with negative value*/
+  {
+    CiInt y1(x);
+    y1.rol(-delta);
+
+    CiInt y2(x);
+    y2.ror(delta);
+
+    ASSERT_THAT(decrypt_ci_int(y1), ::testing::ElementsAreArray(decrypt_ci_int(y2)));
   }
 }
 
 TEST(CiInt, ror) {
-  CiInt x(rand());
-  CiInt y = x;
-  unsigned int x_size = x.size();
-  int delta = rand() % x_size;
+  const CiInt x(rand());
+  const int n = x.size();
+  int delta = rand() % (n);
+  const auto x_dec = decrypt_ci_int(x);
 
-  x.ror(delta);
-  ASSERT_EQ(x_size, y.size());
-  for (int i = x_size-1; i >= 0; i--) {
-    ASSERT_EQ(y[i].get_val(), x[(i - delta) % x_size].get_val());
+  /* left rotate with positive value*/
+  {
+    vector<int> xp_dec(n, 0);
+    for (int i = 0; i < n; ++i)
+      xp_dec[i] = x_dec[(i + delta) % n];
+
+    CiInt y(x);
+    y.ror(delta);
+
+    ASSERT_THAT(decrypt_ci_int(y), ::testing::ElementsAreArray(xp_dec));
   }
 
-  x = y;
-  x.ror(-delta);
-  ASSERT_EQ(x_size, y.size());
-  for (unsigned int i = 0; i < x_size; i++) {
-    ASSERT_EQ(y[i].get_val(), x[(i + delta) % x_size].get_val());
+  /* left rotate with negative value*/
+  {
+    CiInt y1(x);
+    y1.ror(-delta);
+
+    CiInt y2(x);
+    y2.rol(delta);
+
+    ASSERT_THAT(decrypt_ci_int(y1), ::testing::ElementsAreArray(decrypt_ci_int(y2)));
   }
 }
 
