@@ -25,7 +25,13 @@ CiBitVector NaryOper::operator()(const vector<CiBitVector>& inps) const {
   } else if (inps.size() == 1) {
     return inps[0];
   } else {
-    return oper(inps);
+    vector<CiBitVector> m_inps;
+    for (const CiBitVector& inp: inps)
+      if (inp.size() > 0) m_inps.push_back(inp);
+    if (m_inps.empty())
+      return CiBitVector();
+    else
+      return oper(m_inps);
   }
 }
 

@@ -19,6 +19,7 @@ set(SRCS
     int_op_gen/impl/operator.cxx
     int_op_gen/interface.cxx
     int_op_gen/mult_depth.cxx
+    int_op_gen/impl/multi_inp_adder.cxx
     int_op_gen/size.cxx
     bit_exec/clear.cxx
     )
