@@ -45,6 +45,8 @@ CiBitVector IIntOpGen::mux(const CiBitVector &cond, const vector<CiBitVector> &i
   return m_mux(cond, inps);
 }
 
-std::vector<CiBitVector> IIntOpGen::sort (const std::vector<CiBitVector> &v_cbv) const{
-  return m_sort(v_cbv);
+std::vector<CiBitVector> IIntOpGen::sort (const std::vector<CiBitVector> &v_cbv,
+	                                      const std::vector<CiBitVector> &i_cbv,
+	                                      const bool reverse) const{
+  return m_sort(v_cbv, i_cbv, reverse);
 }

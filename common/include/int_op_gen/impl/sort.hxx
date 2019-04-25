@@ -14,7 +14,7 @@ namespace cingulata
     /**
      * @brief      sort an array of CInt
      * @details    The sort function sort a vector of Cint and return the values.
-     *             The multiplicative depth of this implementation is minimal
+     *             The multiplicative depth of this implementation is minimal.
      * @note       Implementation described by Cetin & al in
      *             *Low Dpeth Circuits for Efficient Homomorphic Sorting*.
      */
@@ -28,7 +28,9 @@ namespace cingulata
 
     private:
 
-      std::vector<CiBitVector> oper(const std::vector<CiBitVector>& v_cbv) const;
+      std::vector<CiBitVector> oper(const std::vector<CiBitVector>& v_cbv,
+                                    const std::vector<CiBitVector>& i_cbv,
+                                    const bool reverse) const;
 
       CiBitVector hammingWeight(const CiBitVector x, unsigned int l, unsigned int size_ham ) const;
 

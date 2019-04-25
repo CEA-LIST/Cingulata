@@ -32,6 +32,13 @@ T to_binary(unsigned val, int n) {
   }                                               \
 }
 
+bool sortdesc(const tuple<unsigned, unsigned>& a,
+              const tuple<unsigned, unsigned>& b)
+{
+    return (get<0>(a) > get<0>(b));
+}
+
+
 TEST(IntOpGen, Decoder) {
   const unsigned n = rand() % 12 + 1;
 
@@ -59,6 +66,7 @@ TEST(IntOpGen, Mux) {
 
   vector<unsigned> vals_m_int;
   vector<CiBitVector> vals_m_bv;
+
   for (unsigned i = 0; i < n; ++i) {
     GEN_RAND_BV(tmp, m, rand());
     vals_m_int.push_back(tmp_int);
@@ -79,10 +87,10 @@ TEST(IntOpGen, Mux) {
   ASSERT_EQ_BV_INT(out, vals_m_int[cond_int]);
 }
 
-TEST(IntOpGen, Sort) {
-  const unsigned size_array = ((rand()%10));
-  const unsigned m = ((rand()%16));
-
+TEST(IntOpGen, Sort_same) {
+  const unsigned size_array = ((rand()%10)+1);
+  const unsigned m = ((rand()%16)+1);
+  const bool r = ((rand()%2));
   vector<unsigned> vals_int;
   vector<CiBitVector> vals_bv;
   for (unsigned i = 0; i < size_array; ++i) {
@@ -94,14 +102,52 @@ TEST(IntOpGen, Sort) {
   for (int i = 0; i < size_array; ++i) {
     ASSERT_EQ_BV_INT(vals_bv[i], vals_int[i]);
   }
+  if (r == 0)
+    sort(vals_int.begin(), vals_int.end());
+  else
+    sort(vals_int.begin(), vals_int.end(), greater<int>());
 
-  sort(vals_int.begin(), vals_int.end());
-
-  vector<CiBitVector> out = SortDepth(LowerCompSize(), EqualSize(), SklanskyAdder())(vals_bv);
+  vector<CiBitVector> out = SortDepth(LowerCompSize(), EqualSize(), SklanskyAdder())(vals_bv, r);
   for (int i = 0; i < size_array; ++i) {
     ASSERT_EQ_BV_INT(out[i], vals_int[i]);
   }
 }
+
+/*
+* Warning for this test : if v_bv[i]=v_bj[j], then the sorted
+* values of i_bv can be permuted (not the same alg of sort is used)
+* random failure should occur with this test.
+*
+TEST(IntOpGen, Sort_diff) {
+  vector<tuple<unsigned, unsigned> > vals_t_int;
+  const unsigned size_array = ((rand()%10)+1);
+  const unsigned m = 16;
+  const bool r = ((rand()%2));
+  vector<CiBitVector> vals_v_bv;
+  vector<CiBitVector> vals_i_bv;
+  for (unsigned i = 0; i < size_array; ++i) {
+    GEN_RAND_BV(tmp1, m, rand());
+    vals_v_bv.push_back(tmp1_bv);
+    GEN_RAND_BV(tmp2, m, rand());
+    vals_i_bv.push_back(tmp2_bv);
+    vals_t_int.push_back(make_tuple(tmp1_int, tmp2_int));
+  }
+  for (int i = 0; i < size_array; ++i) {
+    ASSERT_EQ_BV_INT(vals_v_bv[i], get<0>(vals_t_int[i]));
+    ASSERT_EQ_BV_INT(vals_i_bv[i], get<1>(vals_t_int[i]));
+  }
+  if (r == 0)
+    sort(vals_t_int.begin(), vals_t_int.end());
+  else
+    sort(vals_t_int.begin(), vals_t_int.end(), sortdesc);
+  for (int i = 0; i < size_array; ++i)
+    std::cout << "v1:" << get<0>(vals_t_int[i]) << " v2:" << get<1>(vals_t_int[i]) << std::endl;
+  vector<CiBitVector> out = SortDepth(LowerCompSize(), EqualSize(), SklanskyAdder())(vals_v_bv, vals_i_bv, r);
+  for (int i = 0; i < size_array; ++i) {
+    ASSERT_EQ_BV_INT(out[i], get<1>(vals_t_int[i]));
+  }
+
+}*/
 
 /*-------------------------------------------------------------------------*/
 /**

@@ -64,7 +64,9 @@ namespace cingulata
                                   const std::vector<CiBitVector> &inps) const;
 
 
-    virtual std::vector<CiBitVector> sort (const std::vector<CiBitVector> &v_cbv) const;
+    virtual std::vector<CiBitVector> sort (const std::vector<CiBitVector> &v_cbv,
+                                        const std::vector<CiBitVector> &i_cbv,
+                                        const bool reverse) const;
 
   private:
     int_ops::MuxDepth           m_mux;

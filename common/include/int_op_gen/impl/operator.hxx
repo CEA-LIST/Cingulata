@@ -85,12 +85,50 @@ namespace cingulata
     class SortOper
     {
     public:
-      using signature = std::vector<CiBitVector&>& (const std::vector<const CiBitVector&>& v_cbv);
+      using signature = std::vector<CiBitVector&>& (const std::vector<const CiBitVector&>& v_cbv,
+                                                    const std::vector< CiBitVector>& i_cbv,
+                                                    const bool reverse);
 
-      std::vector<CiBitVector> operator()(const std::vector< CiBitVector>& v_cbv) const;
+      /**
+       * @brief      Sort the element of @c v_cbv and return the sorted vector
+       *             The result is given in decreasing order if reverse is set
+       *             with 1.
+       *
+       * @details    All the elements of @v_cbv must have the same bitsize
+       *
+       * @param[in]  v_vbv   Vector of CiBitVector to be sort
+       * @param[in]  reverse 0 if ascending order, 1 else
+       *
+       * @return     sorted vector of input vector
+       */
+      std::vector<CiBitVector> operator()(const std::vector< CiBitVector>& v_cbv, const bool reverse) const;
+
+      /**
+       * @brief      Sort the element by @c v_cbv and return the corresponding
+       *             sorted array of @c i_cbv.
+       *             The result is given in decreasing order if rever is set
+       *             with 1.
+       *
+       * @details    The number of elements in @c v_cbv must be equal to the
+       *             number of elements of @c i_cbv. All the elements of
+       *             @c v_cbv and @c i_cbv must have the same bitsize.
+       *             The bit-size of elements in reult vctor is the same as
+       *             bit-size of an @c i_cbv elements.
+       *
+       * @param[in]  v_vbv   Vector of CiBitVector (metric to sort)
+       * @param[in]  i_vbv   Vector of CiBitVector (metric to retrieve)
+       * @param[in]  reverse 0 if ascending order, 1 else
+       *
+       * @return     sorted vector of input vector
+       */
+      std::vector<CiBitVector> operator()(const std::vector< CiBitVector>& v_cbv,
+                                          const std::vector< CiBitVector>& i_cbv,
+                                          const bool reverse) const;
 
     private:
-      virtual std::vector<CiBitVector> oper(const std::vector<CiBitVector>& v_cbv) const = 0;
+      virtual std::vector<CiBitVector> oper(const std::vector<CiBitVector>& v_cbv,
+                                            const std::vector< CiBitVector>& i_cbv,
+                                            const bool reverse) const = 0;
     };
   }
 }

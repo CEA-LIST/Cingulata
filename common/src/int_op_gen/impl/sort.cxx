@@ -33,8 +33,9 @@ CiBitVector SortDepth::hammingWeight(const CiBitVector x, unsigned int l, unsign
 
 
 
-std::vector<CiBitVector>  SortDepth::oper(const std::vector<CiBitVector>& v_cbv) const {
-
+std::vector<CiBitVector>  SortDepth::oper(const std::vector<CiBitVector>& v_cbv,
+                                          const std::vector<CiBitVector>& i_cbv,
+                                          const bool reverse) const {
   unsigned int size = v_cbv[0].size();
   unsigned int N = v_cbv.size();
   std::vector<CiBitVector> res(N, CiBitVector(size));
@@ -42,7 +43,7 @@ std::vector<CiBitVector>  SortDepth::oper(const std::vector<CiBitVector>& v_cbv)
   for(unsigned int i=0; i<N; i++) {
     m[i][i]=CiBit(false);
     for(unsigned int j=i+1; j<N; j++) {
-      m[i][j]=cmp(v_cbv[i], v_cbv[j]);
+      m[i][j]=cmp(v_cbv[i], v_cbv[j])^CiBit(reverse);
       m[j][i]=m[i][j] ^ CiBit(true);
     }
   }
@@ -68,7 +69,7 @@ std::vector<CiBitVector>  SortDepth::oper(const std::vector<CiBitVector>& v_cbv)
         CiInt i_ci_int(i);
         CiBitVector i_bit_vec = i_ci_int.cast(size_ham);
         z=(equ(i_bit_vec, hamming_weights[j]));
-        res[i] ^=   CiBitVector(size, z) & v_cbv[j];
+        res[i] ^=   CiBitVector(size, z) & i_cbv[j];
 
     }
   }
