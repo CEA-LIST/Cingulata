@@ -448,6 +448,7 @@ TEST(MultiInputAdder, diff_size) {
 
   vector<unsigned> inps_int;
   unsigned out_int = 0;
+  unsigned max_out_int = 0;
   vector<CiBitVector> inps_bv;
   for (unsigned i = 0; i < n; ++i) {
     GEN_RAND_BV(tmp, (rand() % 16) + 1, rand());
@@ -455,6 +456,7 @@ TEST(MultiInputAdder, diff_size) {
     inps_int.push_back(tmp_int);
     inps_bv.push_back(tmp_bv);
     out_int += tmp_int;
+    max_out_int += (1<<tmp_bv.size())-1;
   }
 
   CiBitVector out_bv = MultiInputAdder(RippleCarryAdder())(inps_bv);
@@ -466,4 +468,7 @@ TEST(MultiInputAdder, diff_size) {
 
   /* output is valid */
   ASSERT_EQ_BV_INT(out_bv, out_int);
+  int out_size = (int)ceil(log2(max_out_int+1));
+  ASSERT_EQ(out_bv.size(), out_size) << " n: " << n << " logn: " << logn;
+
 }
