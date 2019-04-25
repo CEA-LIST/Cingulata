@@ -12,6 +12,8 @@ namespace cingulata
 {
   class IIntOpGen {
   public:
+    IIntOpGen();
+
     /**
      * @brief      Add integers represented as vectors of bits. The output
      *             vector size is equal to the @c lhs input vector size
@@ -60,8 +62,11 @@ namespace cingulata
     virtual CiBitVector mux     ( const CiBitVector &cond,
                                   const std::vector<CiBitVector> &inps) const;
 
+    virtual CiBitVector sum     (const std::vector<CiBitVector> &inps) const;
+
   private:
     int_ops::MuxDepth           m_mux;
+    int_ops::MultiInputAdder    m_multi_input_adder;
   };
 }
 

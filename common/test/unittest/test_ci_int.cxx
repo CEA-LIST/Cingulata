@@ -2,6 +2,7 @@
 #include <ci_int.hxx>
 
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 using namespace std;
 using namespace cingulata;
@@ -43,24 +44,31 @@ using namespace cingulata;
   ASSERT_EQ((a).is_signed(), a_is_signed);      \
 }
 
-#define ASSERT_EQ_CI_L(a, b)                      \
-{                                                 \
-  ASSERT_LE((a).size(), 64);                      \
-  for (int i = 0; i < (a).size(); ++i) {          \
-    ASSERT_EQ((a)[i].get_val(), ((b) >> i) & 1);  \
-  }                                               \
-}
+#define ASSERT_EQ_CI_L(v, val)                                                 \
+  {                                                                            \
+    auto _v = (v);                                                             \
+    ASSERT_LE(_v.size(), 64);                                                  \
+    auto _val = (val);                                                         \
+    vector<int> val_dec(_v.size());                                            \
+    vector<int> v_dec(_v.size());                                              \
+    for (int i = 0; i < _v.size(); ++i) {                                      \
+      v_dec[i] = _v[i].get_val();                                              \
+      val_dec[i] = (_val >> i) & 1;                                            \
+    }                                                                          \
+    ASSERT_THAT(val_dec, ::testing::ElementsAreArray(v_dec));                  \
+  }
 
 #define ASSERT_EQ_CI_CI_S(a, b)                                                \
   {                                                                            \
     auto &aa = (a);                                                            \
     auto &bb = (b);                                                            \
-    for (int i = 0; i < aa.size(); ++i) {                                      \
-      ASSERT_EQ(aa[i].get_val(), bb[i].get_val());                             \
+    vector<int> a_dec(bb.size());                                              \
+    vector<int> b_dec(bb.size());                                              \
+    for (int i = 0; i < bb.size(); ++i) {                                      \
+      a_dec[i] = aa[i].get_val();                                              \
+      b_dec[i] = bb[i].get_val();                                              \
     }                                                                          \
-    for (int i = aa.size(); i < bb.size(); ++i) {                              \
-      ASSERT_EQ(aa.sign().get_val(), bb[i].get_val());                         \
-    }                                                                          \
+    ASSERT_THAT(a_dec, ::testing::ElementsAreArray(b_dec));                    \
   }
 
 #define ASSERT_EQ_CI_CI(a, b)                                                  \
@@ -187,7 +195,7 @@ TEST(CiInt, msb) {
   ASSERT_EQ(x.msb().get_val(), x[x.size()-1].get_val());
 }
 
-TEST(CiInt, sign) {
+TEST(CiInt, sign_single) {
   CiInt x(255, 8, false);
   ASSERT_EQ(x.sign().get_val(), 0);
 

@@ -3,6 +3,10 @@
 using namespace std;
 using namespace cingulata;
 
+IIntOpGen::IIntOpGen()
+    : m_multi_input_adder(
+          bind(&IIntOpGen::add, this, placeholders::_1, placeholders::_2)) {}
+
 CiBitVector IIntOpGen::sub(const CiBitVector& lhs, const CiBitVector& rhs) const {
   return add(lhs, neg(rhs));
 }
@@ -34,4 +38,8 @@ CiBitVector IIntOpGen::mux(const CiBit &cond, const CiBitVector &a,
 
 CiBitVector IIntOpGen::mux(const CiBitVector &cond, const vector<CiBitVector> &inps) const {
   return m_mux(cond, inps);
+}
+
+CiBitVector IIntOpGen::sum(const std::vector<CiBitVector> &inps) const {
+  return m_multi_input_adder(inps);
 }
