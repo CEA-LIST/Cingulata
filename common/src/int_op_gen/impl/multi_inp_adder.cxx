@@ -16,10 +16,15 @@ CiBitVector MultiInputAdder::oper(const std::vector<CiBitVector> &inps) const {
   /* Determine the maximum bit-size of the results \sum_i (2^inps[i].size()-1) */
   vector<CiBitVector> inps_sym;
   for (const CiBitVector& inp: inps) {
-    CiBitVector inp_sym(inp.size(), 1);
-    // for (const CiBit& b: inp)
+    CiBitVector inp_sym(inp.size(), 1); // encode maximal inp.size()-bit value
 
-    inps_sym.push_back(inp_sym); // encode maximal inp.size()-bit value
+    /* set plaintext bits if available */
+    for (unsigned i = 0; i < inp.size(); ++i) {
+      if (inp[i].is_plain() and inp[i].get_val() == 0)
+        inp_sym[i] = 0;
+    }
+
+    inps_sym.push_back(inp_sym);
   }
 
   CiBitVector sum_sym = add(inps_sym);

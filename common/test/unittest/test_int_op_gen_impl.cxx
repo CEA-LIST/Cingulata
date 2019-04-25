@@ -21,11 +21,12 @@ T to_binary(unsigned val, int n) {
 
 #define GEN_RAND_BV(VAR, n, val)                                               \
   unsigned VAR##_int = mod(val, n);                                            \
-  CiBitVector VAR##_bv = to_binary<CiBitVector>((VAR##_int), (n));
+  CiBitVector VAR##_bv = to_binary<CiBitVector>((VAR##_int), (n)).encrypt();
 
 #define ASSERT_EQ_BV_INT(ct_vec1, pt_int)                                      \
   {                                                                            \
-    auto ct_vec = (ct_vec1);                                                   \
+    CiBitVector ct_vec = (ct_vec1);                                            \
+    ct_vec.decrypt();                                                          \
     auto pt_vec = to_binary<vector<int>>((pt_int), ct_vec.size());             \
     vector<int> ct_vec_dec;                                                    \
     for (int i = 0; i < ct_vec.size(); ++i)                                    \
@@ -45,6 +46,7 @@ TEST(IntOpGen, Decoder) {
 
   /* output is valid */
   ASSERT_EQ(out.size(), (1<<n)) << n;
+  out.decrypt();
   for (unsigned i = 0; i < out.size(); ++i) {
     if (i == inp_int)
       ASSERT_TRUE(out[i].get_val());
@@ -227,16 +229,16 @@ public:
   }
 };
 
-#define TEST_COMP_OP(a_int, a_bv, b_int, b_bv)  \
-{                                               \
-  auto r_pt = cmp_pt(a_int, b_int);             \
-  auto r_ct = cmp_ct(a_bv, b_bv);               \
-  /* inputs did not changed */                  \
-  ASSERT_EQ_BV_INT(a_bv, a_int);                \
-  ASSERT_EQ_BV_INT(b_bv, b_int);                \
-  /* output is valid */                         \
-  ASSERT_EQ(r_ct.get_val(), r_pt);              \
-}
+#define TEST_COMP_OP(a_int, a_bv, b_int, b_bv)                                 \
+  {                                                                            \
+    auto r_pt = cmp_pt(a_int, b_int);                                          \
+    auto r_ct = cmp_ct(a_bv, b_bv);                                            \
+    /* inputs did not changed */                                               \
+    ASSERT_EQ_BV_INT(a_bv, a_int);                                             \
+    ASSERT_EQ_BV_INT(b_bv, b_int);                                             \
+    /* output is valid */                                                      \
+    ASSERT_EQ(r_ct.decrypt(), r_pt);                                           \
+  }
 
 TEST_P(Comparator, random_inps) {
   const unsigned n = rand() % 32 + 1;

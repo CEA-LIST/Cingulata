@@ -35,7 +35,8 @@ using namespace cingulata;
     VAR ## _val = VAR ## _val >> (64 - VAR ## _size);       \
   else                                                      \
     VAR ## _val = mod(VAR ## _val, VAR ## _size);           \
-  CiInt VAR(VAR ## _val, VAR ## _size, VAR ## _is_signed);
+  CiInt VAR(VAR ## _val, VAR ## _size, VAR ## _is_signed);  \
+  VAR.encrypt();
 
 
 #define ASSERT_CI_PARAM(a, a_size, a_is_signed) \
@@ -52,7 +53,7 @@ using namespace cingulata;
     vector<int> val_dec(_v.size());                                            \
     vector<int> v_dec(_v.size());                                              \
     for (int i = 0; i < _v.size(); ++i) {                                      \
-      v_dec[i] = _v[i].get_val();                                              \
+      v_dec[i] = _v[i].decrypt();                                              \
       val_dec[i] = (_val >> i) & 1;                                            \
     }                                                                          \
     ASSERT_THAT(val_dec, ::testing::ElementsAreArray(v_dec));                  \
@@ -65,8 +66,8 @@ using namespace cingulata;
     vector<int> a_dec(bb.size());                                              \
     vector<int> b_dec(bb.size());                                              \
     for (int i = 0; i < bb.size(); ++i) {                                      \
-      a_dec[i] = aa[i].get_val();                                              \
-      b_dec[i] = bb[i].get_val();                                              \
+      a_dec[i] = aa[i].decrypt();                                              \
+      b_dec[i] = bb[i].decrypt();                                              \
     }                                                                          \
     ASSERT_THAT(a_dec, ::testing::ElementsAreArray(b_dec));                    \
   }
@@ -478,7 +479,7 @@ TYPED_TEST(CiInt_OpGen, TEST_NAME) {                    \
   CiBit r = OPER_CT(x);                                 \
   ASSERT_CI_PARAM(x, x_size, x_is_signed);              \
   ASSERT_EQ_CI_L(x, x_val);                             \
-  ASSERT_EQ(r.get_val(), OPER_PT(x_val));               \
+  ASSERT_EQ(r.decrypt(), OPER_PT(x_val));               \
 }
 
 OP_GEN_COMP_1_INP(  equal_same_inp,
@@ -519,7 +520,7 @@ TYPED_TEST(CiInt_OpGen, TEST_NAME) {                    \
   ASSERT_EQ_CI_L(y, y_val);                             \
   x_val = mod(x_val, max(x_size, y_size));              \
   y_val = mod(y_val, max(x_size, y_size));              \
-  ASSERT_EQ(r.get_val(), OPER_PT(x_val, y_val));        \
+  ASSERT_EQ(r.decrypt(), OPER_PT(x_val, y_val));        \
 }
 
 OP_GEN_COMP_2_INP(  equal,
