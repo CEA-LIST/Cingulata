@@ -69,36 +69,28 @@ int main() {
   physical_act ^= keystream[5];
   drinking ^= keystream[6];
 
-  CiInt risk{CiInt::u8};
+  vector<CiInt> risk_factors;
 
-  risk = risk + select((flags[SEX_FIELD]) && (age > 50), 1, 0);
+  risk_factors.push_back(select((flags[SEX_FIELD]) && (age > 50), 1, 0));
+  risk_factors.push_back(select((!flags[SEX_FIELD]) && (age > 60), 1, 0));
 
-  risk = risk + select((!flags[SEX_FIELD]) && (age > 60), 1, 0);
+  risk_factors.push_back(flags[ANTECEDENT_FIELD]);
+  risk_factors.push_back(flags[SMOKER_FIELD]);
+  risk_factors.push_back(flags[DIABETES_FIELD]);
+  risk_factors.push_back(flags[PRESSURE_FIELD]);
 
-  risk = risk + flags[ANTECEDENT_FIELD];
-  risk = risk + flags[SMOKER_FIELD];
-  risk = risk + flags[DIABETES_FIELD];
-  risk = risk + flags[PRESSURE_FIELD];
+  risk_factors.push_back(select(hdl < 40, 1, 0));
 
-  risk = risk + select(hdl < 40, 1, 0);
+  risk_factors.push_back(select(weight - 10 > height, 1, 0));
 
-  // Integer8 riskH = 0;
-  // Integer8 sum = 2;
-  // sum = height + Integer8(10);
-  // riskH = select( weight > sum, 1, 0);
+  risk_factors.push_back(select(physical_act < 30, 1, 0));
 
-  risk = risk + select(weight - 10 > height, 1, 0);
+  risk_factors.push_back(select((flags[SEX_FIELD]) && (drinking > 3), 1, 0));
+  risk_factors.push_back(select((!flags[SEX_FIELD]) && (drinking > 2), 1, 0));
 
-  risk = risk + select(physical_act < 30, 1, 0);
+  CiInt risk = sum(risk_factors);
 
-  risk = risk + select((flags[SEX_FIELD]) && (drinking > 3),
-                       1, 0);
-  risk = risk + select((!flags[SEX_FIELD]) && (drinking > 2),
-                       1, 0);
-
-  for (int i = 3; i >= 0; --i) {
-    cout << risk[i];
-  }
+  risk.write("risk");
 
     /* Export to file the "tracked" circuit */
   CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name, "cardio");
