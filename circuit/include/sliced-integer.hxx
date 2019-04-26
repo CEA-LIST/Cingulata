@@ -42,11 +42,11 @@ public:
 public:
   /*! \brief forward constructor */
   SlicedInteger
-    (const IntType &value_i = 0) : CiInt(value_i) {}
+    (const IntType &value_i = 0) : CiInt(value_i, 8*sizeof(IntType)) {}
 
   /*! \brief forward constructor */
   SlicedInteger
-    (const BitType &value_i) : CiInt(value_i) {}
+    (const BitType &value_i) : CiInt(value_i, 1) {}
 
   /*! \brief forward constructor */
   SlicedInteger
