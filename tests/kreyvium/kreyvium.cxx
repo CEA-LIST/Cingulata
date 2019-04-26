@@ -25,9 +25,8 @@
 /* local includes */
 #include <bit_exec/tracker.hxx>
 #include <ci_bit.hxx>
+#include <ci_bit_vector.hxx>
 #include <ci_context.hxx>
-#include <ci_int.hxx>
-#include <int_op_gen/mult_depth.hxx>
 
 /* namespaces */
 using namespace std;
@@ -118,7 +117,7 @@ CiBitVector kreyvium_stream(CiBitVector &state, CiBitVector &RKEY,
 }
 
 int main() {
-  CiContext::set_config(new BitTracker(), new IntOpGenDepth());
+  CiContext::set_bit_exec(new BitTracker());
 
   CiBitVector key{128}, iv{128};
 
