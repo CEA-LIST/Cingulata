@@ -16,7 +16,7 @@ namespace cingulata
      */
     class WallaceMultiplier : public BinaryOper {
       public:
-        WallaceMultiplier(const std::function<BinaryOper::signature>& adder_p) : adder(adder_p){}
+        WallaceMultiplier(const std::function<BinaryOper::signature>& adder_p) : adder(adder_p) {}
 
       private:
       /**

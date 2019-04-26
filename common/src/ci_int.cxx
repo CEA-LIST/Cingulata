@@ -48,7 +48,7 @@ CiInt& CiInt::operator= (const CiInt& other) {
 }
 
 CiInt::operator CiBit() const {
-  return *this != CiInt(0L, size(), is_signed());
+  return *this != CiInt(CiBit::zero, size(), is_signed());
 }
 
 CiInt::operator CiBitVector() const {
@@ -160,12 +160,18 @@ CiInt& CiInt::operator^=(const CiInt& other) {
 }
 
 CiInt& CiInt::operator<<=(const int pos) {
-  m_bits.shr(pos, CiBit::zero);
+  if (pos < 0)
+    m_bits.shl(-pos, sign());
+  else
+    m_bits.shr(pos, CiBit::zero);
   return *this;
 }
 
 CiInt& CiInt::operator>>=(const int pos) {
-  m_bits.shl(pos, sign());
+  if (pos < 0)
+    m_bits.shr(-pos, CiBit::zero);
+  else
+    m_bits.shl(pos, sign());
   return *this;
 }
 
@@ -365,7 +371,7 @@ istream& cingulata::operator>>(istream& inp, CiInt& val) {
   return inp;
 }
 
-ostream& cingulata::operator<<(ostream& out, CiInt& val) {
+ostream& cingulata::operator<<(ostream& out, const CiInt& val) {
   val.write();
   return out;
 }

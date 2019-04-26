@@ -19,6 +19,22 @@ CiBitVector BinaryOper::operator()(const CiBitVector& lhs, const CiBitVector& rh
   return oper(lhs, rhs);
 }
 
+CiBitVector NaryOper::operator()(const vector<CiBitVector>& inps) const {
+  if (inps.size() == 0) {
+    return CiBitVector();
+  } else if (inps.size() == 1) {
+    return inps[0];
+  } else {
+    vector<CiBitVector> m_inps;
+    for (const CiBitVector& inp: inps)
+      if (inp.size() > 0) m_inps.push_back(inp);
+    if (m_inps.empty())
+      return CiBitVector();
+    else
+      return oper(m_inps);
+  }
+}
+
 CiBit CompOper::operator()(const CiBitVector& lhs, const CiBitVector& rhs) const {
   assert(lhs.size() == rhs.size());
   assert(lhs.size() > 0);
@@ -46,20 +62,19 @@ CiBitVector MuxOper::operator()(const CiBitVector& cond, const vector<CiBitVecto
   return oper(cond, inps);
 }
 
-
-std::vector<CiBitVector> SortOper::operator()(const std::vector<CiBitVector>& v_cbv,
-                                              const std::vector<CiBitVector>& i_cbv,
-                                              const bool reverse) const {
+vector<CiBitVector> SortOper::operator()(const vector<CiBitVector> &v_cbv,
+                                         const vector<CiBitVector> &i_cbv,
+                                         const bool reverse) const {
   auto s = v_cbv[0].size();
   assert(v_cbv.size() == i_cbv.size());
-  for (const auto& cbv: v_cbv)
+  for (const auto &cbv : v_cbv)
     assert(cbv.size() == s);
-  for (const auto& cbv: i_cbv)
+  for (const auto &cbv : i_cbv)
     assert(cbv.size() == s);
   return oper(v_cbv, i_cbv, reverse);
 }
 
-std::vector<CiBitVector> SortOper::operator()(const std::vector<CiBitVector>& v_cbv,
-                                              const bool reverse) const {
+vector<CiBitVector> SortOper::operator()(const vector<CiBitVector> &v_cbv,
+                                         const bool reverse) const {
   return (*this)(v_cbv, v_cbv, reverse);
 }

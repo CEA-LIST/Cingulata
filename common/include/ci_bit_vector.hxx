@@ -3,8 +3,10 @@
 
 #include <ci_bit.hxx>
 #include <io_name_vec.hxx>
+#include <slice.hxx>
 
 #include <vector>
+#include <optional>
 
 namespace cingulata
 {
@@ -17,6 +19,8 @@ namespace cingulata
   class CiBitVector : public IoNameVec<CiBitVector>
   {
   public:
+    typedef CiBit elem_t;
+
     /**
      * @brief      Construct an object containing @c p_bit_cnt copies of @c
      *             p_bit.
@@ -34,11 +38,20 @@ namespace cingulata
     CiBitVector(const std::vector<CiBit>& p_bits);
 
     /**
+     * @brief      Constructs a bit-vector from a bit-vector slice
+     *
+     * @param[in]  slice  slice object
+     */
+    CiBitVector(const Slice<CiBitVector> &slice);
+    CiBitVector(const CSlice<CiBitVector> &slice);
+
+    /**
      * @brief      Copy constructor -- use default
      *
      * @param[in]  other  object to copy
      */
     CiBitVector(const CiBitVector& other) = default;
+
 
     /**
      * @brief      Assign a bit-vector object to current object
@@ -136,18 +149,60 @@ namespace cingulata
     const CiBit& at(const int p_idx, const CiBit& p_bit = CiBit::zero) const;
 
     /**
-     * @brief      Select a range of bits using slice indexing.
-     * @details    Bits on positions @c start+k*stride<end for @c pos>=0 are used
-     *             to create a new bit-vector object. Method @c idx_rel_to_abs
-     *             is used to transform @c start and @c end indexes beforehand.
-     *
-     * @param[in]  p_start   start index
-     * @param[in]  p_end     end index (exclusive)
-     * @param[in]  p_stride  stride
-     *
-     * @return     A new object with selected bits
+     * @}
      */
-    CiBitVector slice(int p_start = 0, int p_end = 1<<30, const int p_stride = 1) const;
+
+    /**
+     * @name Bit slice extraction functions
+     * @{
+     */
+
+    /**
+     * @brief      Select a range of bits using slice indexing.
+     * @details    Bits on positions @c start+k*stride<end for @c pos>=0 are
+     *             used to create a new bit-vector object. Method @c
+     *             idx_rel_to_abs is used to transform @c start and @c end
+     *             indexes beforehand.
+     *
+     * @param[in]  start   start index, default value 0
+     * @param[in]  end     end index (exclusive), default value @c size()
+     * @param[in]  stride  stride, default value 1
+     *
+     * @return     A slice object with selected bits
+     */
+    Slice<CiBitVector> slice(const std::optional<int> &start = {},
+                             const std::optional<int> &end = {},
+                             const std::optional<int> &stride = {});
+
+    /**
+     * @copydoc slice()
+     */
+    const CSlice<CiBitVector>
+    slice(const std::optional<int> &start = {},
+          const std::optional<int> &end = {},
+          const std::optional<int> &stride = {}) const;
+
+    /**
+     * @copybrief slice()
+     *
+     * @param[in]  idx   Tuple of start, end and stride parameters
+     *
+     * @return     A slice object with selected bits
+     */
+    Slice<CiBitVector>
+    operator[](const std::tuple<std::optional<int>, std::optional<int>,
+                                std::optional<int>> &idx);
+
+    /**
+     * @copybrief slice()
+     *
+     * @param[in]  idx   Tuple of start, end and stride parameters
+     *
+     * @return     A const slice object with selected bits
+     */
+    const CSlice<CiBitVector>
+    operator[](const std::tuple<std::optional<int>, std::optional<int>,
+                                std::optional<int>> &idx) const;
 
     /**
      * @}
@@ -383,7 +438,7 @@ namespace cingulata
    * @{
    */
   std::istream& operator>>(std::istream&, CiBitVector&);
-  std::ostream& operator<<(std::ostream&, CiBitVector&);
+  std::ostream& operator<<(std::ostream&, const CiBitVector&);
   /**
    * @}
    */

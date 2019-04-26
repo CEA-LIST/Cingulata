@@ -24,6 +24,18 @@ CiBitVector::CiBitVector(const vector<CiBit>& p_bits)
   m_vec(p_bits)
 {}
 
+CiBitVector::CiBitVector(const Slice<CiBitVector>& slice) {
+  for (int i = 0; i < (int)slice.size(); ++i) {
+    m_vec.push_back(slice[i]);
+  }
+}
+
+CiBitVector::CiBitVector(const CSlice<CiBitVector>& slice) {
+  for (int i = 0; i < (int)slice.size(); ++i) {
+    m_vec.push_back(slice[i]);
+  }
+}
+
 CiBitVector& CiBitVector::operator= (const CiBitVector& other) {
   if (this != &other) {
     m_vec = other.m_vec;
@@ -66,21 +78,26 @@ const CiBit& CiBitVector::at(const int p_idx, const CiBit& p_bit) const {
     return p_bit;
 }
 
-CiBitVector CiBitVector::slice(int p_start, int p_end, const int p_stride) const {
-  p_start = idx_clip(idx_rel_to_abs(p_start));
-  p_end = idx_clip(idx_rel_to_abs(p_end));
+Slice<CiBitVector> CiBitVector::slice(const optional<int> &start,
+                                      const optional<int> &end,
+                                      const optional<int> &stride) {
+  return Slice<CiBitVector>(*this, start, end, stride);
+}
 
-  vector<CiBit> bits;
+const CSlice<CiBitVector> CiBitVector::slice(const optional<int> &start,
+                                            const optional<int> &end,
+                                            const optional<int> &stride) const {
+  return CSlice<CiBitVector>(*this, start, end, stride);
+}
 
-  if (p_stride > 0) {
-    for (int i = p_start; i < (int)p_end; i += p_stride)
-      bits.push_back(m_vec.at(i));
-  } else if (p_stride < 0) {
-    for (int i = p_start; i > (int)p_end; i += p_stride)
-      bits.push_back(m_vec.at(i));
-  }
+Slice<CiBitVector> CiBitVector::
+operator[](const tuple<optional<int>, optional<int>, optional<int>> &idx) {
+  return slice(get<0>(idx), get<1>(idx), get<2>(idx));
+}
 
-  return bits;
+const CSlice<CiBitVector> CiBitVector::operator[](
+    const tuple<optional<int>, optional<int>, optional<int>> &idx) const {
+  return slice(get<0>(idx), get<1>(idx), get<2>(idx));
 }
 
 CiBitVector& CiBitVector::operator&=(const CiBitVector& other) {
@@ -283,7 +300,7 @@ istream& cingulata::operator>>(istream& inp, CiBitVector& val) {
   return inp;
 }
 
-ostream& cingulata::operator<<(ostream& out, CiBitVector& val) {
+ostream& cingulata::operator<<(ostream& out, const CiBitVector& val) {
   val.write();
   return out;
 }

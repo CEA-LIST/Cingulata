@@ -1,7 +1,11 @@
 #include <int_op_gen/impl/adder.hxx>
-#include <math.h>
-#include <iostream>
 
+#include <cmath>
+#include <iostream>
+#include <queue>
+#include <tuple>
+
+using namespace std;
 using namespace cingulata;
 using namespace cingulata::int_ops;
 
@@ -98,5 +102,3 @@ CiBitVector SklanskyAdder::oper(const CiBitVector& lhs, const CiBitVector& rhs) 
 
   return res;
 }
-
-

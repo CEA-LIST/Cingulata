@@ -6,6 +6,7 @@
 #include <io_name_vec.hxx>
 
 #include <vector>
+#include <cmath>
 
 namespace cingulata
 {
@@ -57,18 +58,23 @@ namespace cingulata
      * @details    Refer to function #encode_plain_val documentation for more
      *             details on conversion of primitive type value to bits.
      *
-     * @param      p_val        integer value to encode in current object
-     * @param      p_bit_cnt    bit count, if none given the bit-size of @c
-     *                          p_val is used
+     * @param      p_val        integer value to encode
+     * @param      p_bit_cnt    bit count, if -1 (default value) given then the
+     *                          minimal bit-size to encode @c p_val is used
      * @param      p_is_signed  signedness of new object, if none given the @c
      *                          p_val signedness is used
      *
      * @tparam     T            an integral type
+     * @tparam     <unnamed>    assert that T is integral type
      */
-    template<typename T>
+    template
+    <
+        typename T,
+        typename = typename std::enable_if<std::is_integral<T>::value, T>::type
+    >
     CiInt(
       const T p_val,
-      const unsigned p_bit_cnt = sizeof(T)*8,
+      const unsigned p_bit_cnt = (unsigned)-1,
       const bool p_is_signed = std::is_signed<T>::value
     );
 
@@ -142,8 +148,12 @@ namespace cingulata
      *
      * @return     reference to current object
      */
-    template<typename T>
-    CiInt& operator= (const T p_val);
+    template
+    <
+        typename T,
+        typename = typename std::enable_if<std::is_integral<T>::value, T>::type
+    >
+    CiInt &operator=(const T p_val);
 
     /**
      * @brief      Destroys the object.
@@ -415,12 +425,15 @@ namespace cingulata
     bool m_is_signed;
 
     /**
-     * @brief      Encodes an integer into bits
+     * @brief      Encodes an integral type value into bits
+     * @details    { detailed_item_description }
      *
-     * @param      p_val      input integer
-     * @param      p_bit_cnt  number of bits
+     * @param      p_val      input value
+     * @param      p_bit_cnt  number of bits, if -1 given then minimal number of
+     *                        bits needed to encode @c p_val is used
      *
      * @tparam     T          type of @c p_val
+     * @tparam     <unnamed>  only integral types are accepted
      */
     template
     <
@@ -467,7 +480,7 @@ namespace cingulata
    * @{
    */
   std::istream& operator>>(std::istream&, CiInt&);
-  std::ostream& operator<<(std::ostream&, CiInt&);
+  std::ostream& operator<<(std::ostream&, const CiInt&);
   /**
    * @}
    */

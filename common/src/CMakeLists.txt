@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
 
-set (CMAKE_CXX_STANDARD 11)
-
 set(SRCS
     bit_exec/interface.cxx
     bit_exec/tracker.cxx
@@ -10,6 +8,7 @@ set(SRCS
     ci_context.cxx
     ci_fncs.cxx
     ci_int.cxx
+    slice.cxx
     int_op_gen/impl/adder.cxx
     int_op_gen/impl/dec.cxx
     int_op_gen/impl/equal.cxx
@@ -21,7 +20,9 @@ set(SRCS
     int_op_gen/impl/operator.cxx
     int_op_gen/interface.cxx
     int_op_gen/mult_depth.cxx
+    int_op_gen/impl/multi_inp_adder.cxx
     int_op_gen/size.cxx
+    bit_exec/clear.cxx
     )
 
 include_directories(${INCLUDE_DIR})

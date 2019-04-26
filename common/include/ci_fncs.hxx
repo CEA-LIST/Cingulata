@@ -6,7 +6,38 @@
 #include <ci_int.hxx>
 
 namespace cingulata {
+  /**
+   * @brief      Oblivious select one of two integers.
+   * @details    This function is an equivalent of the ternary operator @c
+   *             cond?a:b
+   *
+   * @param[in]  cond  The condition
+   * @param[in]  a     Result when @c condition==1
+   * @param[in]  b     Result when @c condition==0
+   *
+   * @return     obliviously selected integer
+   */
   CiInt select(const CiBit &cond, const CiInt &a, const CiInt &b);
+
+  /**
+   * @brief      Sums-up a list of integers.
+   * @details    Resulting @c CiInt object is minimal in bit-size.
+   *
+   * @param[in]  elems  The elements to add
+   *
+   * @return     Sum in input elements
+   */
+  CiInt sum(const std::vector<CiInt> &elems);
+
+  /**
+   * @brief      Sums-up a list of bits.
+   * @details    Resulting @c CiInt object is minimal in bit-size.
+   *
+   * @param[in]  elems  The elements to add
+   *
+   * @return     Sum in input elements
+   */
+  CiInt sum(const std::vector<CiBit> &elems);
 }
 
 #endif // CI_FNCS

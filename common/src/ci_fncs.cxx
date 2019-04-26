@@ -4,8 +4,27 @@
 #include <ci_fncs.hxx>
 #include <ci_int.hxx>
 
-using namespace cingulata;
+using namespace std;
 
-CiInt cingulata::select(const CiBit &cond, const CiInt &a, const CiInt &b) {
-  return CiContext::get_int_op_gen()->mux(cond, a.cast(), b.cast());
+namespace cingulata {
+
+CiInt select(const CiBit &cond, const CiInt &a, const CiInt &b) {
+  return CiContext::get_int_op_gen()->mux(cond, b.cast(), a.cast());
+}
+
+CiInt sum(const vector<CiInt> &elems) {
+  vector<CiBitVector> elems_bv;
+  for (const CiInt& elem: elems)
+    elems_bv.push_back(elem.cast());
+  return CiContext::get_int_op_gen()->sum(elems_bv);
+}
+
+CiInt sum(const vector<CiBit> &elems) {
+  vector<CiBitVector> elems_bv;
+  for (const CiBit& elem: elems)
+    elems_bv.emplace_back(1,elem);
+  return CiContext::get_int_op_gen()->sum(elems_bv);
+}
+
+
 }

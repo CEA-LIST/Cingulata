@@ -28,8 +28,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <vector>
-#include <iomanip>  
-#include <iostream>  
+#include <iomanip>
+#include <iostream>
 #include <fstream>
 
 using namespace std;
@@ -50,16 +50,16 @@ struct Options {
 
 Options parseArgs(int argc, char** argv) {
   Options options;
-  
+
   po::options_description config("Options");
   config.add_options()
       ("bit-cnt", po::value<unsigned int>(&options.BitCnt)->default_value(1), "Number of bits to transform messages to")
       ("from-bin", po::bool_switch(&options.FromBinary)->default_value(false), "Transform messages from binary")
       ("msb-first", po::bool_switch(&options.MsbFirst)->default_value(false), "Most significant bit first")
-      ("no-name", po::bool_switch(&options.NoOutputFileName)->default_value(false), "Do not print file names")      
-      ("prefix", po::value<string>(&options.FilePrefix)->default_value("i_"), "File prefix")
+      ("no-name", po::bool_switch(&options.NoOutputFileName)->default_value(false), "Do not print file names")
+      ("prefix", po::value<string>(&options.FilePrefix)->default_value("input/i:"), "File prefix")
       ("suffix", po::value<string>(&options.FileSuffix)->default_value(".ct"), "File suffix")
-      ("start-idx", po::value<int>(&options.FileStartIdx)->default_value(2), "File index start value")
+      ("start-idx", po::value<int>(&options.FileStartIdx)->default_value(0), "File index start value")
       ("idx-places", po::value<unsigned int>(&options.IdxPlaces)->default_value(0), "File index places")
       ("file", po::bool_switch(&options.File)->default_value(false), "Write result in plaintext/encoded_result (only if from-bin option is true)")
       ("help,h", "produce help message")
@@ -68,11 +68,11 @@ Options parseArgs(int argc, char** argv) {
   po::options_description hidden("Hidden");
   hidden.add_options()
       ("messages", po::value< vector<unsigned int> >(&options.Messages), "")
-  ; 
+  ;
 
   po::options_description all("All");
   all.add(config).add(hidden);
-  
+
   po::positional_options_description p;
   p.add("messages", -1);
 
@@ -101,7 +101,7 @@ Options parseArgs(int argc, char** argv) {
       cout << config << endl;
       exit(0);
     }
-    
+
     po::notify(vm);
 
     if (options.Messages.empty()) {
@@ -111,11 +111,11 @@ Options parseArgs(int argc, char** argv) {
     }
   } catch (po::error& e) {
     cerr << "ERROR: " << e.what() << endl;
-    cerr << config << endl; 
+    cerr << config << endl;
     exit(-1);
   } catch (...) {
     cerr << "Something went wrong!!!" << endl;
-    cerr << config << endl; 
+    cerr << config << endl;
     exit(-1);
   }
 
@@ -124,7 +124,7 @@ Options parseArgs(int argc, char** argv) {
 
 vector<unsigned int> toBinary(int num, unsigned int bitCnt, bool msbFirst) {
   vector<unsigned int> binForm;
-  
+
   unsigned int i = 0;
   while (i < bitCnt) {
     binForm.push_back((num >> i++) & 1);
@@ -139,11 +139,11 @@ vector<unsigned int> toBinary(int num, unsigned int bitCnt, bool msbFirst) {
 
 int fromBinary(vector<unsigned int> binForm, unsigned int bitCnt, bool msbFirst) {
   int num = 0;
-  
+
   if (msbFirst) {
     std::reverse(binForm.begin(), binForm.end());
   }
-  
+
   for (unsigned int i = 0; i < bitCnt and i < binForm.size(); i++) {
     num += (binForm[i] << i);
   }
@@ -160,22 +160,22 @@ int main(int argc, char **argv) {
 			ofstream file("plaintext/encoded_result", ios::out | ios::trunc); // open in write mode with content deleted
 			if (file)
 			{
-				for (unsigned int i = 0; i < options.Messages.size(); i+= options.BitCnt) 
+				for (unsigned int i = 0; i < options.Messages.size(); i+= options.BitCnt)
 				{
 					vector<unsigned int>::const_iterator first = options.Messages.begin() + i;
 					vector<unsigned int>::const_iterator last = first + options.BitCnt;
-					if (last > options.Messages.end()) 
+					if (last > options.Messages.end())
 					{
 						last = options.Messages.end();
 					}
 					file << fromBinary(vector<unsigned int>(first, last), options.BitCnt, options.MsbFirst) << endl;
 				}
-				file.close();	    
+				file.close();
 			}
 			else
 			{
 				cerr << "Impossible to open the file plaintext/encoded_result." << endl;
-			} 
+			}
 		}
 		else
 		{
