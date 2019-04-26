@@ -28,13 +28,6 @@ using namespace cingulata;
  */
 #define mod(val, bc) ((val) & (((bc) < 64) ? ((1UL<<(bc)) - 1) : -1L))
 
-vector<int> decrypt_ci_int(const CiInt& val) {
-  vector<int> res(val.size());
-  for (int i = 0; i < val.size(); ++i)
-    res[i] = val[i].get_val();
-  return res;
-}
-
 #define GEN_RAND_CI_L(VAR, size, is_signed)                 \
   long VAR ## _val = lrand();                               \
   unsigned VAR ## _size = (size);                           \
@@ -53,17 +46,54 @@ vector<int> decrypt_ci_int(const CiInt& val) {
   ASSERT_EQ((a).is_signed(), a_is_signed);      \
 }
 
+template<typename T>
+vector<int> decode(const T& val) {
+  vector<int> res(val.size());
+  for (int i = 0; i < val.size(); ++i)
+    res[i] = val[i].get_val();
+  return res;
+}
+
+template<typename T>
+vector<int> decode_ext(const T& val, const unsigned size = -1) {
+  vector<int> res = decode(val);
+
+  if (size != (unsigned)-1) {
+    if (val.is_signed()) {
+      res.resize(size, val.sign().get_val());
+    } else {
+      res.resize(size, 0);
+    }
+  }
+
+  return res;
+}
+
+template <typename T, typename = typename std::enable_if<
+                          std::is_integral<T>::value, T>::type>
+vector<int> to_binary(T val, const unsigned size = -1) {
+  vector<int> res;
+  for (int i = 0; i < 8*sizeof(T); ++i)
+    res.push_back((val>>i)&1);
+
+  if (size != (unsigned)-1) {
+    if (std::is_signed<T>::value)
+      res.resize(size, *(res.rbegin()));
+    else
+      res.resize(size, 0);
+  }
+
+  return res;
+}
+
 #define ASSERT_EQ_CI_L(v, val)                                                 \
   {                                                                            \
     auto _v = (v);                                                             \
     ASSERT_LE(_v.size(), 64);                                                  \
     auto _val = (val);                                                         \
-    vector<int> val_dec(_v.size());                                            \
-    vector<int> v_dec(_v.size());                                              \
-    for (int i = 0; i < _v.size(); ++i) {                                      \
-      v_dec[i] = _v[i].decrypt();                                              \
-      val_dec[i] = (_val >> i) & 1;                                            \
-    }                                                                          \
+    _v.decrypt();                                                              \
+    vector<int> v_dec = decode(_v);                                            \
+    vector<int> val_dec = to_binary(val, _v.size());                           \
     ASSERT_THAT(v_dec, ::testing::ElementsAreArray(val_dec));                  \
   }
 
@@ -71,12 +101,10 @@ vector<int> decrypt_ci_int(const CiInt& val) {
   {                                                                            \
     auto &aa = (a);                                                            \
     auto &bb = (b);                                                            \
-    vector<int> a_dec(bb.size());                                              \
-    vector<int> b_dec(bb.size());                                              \
-    for (int i = 0; i < bb.size(); ++i) {                                      \
-      a_dec[i] = aa[i].decrypt();                                              \
-      b_dec[i] = bb[i].decrypt();                                              \
-    }                                                                          \
+    aa.decrypt();                                                              \
+    bb.decrypt();                                                              \
+    vector<int> a_dec = decode_ext(aa, bb.size());                             \
+    vector<int> b_dec = decode_ext(bb, bb.size());                             \
     ASSERT_THAT(a_dec, ::testing::ElementsAreArray(b_dec));                    \
   }
 
@@ -89,68 +117,97 @@ vector<int> decrypt_ci_int(const CiInt& val) {
     }                                                                          \
   }
 
-TEST(CiInt, constructor_from_ci_bit) {
-  CiBit b(rand() % 2);
-  b.encrypt();
-  const int n = rand() % 128;
-  CiInt x(b, n);
-  ASSERT_EQ(x.is_signed(), CiInt::default_is_signed);
-  ASSERT_EQ(x.size(), n);
-  for (int i = 0; i < n; ++i)
-    ASSERT_EQ(x[i].decrypt(), b.decrypt());
-}
-
-TEST(CiInt, constructor_from_ci_bit_vector) {
-  int size = rand() % 128;
-  vector<CiBit> v;
-  for (unsigned int j = 0; j < size; j++) {
-    v.push_back(CiBit(rand() % 2).encrypt());
+#define TEST_CONSTRUCTOR_CIBIT(_b_val, _n)                                     \
+  {                                                                            \
+    const auto b_val = (_b_val);                                               \
+    const auto n = (_n);                                                       \
+    CiInt x(CiBit(b_val).encrypt(), n);                                        \
+    ASSERT_EQ(x.is_signed(), CiInt::default_is_signed) << b_val << " " << n;   \
+    ASSERT_EQ(x.size(), n) << b_val << " " << n;                               \
+    for (int i = 0; i < n; ++i)                                                \
+      ASSERT_EQ(x[i].decrypt(), b_val) << b_val << " " << n;                   \
   }
 
-  CiInt x(v);
-  ASSERT_EQ(x.is_signed(), false);
-  ASSERT_EQ(x.size(), size);
-  for (unsigned int j = 0; j < size; j++) {
-    ASSERT_EQ(x[j].decrypt(), v[j].decrypt());
+TEST(CiInt, constructor_from_ci_bit_single) {
+  TEST_CONSTRUCTOR_CIBIT(0, 0);
+  TEST_CONSTRUCTOR_CIBIT(1, 0);
+  TEST_CONSTRUCTOR_CIBIT(0, 1);
+  TEST_CONSTRUCTOR_CIBIT(1, 1);
+  TEST_CONSTRUCTOR_CIBIT(0, 2);
+  TEST_CONSTRUCTOR_CIBIT(1, 2);
+}
+
+TEST(CiInt, constructor_from_ci_bit_rand) {
+  TEST_CONSTRUCTOR_CIBIT(rand()%2, (rand()%64) + 3);
+}
+
+#define TEST_CONSTRUCTOR_CIBITVECTOR(_size)                                    \
+  {                                                                            \
+    const auto size = (_size);                                                 \
+    vector<CiBit> v;                                                           \
+    for (unsigned int j = 0; j < size; j++) {                                  \
+      v.push_back(CiBit(rand() % 2));                                          \
+    }                                                                          \
+    CiInt x(v);                                                                \
+    ASSERT_EQ(x.is_signed(), CiInt::default_is_signed);                        \
+    ASSERT_THAT(decode(x), ::testing::ElementsAreArray(decode(v)));            \
   }
+
+TEST(CiInt, constructor_from_ci_bit_vector_single) {
+  TEST_CONSTRUCTOR_CIBITVECTOR(0);
+  TEST_CONSTRUCTOR_CIBITVECTOR(1);
+  TEST_CONSTRUCTOR_CIBITVECTOR(2);
 }
 
-template<typename T>
-void test_construct_plain(const T x_val) {
-  CiInt x(x_val);
-  unsigned x_size = (x_val < 0) ? (unsigned)ceil(log2(-x_val+1))+1 : (unsigned)ceil(log2(x_val+1));
-  ASSERT_CI_PARAM(x, x_size, std::is_signed<T>::value);
-  ASSERT_EQ_CI_L(x, x_val);
+TEST(CiInt, constructor_from_ci_bit_vector_rand) {
+  TEST_CONSTRUCTOR_CIBITVECTOR((rand() % 128) + 2);
 }
 
-template<typename T>
-void test_construct_plain(const T x_val, const int x_size) {
-  CiInt x(x_val, x_size);
-  ASSERT_CI_PARAM(x, x_size, std::is_signed<T>::value);
-  ASSERT_EQ_CI_L(x, x_val);
-}
+#define TEST_CONSTRUCTOR_PLAIN(_x_val)                                         \
+  {                                                                            \
+    auto x_val = (_x_val);                                                     \
+    CiInt x(x_val);                                                            \
+    unsigned x_size = (x_val < 0) ? (unsigned)ceil(log2(-x_val + 1)) + 1       \
+                                  : (unsigned)ceil(log2(x_val + 1));           \
+    ASSERT_EQ(x.size(), x_size);                                               \
+    ASSERT_EQ(x.is_signed(), std::is_signed<decltype(x_val)>::value);          \
+    ASSERT_THAT(to_binary(x_val, x_size),                                      \
+                ::testing::ElementsAreArray(decode_ext(x, x_size)));           \
+  }
 
-TEST(CiInt, construct_plain_single) {
-  test_construct_plain((int32_t)15);
-  test_construct_plain((int32_t)-15);
+#define TEST_CONSTRUCTOR_PLAIN_1(_x_val, _x_size)                              \
+  {                                                                            \
+    auto x_val = (_x_val);                                                     \
+    auto x_size = (_x_size);                                                   \
+    CiInt x(x_val, x_size);                                                    \
+    ASSERT_EQ(x.size(), x_size);                                               \
+    ASSERT_EQ(x.is_signed(), std::is_signed<decltype(x_val)>::value);          \
+    ASSERT_THAT(to_binary(x_val, x_size),                                      \
+                ::testing::ElementsAreArray(decode_ext(x, x_size)));           \
+  }
 
-  test_construct_plain((uint32_t)15);
-  test_construct_plain((uint32_t)-15);
 
-  test_construct_plain((int32_t)16);
-  test_construct_plain((int32_t)-16);
+TEST(CiInt, constructor_plain_single) {
+  TEST_CONSTRUCTOR_PLAIN((int32_t)15);
+  TEST_CONSTRUCTOR_PLAIN((int32_t)-15);
 
-  test_construct_plain((int32_t)15, 4);
-  test_construct_plain((int32_t)-15, 4);
+  TEST_CONSTRUCTOR_PLAIN((uint32_t)15);
+  TEST_CONSTRUCTOR_PLAIN((uint32_t)-15);
 
-  test_construct_plain((int32_t)15, 5);
-  test_construct_plain((int32_t)-15, 5);
+  TEST_CONSTRUCTOR_PLAIN((int32_t)16);
+  TEST_CONSTRUCTOR_PLAIN((int32_t)-16);
 
-  test_construct_plain((uint32_t)15, 4);
-  test_construct_plain((uint32_t)-15, 4);
+  TEST_CONSTRUCTOR_PLAIN_1((int32_t)15, 4);
+  TEST_CONSTRUCTOR_PLAIN_1((int32_t)-15, 4);
 
-  test_construct_plain((uint32_t)15, 5);
-  test_construct_plain((uint32_t)-15, 5);
+  TEST_CONSTRUCTOR_PLAIN_1((int32_t)15, 5);
+  TEST_CONSTRUCTOR_PLAIN_1((int32_t)-15, 5);
+
+  TEST_CONSTRUCTOR_PLAIN_1((uint32_t)15, 4);
+  TEST_CONSTRUCTOR_PLAIN_1((uint32_t)-15, 4);
+
+  TEST_CONSTRUCTOR_PLAIN_1((uint32_t)15, 5);
+  TEST_CONSTRUCTOR_PLAIN_1((uint32_t)-15, 5);
 }
 
 TEST(CiInt, assign_from_ci_int) {
@@ -370,7 +427,7 @@ TEST(CiInt, right_shift) {
   const CiInt x(rand());
   const int n = x.size();
   int delta = rand() % (n);
-  const auto x_dec = decrypt_ci_int(x);
+  const auto x_dec = decode(x);
 
   /* right shift with positive value*/
   {
@@ -381,10 +438,10 @@ TEST(CiInt, right_shift) {
     CiInt y(x);
     y >>= delta;
 
-    ASSERT_THAT(decrypt_ci_int(y), ::testing::ElementsAreArray(xp_dec));
+    ASSERT_THAT(decode(y), ::testing::ElementsAreArray(xp_dec));
 
     CiInt z = x >> delta;
-    ASSERT_THAT(decrypt_ci_int(z), ::testing::ElementsAreArray(xp_dec));
+    ASSERT_THAT(decode(z), ::testing::ElementsAreArray(xp_dec));
   }
 
   /* right shift with a negative value */
@@ -395,12 +452,12 @@ TEST(CiInt, right_shift) {
     CiInt y2(x);
     y2 <<= (delta);
 
-    ASSERT_THAT(decrypt_ci_int(y1), ::testing::ElementsAreArray(decrypt_ci_int(y2)));
+    ASSERT_THAT(decode(y1), ::testing::ElementsAreArray(decode(y2)));
 
     CiInt z1 = x >> (-delta);
     CiInt z2 = x << (delta);
 
-    ASSERT_THAT(decrypt_ci_int(z1), ::testing::ElementsAreArray(decrypt_ci_int(z2)));
+    ASSERT_THAT(decode(z1), ::testing::ElementsAreArray(decode(z2)));
   }
 }
 
@@ -408,7 +465,7 @@ TEST(CiInt, left_shift) {
   const CiInt x(rand());
   const int n = x.size();
   int delta = rand() % (n);
-  const auto x_dec = decrypt_ci_int(x);
+  const auto x_dec = decode(x);
 
   /* left shift with positive value*/
   {
@@ -419,10 +476,10 @@ TEST(CiInt, left_shift) {
     CiInt y(x);
     y <<= delta;
 
-    ASSERT_THAT(decrypt_ci_int(y), ::testing::ElementsAreArray(xp_dec));
+    ASSERT_THAT(decode(y), ::testing::ElementsAreArray(xp_dec));
 
     CiInt z = x << delta;
-    ASSERT_THAT(decrypt_ci_int(z), ::testing::ElementsAreArray(xp_dec));
+    ASSERT_THAT(decode(z), ::testing::ElementsAreArray(xp_dec));
   }
 
   /* left shift with a negative value */
@@ -433,12 +490,12 @@ TEST(CiInt, left_shift) {
     CiInt y2(x);
     y2 >>= (delta);
 
-    ASSERT_THAT(decrypt_ci_int(y1), ::testing::ElementsAreArray(decrypt_ci_int(y2)));
+    ASSERT_THAT(decode(y1), ::testing::ElementsAreArray(decode(y2)));
 
     CiInt z1 = x << (-delta);
     CiInt z2 = x >> (delta);
 
-    ASSERT_THAT(decrypt_ci_int(z1), ::testing::ElementsAreArray(decrypt_ci_int(z2)));
+    ASSERT_THAT(decode(z1), ::testing::ElementsAreArray(decode(z2)));
   }
 }
 
@@ -446,7 +503,7 @@ TEST(CiInt, rol) {
   const CiInt x(rand());
   const int n = x.size();
   int delta = rand() % (n);
-  const auto x_dec = decrypt_ci_int(x);
+  const auto x_dec = decode(x);
 
   /* left rotate with positive value*/
   {
@@ -457,7 +514,7 @@ TEST(CiInt, rol) {
     CiInt y(x);
     y.rol(delta);
 
-    ASSERT_THAT(decrypt_ci_int(y), ::testing::ElementsAreArray(xp_dec));
+    ASSERT_THAT(decode(y), ::testing::ElementsAreArray(xp_dec));
   }
 
   /* left rotate with negative value*/
@@ -468,7 +525,7 @@ TEST(CiInt, rol) {
     CiInt y2(x);
     y2.ror(delta);
 
-    ASSERT_THAT(decrypt_ci_int(y1), ::testing::ElementsAreArray(decrypt_ci_int(y2)));
+    ASSERT_THAT(decode(y1), ::testing::ElementsAreArray(decode(y2)));
   }
 }
 
@@ -476,7 +533,7 @@ TEST(CiInt, ror) {
   const CiInt x(rand());
   const int n = x.size();
   int delta = rand() % (n);
-  const auto x_dec = decrypt_ci_int(x);
+  const auto x_dec = decode(x);
 
   /* left rotate with positive value*/
   {
@@ -487,7 +544,7 @@ TEST(CiInt, ror) {
     CiInt y(x);
     y.ror(delta);
 
-    ASSERT_THAT(decrypt_ci_int(y), ::testing::ElementsAreArray(xp_dec));
+    ASSERT_THAT(decode(y), ::testing::ElementsAreArray(xp_dec));
   }
 
   /* left rotate with negative value*/
@@ -498,7 +555,7 @@ TEST(CiInt, ror) {
     CiInt y2(x);
     y2.rol(delta);
 
-    ASSERT_THAT(decrypt_ci_int(y1), ::testing::ElementsAreArray(decrypt_ci_int(y2)));
+    ASSERT_THAT(decode(y1), ::testing::ElementsAreArray(decode(y2)));
   }
 }
 
