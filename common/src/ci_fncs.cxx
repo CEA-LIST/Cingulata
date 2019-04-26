@@ -1,7 +1,7 @@
 #include <ci_bit.hxx>
 #include <ci_bit_vector.hxx>
 #include <ci_context.hxx>
-#include <ci_int_fncs.hxx>
+#include <ci_fncs.hxx>
 #include <ci_int.hxx>
 
 using namespace std;
@@ -18,5 +18,13 @@ CiInt sum(const vector<CiInt> &elems) {
     elems_bv.push_back(elem.cast());
   return CiContext::get_int_op_gen()->sum(elems_bv);
 }
+
+CiInt sum(const vector<CiBit> &elems) {
+  vector<CiBitVector> elems_bv;
+  for (const CiBit& elem: elems)
+    elems_bv.emplace_back(1,elem);
+  return CiContext::get_int_op_gen()->sum(elems_bv);
+}
+
 
 }

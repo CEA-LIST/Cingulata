@@ -23,7 +23,7 @@
 
 #include <ci_bit.hxx>
 #include <ci_int.hxx>
-#include <ci_int_fncs.hxx>
+#include <ci_fncs.hxx>
 
 #include <vector>
 

@@ -23,7 +23,7 @@
 /* local includes */
 #include <bit_exec/tracker.hxx>
 #include <ci_context.hxx>
-#include <ci_int_fncs.hxx>
+#include <ci_fncs.hxx>
 #include <ci_int.hxx>
 #include <int_op_gen/mult_depth.hxx>
 

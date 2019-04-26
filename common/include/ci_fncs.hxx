@@ -20,7 +20,7 @@ namespace cingulata {
   CiInt select(const CiBit &cond, const CiInt &a, const CiInt &b);
 
   /**
-   * @brief      Sums-up many integers.
+   * @brief      Sums-up a list of integers.
    * @details    Resulting @c CiInt object is minimal in bit-size.
    *
    * @param[in]  elems  The elements to add
@@ -28,6 +28,16 @@ namespace cingulata {
    * @return     Sum in input elements
    */
   CiInt sum(const std::vector<CiInt> &elems);
+
+  /**
+   * @brief      Sums-up a list of bits.
+   * @details    Resulting @c CiInt object is minimal in bit-size.
+   *
+   * @param[in]  elems  The elements to add
+   *
+   * @return     Sum in input elements
+   */
+  CiInt sum(const std::vector<CiBit> &elems);
 }
 
 #endif // CI_FNCS
