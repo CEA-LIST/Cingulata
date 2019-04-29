@@ -35,7 +35,7 @@ echo "FHE key generation"
 $APPS_DIR/generate_keys
 
 echo "Input encryption"
-NR_THREADS=1
+NR_THREADS=4
 
 #encrypt cipher key
 $APPS_DIR/encrypt -v --threads $NR_THREADS `$APPS_DIR/helper --msb-first --bit-cnt 8 --prefix input/i:key_ 85 85 85 85 85 85 85 85 85 85 85 85 85 85 85 85`
@@ -47,7 +47,7 @@ time $APPS_DIR/dyn_omp $CIRCUIT --threads $NR_THREADS # -v
 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`
-$APPS_DIR/helper --from-bin --bit-cnt 8 `$APPS_DIR/decrypt  $OUT_FILES`
+$APPS_DIR/helper --msb-first --from-bin --bit-cnt 8 `$APPS_DIR/decrypt  $OUT_FILES`
 
 
 
