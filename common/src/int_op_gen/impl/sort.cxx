@@ -1,6 +1,5 @@
 #include <int_op_gen/impl/sort.hxx>
-
-#include <ci_int.hxx>
+#include <utils.hxx>
 
 #include <cmath>
 
@@ -63,8 +62,7 @@ vector<CiBitVector> SortDepth::oper(const vector<CiBitVector> &v_cbv,
   for (unsigned int i = 0; i < N; i++) {
     for (unsigned int j = 0; j < N; j++) {
       CiBit z;
-      CiInt i_ci_int(i);
-      CiBitVector i_bit_vec = i_ci_int.cast(size_ham);
+      CiBitVector i_bit_vec(encode_plain_int(i, size_ham));
       z = (equ(i_bit_vec, hamming_weights[j]));
       res[i] ^= CiBitVector(size, z) & i_cbv[j];
     }

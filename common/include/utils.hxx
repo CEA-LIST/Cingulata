@@ -8,6 +8,11 @@
 namespace cingulata {
 
 /**
+ * type for plain-text bit
+ */
+typedef unsigned bit_plain_t;
+
+/**
  * @brief      Encodes an integral native type value into a vector of bits.
  * @details    This methods encodes an integer value into a bit-vector starting
  *             with the LSB (i.e. 1st LSB of @c p_val on position 0, 2nd LSB on
@@ -30,10 +35,10 @@ namespace cingulata {
  *
  * @return     encoding of input value into bits
  */
-template <typename int_t, typename bit_t,
+template <typename int_t,
           typename = typename std::enable_if<std::is_integral<int_t>::value,
                                              int_t>::type>
-std::vector<bit_t> encode_plain_int(const int_t p_val,
+std::vector<bit_plain_t> encode_plain_int(const int_t p_val,
                                     const unsigned p_bit_cnt = -1) {
 
   const bool is_negative = (p_val < 0);
@@ -41,16 +46,16 @@ std::vector<bit_t> encode_plain_int(const int_t p_val,
   const unsigned min_bit_cnt = (unsigned)std::ceil(
       std::log2(double(val) + 1)); // minimal number of bits for p_val
 
-  std::vector<bit_t> result;
+  std::vector<bit_plain_t> result;
   for (unsigned i = 0; i < min_bit_cnt; ++i) {
     result.push_back((p_val >> i) & 1);
   }
 
   if (p_bit_cnt == (unsigned)-1) {
     if (is_negative)
-      result.push_back(bit_t(1));
+      result.push_back(bit_plain_t(1));
   } else {
-    result.resize(p_bit_cnt, bit_t(is_negative));
+    result.resize(p_bit_cnt, bit_plain_t(is_negative));
   }
 
   return result;

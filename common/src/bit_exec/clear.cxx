@@ -15,7 +15,7 @@ ObjHandle BitExecClear::encrypt(const bit_plain_t pt_val) {
   return out;
 }
 
-IBitExec::bit_plain_t BitExecClear::decrypt(const ObjHandle &in) {
+bit_plain_t BitExecClear::decrypt(const ObjHandle &in) {
   return *(in.get<bit_plain_t>());
 }
 

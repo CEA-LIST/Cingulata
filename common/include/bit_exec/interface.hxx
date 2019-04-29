@@ -2,6 +2,7 @@
 #define BIT_EXEC_INTERFACE
 
 #include <bit_exec/obj_handle.hxx>
+#include <utils.hxx>
 
 #include <stdint.h>
 #include <string>
@@ -23,8 +24,6 @@ namespace cingulata
   class IBitExec
   {
   public:
-    using bit_plain_t = unsigned;
-
     IBitExec()          = default;
     virtual ~IBitExec() = default;
 
