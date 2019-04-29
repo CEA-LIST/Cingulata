@@ -35,7 +35,7 @@ echo "FHE key generation"
 $APPS_DIR/generate_keys
 
 echo "Input encryption"
-NR_THREADS=4
+NR_THREADS=1
 
 #encrypt cipher key
 $APPS_DIR/encrypt -v --threads $NR_THREADS `$APPS_DIR/helper --msb-first --bit-cnt 8 --prefix input/i:key_ 85 85 85 85 85 85 85 85 85 85 85 85 85 85 85 85`
