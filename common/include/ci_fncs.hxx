@@ -38,6 +38,46 @@ namespace cingulata {
    * @return     Sum in input elements
    */
   CiInt sum(const std::vector<CiBit> &elems);
-}
+
+  /**
+   * @brief      Oblivious sort a vector of @c CiInt objects @c vals
+   *
+   * @param[in]  vals    The elements to sort
+   * @param[in]  reverse  The sort order
+   *
+   * @return     Sorted vector of integers
+   */
+  std::vector<CiInt> sort(const std::vector<CiInt> &vals,
+                          const bool reverse = false);
+
+  /**
+   * @brief      Oblivious sort a vector of @c CiInt objects @c elems according
+   *             to values in vector @c vals.
+   * @details    Output
+   *
+   * @param[in]  vals    Values to use for comparison
+   * @param[in]  elems    The elements to sort
+   * @param[in]  reverse  The sort order
+   *
+   * @return     Sorted vector of integers
+   */
+  std::vector<CiInt> sort(const std::vector<CiInt> &vals,
+                          const std::vector<CiInt> &elems,
+                          const bool reverse = false);
+
+  /**
+   * @brief      Oblivious argument sort a vector of @c CiInt objects @c vals,
+   *             i.e. returns indices (encrypted) which sort input vector @c
+   *             vals.
+   *
+   * @param[in]  vals     The elements to argument sort
+   * @param[in]  reverse  The sort order
+   *
+   * @return     Sorted vector of integers
+   */
+  std::vector<CiInt> argsort(const std::vector<CiInt> &vals,
+                             const bool reverse = false);
+
+  } // namespace cingulata
 
 #endif // CI_FNCS
