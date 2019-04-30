@@ -26,7 +26,7 @@ test:single_exec:
     GIT_STRATEGY: none
   stage: test
   script:
-    - ./build/common/test/unittests --gtest_filter=*_single --gtest_output="xml:report.xml"
+    - ./build/common/test/unittests --gtest_output="xml:report.xml"
   dependencies:
     - build:unittests
   artifacts:
