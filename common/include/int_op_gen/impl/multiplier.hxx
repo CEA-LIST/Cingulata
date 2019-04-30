@@ -32,6 +32,8 @@ namespace cingulata
       CiBitVector oper(const CiBitVector& lhs, const CiBitVector& rhs) const override;
 
       std::function<BinaryOper::signature> adder;
+
+
    };
   }
 }

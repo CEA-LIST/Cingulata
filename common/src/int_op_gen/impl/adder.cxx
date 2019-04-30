@@ -30,7 +30,6 @@ namespace
 {
   void pre_computation( std::vector<CiBitVector>& P,  std::vector<CiBitVector>& G, const CiBitVector& lhs, const CiBitVector& rhs) {
     const int size = lhs.size();
-    CiBit test();
     for (int i = 0; i < size; ++i) {
       P[i][i] = lhs[i] ^ rhs[i];
     }

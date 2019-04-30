@@ -19,6 +19,11 @@ CiBitVector::CiBitVector(
   m_vec(p_bit_cnt, p_bit)
 {}
 
+CiBitVector::CiBitVector(const vector<bit_plain_t>& p_bits)
+:
+  m_vec(p_bits.begin(), p_bits.end())
+{}
+
 CiBitVector::CiBitVector(const vector<CiBit>& p_bits)
 :
   m_vec(p_bits)

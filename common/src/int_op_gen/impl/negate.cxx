@@ -4,8 +4,5 @@ using namespace cingulata;
 using namespace cingulata::int_ops;
 
 CiBitVector Negate::oper(const CiBitVector& a) const {
-  CiBitVector tmp = ~a;
-  CiBitVector one = CiBitVector(tmp.size());
-  one[0] = CiBit::one;
-  return add(tmp, one);
+  return add(~a, encode_plain_int(1, a.size()));
 }

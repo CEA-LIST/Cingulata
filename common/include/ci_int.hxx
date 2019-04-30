@@ -4,6 +4,7 @@
 #include <ci_bit.hxx>
 #include <ci_bit_vector.hxx>
 #include <io_name_vec.hxx>
+#include <utils.hxx>
 
 #include <vector>
 #include <cmath>
@@ -53,19 +54,23 @@ namespace cingulata
      */
 
     /**
-     * @brief      Construct a new object from an integer with given bit count
-     *             and signedness
-     * @details    Refer to function #encode_plain_val documentation for more
-     *             details on conversion of primitive type value to bits.
+     * @brief      Construct a new object from a native integer with a given bit
+     *             count and signedness
+     * @details    Value @c p_val is converted to a bit vector using method
+     *             @link utils.hxx encode_plain_int()
+     *             @endlink. Refer to its documentation for more details on
+     *             conversion rules of primitive type values to bits.
      *
      * @param      p_val        integer value to encode
      * @param      p_bit_cnt    bit count, if -1 (default value) given then the
-     *                          minimal bit-size to encode @c p_val is used
+     *                          minimal bit-size needed to encode @c p_val is
+     *                          used
      * @param      p_is_signed  signedness of new object, if none given the @c
      *                          p_val signedness is used
      *
      * @tparam     T            an integral type
-     * @tparam     <unnamed>    assert that T is integral type
+     * @tparam     <unnamed>    ensure only primitive integral types are
+     *                          accepted
      */
     template
     <
@@ -140,11 +145,15 @@ namespace cingulata
 
     /**
      * @brief      Assign a primitive type value to current object
-     * @details    Current object bit-count and signedness are used.
+     * @details    Current object bit-count and signedness are not changed.
+     *             Function
+     *             @link utils.hxx encode_plain_int()
+     *             @endlink is used to encode native type value into bits.
      *
-     * @param[in]  p_val  value to assign from
+     * @param[in]  p_val      value to assign from
      *
-     * @tparam     T      type of primitive integer
+     * @tparam     T          type of primitive integer
+     * @tparam     <unnamed>  ensure only primitive integral types are accepted
      *
      * @return     reference to current object
      */
@@ -423,24 +432,6 @@ namespace cingulata
   private:
     CiBitVector m_bits;
     bool m_is_signed;
-
-    /**
-     * @brief      Encodes an integral type value into bits
-     * @details    { detailed_item_description }
-     *
-     * @param      p_val      input value
-     * @param      p_bit_cnt  number of bits, if -1 given then minimal number of
-     *                        bits needed to encode @c p_val is used
-     *
-     * @tparam     T          type of @c p_val
-     * @tparam     <unnamed>  only integral types are accepted
-     */
-    template
-    <
-        typename T,
-        typename = typename std::enable_if<std::is_integral<T>::value, T>::type
-    >
-    void encode_plain_val(const T p_val, const unsigned p_bit_cnt);
   };
 
   /* Logical operators */

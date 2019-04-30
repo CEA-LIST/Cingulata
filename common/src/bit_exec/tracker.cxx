@@ -149,7 +149,7 @@ void BitTracker::make_output(const ObjHandleT<BTI::Node>& inp, const std::string
   outputs.push_back(hdl);
 }
 
-ObjHandle BitTracker::encode(const IBitExec::bit_plain_t pt_val) {
+ObjHandle BitTracker::encode(const bit_plain_t pt_val) {
   if (pt_val == 0) {
     return add_gate(BTI::GateType::ZERO, {});
   } else {
@@ -157,11 +157,11 @@ ObjHandle BitTracker::encode(const IBitExec::bit_plain_t pt_val) {
   }
 }
 
-ObjHandle BitTracker::encrypt(const IBitExec::bit_plain_t pt_val) {
+ObjHandle BitTracker::encrypt(const bit_plain_t pt_val) {
   return add_input();
 }
 
-IBitExec::bit_plain_t BitTracker::decrypt(const ObjHandle& hdl) {
+bit_plain_t BitTracker::decrypt(const ObjHandle& hdl) {
   make_output(hdl);
   return 0;
 }

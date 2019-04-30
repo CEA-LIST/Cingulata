@@ -2,7 +2,9 @@
 #define CI_BIT
 
 #include <string>
+
 #include <bit_exec/interface.hxx>
+#include <utils.hxx>
 
 namespace cingulata
 {
@@ -19,8 +21,6 @@ namespace cingulata
   class CiBit
   {
   public:
-    using bit_plain_t = IBitExec::bit_plain_t;
-
     static const CiBit zero;
     static const CiBit one;
 

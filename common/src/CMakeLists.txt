@@ -16,6 +16,7 @@ set(SRCS
     int_op_gen/impl/multiplier.cxx
     int_op_gen/impl/mux.cxx
     int_op_gen/impl/negate.cxx
+    int_op_gen/impl/sort.cxx
     int_op_gen/impl/operator.cxx
     int_op_gen/interface.cxx
     int_op_gen/mult_depth.cxx

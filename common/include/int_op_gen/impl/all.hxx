@@ -5,4 +5,5 @@
 #include <int_op_gen/impl/multiplier.hxx>
 #include <int_op_gen/impl/mux.hxx>
 #include <int_op_gen/impl/negate.hxx>
+#include <int_op_gen/impl/sort.hxx>
 #include <int_op_gen/impl/multi_inp_adder.hxx>

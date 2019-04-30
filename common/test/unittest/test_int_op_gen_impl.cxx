@@ -62,6 +62,7 @@ TEST(IntOpGen, Mux) {
 
   vector<unsigned> vals_m_int;
   vector<CiBitVector> vals_m_bv;
+
   for (unsigned i = 0; i < n; ++i) {
     GEN_RAND_BV(tmp, m, rand());
     vals_m_int.push_back(tmp_int);
@@ -80,6 +81,32 @@ TEST(IntOpGen, Mux) {
 
   /* output is valid */
   ASSERT_EQ_BV_INT(out, vals_m_int[cond_int]);
+}
+
+TEST(IntOpGen, Sort_same) {
+  const unsigned size_array = ((rand()%10)+1);
+  const unsigned m = ((rand()%16)+1);
+  const bool r = ((rand()%2));
+  vector<unsigned> vals_int;
+  vector<CiBitVector> vals_bv;
+  for (unsigned i = 0; i < size_array; ++i) {
+    GEN_RAND_BV(tmp, m, rand());
+    vals_int.push_back(tmp_int);
+    vals_bv.push_back(tmp_bv);
+  }
+
+  for (int i = 0; i < size_array; ++i) {
+    ASSERT_EQ_BV_INT(vals_bv[i], vals_int[i]);
+  }
+  if (r == 0)
+    sort(vals_int.begin(), vals_int.end());
+  else
+    sort(vals_int.begin(), vals_int.end(), greater<int>());
+
+  vector<CiBitVector> out = SortDepth(LowerCompSize(), EqualSize(), SklanskyAdder())(vals_bv, r);
+  for (int i = 0; i < size_array; ++i) {
+    ASSERT_EQ_BV_INT(out[i], vals_int[i]);
+  }
 }
 
 /*-------------------------------------------------------------------------*/

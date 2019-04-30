@@ -47,7 +47,7 @@ CiBit& CiBit::clr_name() {
   return *this;
 }
 
-CiBit::bit_plain_t CiBit::get_val() const {
+bit_plain_t CiBit::get_val() const {
   assert(is_plain());
   return pt_val;
 }
@@ -85,7 +85,7 @@ CiBit& CiBit::encrypt() {
   return *this;
 }
 
-CiBit::bit_plain_t CiBit::decrypt() {
+bit_plain_t CiBit::decrypt() {
   if (not is_plain())
     set_val(CiContext::get_bit_exec()->decrypt(obj_hdl));
   return get_val();
@@ -178,7 +178,7 @@ void CiBit::move(const CiBit& other) {
   name = std::move(other.name);
 }
 
-CiBit::bit_plain_t CiBit::negate(const bit_plain_t p_pt_val) {
+bit_plain_t CiBit::negate(const bit_plain_t p_pt_val) {
   return 1^p_pt_val;
 }
 
