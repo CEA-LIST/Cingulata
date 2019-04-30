@@ -66,21 +66,12 @@ namespace cingulata
      *                          minimal bit-size needed to encode @c p_val is
      *                          used
      * @param      p_is_signed  signedness of new object, if none given the @c
-     *                          p_val signedness is used
-     *
-     * @tparam     T            an integral type
-     * @tparam     <unnamed>    ensure only primitive integral types are
-     *                          accepted
+     *                          default_is_signed value is used
      */
-    template
-    <
-        typename T,
-        typename = typename std::enable_if<std::is_integral<T>::value, T>::type
-    >
     CiInt(
-      const T p_val,
+      const int64_t p_val,
       const unsigned p_bit_cnt = (unsigned)-1,
-      const bool p_is_signed = std::is_signed<T>::value
+      const bool p_is_signed = default_is_signed
     );
 
     /**
@@ -89,7 +80,8 @@ namespace cingulata
      *
      * @param      p_bit        a bit object
      * @param[in]  p_bit_cnt    number of bits to copy
-     * @param      p_is_signed  signedness of new object
+     * @param      p_is_signed  signedness of new object, if none given the @c
+     *                          default_is_signed value is used
      */
     CiInt(
       const CiBit& p_bit,
@@ -102,7 +94,8 @@ namespace cingulata
      * @note       First bit of vector is the least significant one
      *
      * @param      p_bits       vector of bits
-     * @param      p_is_signed  signedness of new object
+     * @param      p_is_signed  signedness of new object, if none given the @c
+     *                          default_is_signed value is used
      */
     CiInt(
       const std::vector<CiBit>& p_bits,
@@ -152,17 +145,9 @@ namespace cingulata
      *
      * @param[in]  p_val      value to assign from
      *
-     * @tparam     T          type of primitive integer
-     * @tparam     <unnamed>  ensure only primitive integral types are accepted
-     *
      * @return     reference to current object
      */
-    template
-    <
-        typename T,
-        typename = typename std::enable_if<std::is_integral<T>::value, T>::type
-    >
-    CiInt &operator=(const T p_val);
+    CiInt &operator=(const int64_t p_val);
 
     /**
      * @brief      Destroys the object.
@@ -475,8 +460,6 @@ namespace cingulata
   /**
    * @}
    */
-
-  #include <ci_int_defs.cxx>
 }
 
 #endif

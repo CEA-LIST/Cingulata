@@ -170,7 +170,7 @@ TEST(CiInt, constructor_from_ci_bit_vector_rand) {
     unsigned x_size = (x_val < 0) ? (unsigned)ceil(log2(-x_val + 1)) + 1       \
                                   : (unsigned)ceil(log2(x_val + 1));           \
     ASSERT_EQ(x.size(), x_size);                                               \
-    ASSERT_EQ(x.is_signed(), std::is_signed<decltype(x_val)>::value);          \
+    ASSERT_EQ(x.is_signed(), CiInt::default_is_signed);                        \
     ASSERT_THAT(to_binary(x_val, x_size),                                      \
                 ::testing::ElementsAreArray(decode_ext(x, x_size)));           \
   }
@@ -181,11 +181,22 @@ TEST(CiInt, constructor_from_ci_bit_vector_rand) {
     auto x_size = (_x_size);                                                   \
     CiInt x(x_val, x_size);                                                    \
     ASSERT_EQ(x.size(), x_size);                                               \
-    ASSERT_EQ(x.is_signed(), std::is_signed<decltype(x_val)>::value);          \
+    ASSERT_EQ(x.is_signed(), CiInt::default_is_signed);                        \
     ASSERT_THAT(to_binary(x_val, x_size),                                      \
                 ::testing::ElementsAreArray(decode_ext(x, x_size)));           \
   }
 
+#define TEST_CONSTRUCTOR_PLAIN_2(_x_val, _x_size, _x_is_signed)                \
+  {                                                                            \
+    auto x_val = (_x_val);                                                     \
+    auto x_size = (_x_size);                                                   \
+    auto x_is_signed = (_x_is_signed);                                         \
+    CiInt x(x_val, x_size, x_is_signed);                                       \
+    ASSERT_EQ(x.size(), x_size);                                               \
+    ASSERT_EQ(x.is_signed(), x_is_signed);                                     \
+    ASSERT_THAT(to_binary(x_val, x_size),                                      \
+                ::testing::ElementsAreArray(decode_ext(x, x_size)));           \
+  }
 
 TEST(CiInt, constructor_plain_single) {
   TEST_CONSTRUCTOR_PLAIN((int32_t)15);
@@ -208,6 +219,18 @@ TEST(CiInt, constructor_plain_single) {
 
   TEST_CONSTRUCTOR_PLAIN_1((uint32_t)15, 5);
   TEST_CONSTRUCTOR_PLAIN_1((uint32_t)-15, 5);
+
+  TEST_CONSTRUCTOR_PLAIN_2(15, 4, false);
+  TEST_CONSTRUCTOR_PLAIN_2(-15, 4, false);
+
+  TEST_CONSTRUCTOR_PLAIN_2(15, 4, true);
+  TEST_CONSTRUCTOR_PLAIN_2(-15, 4, true);
+
+  TEST_CONSTRUCTOR_PLAIN_2(15, 5, false);
+  TEST_CONSTRUCTOR_PLAIN_2(-15, 5, false);
+
+  TEST_CONSTRUCTOR_PLAIN_2(15, 5, true);
+  TEST_CONSTRUCTOR_PLAIN_2(-15, 5, true);
 }
 
 TEST(CiInt, assign_from_ci_int) {
@@ -226,42 +249,42 @@ TEST(CiInt, assign_from_value_single) {
     const int val = 0;
     const unsigned val_size = 0;
     CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, true);
+    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
     ASSERT_EQ_CI_L(y, val);
   }
   {
     const int val = 1;
     const unsigned val_size = 1;
     CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, true);
+    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
     ASSERT_EQ_CI_L(y, val);
   }
   {
     const int val = -1;
     const unsigned val_size = 2;
     CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, true);
+    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
     ASSERT_EQ_CI_L(y, val);
   }
   {
     const unsigned val = 0;
     const unsigned val_size = 0;
     CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, false);
+    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
     ASSERT_EQ_CI_L(y, val);
   }
   {
     const unsigned val = 1;
     const unsigned val_size = 1;
     CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, false);
+    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
     ASSERT_EQ_CI_L(y, val);
   }
   {
     const unsigned val = -1;
     const unsigned val_size = sizeof(unsigned)*8;
     CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, false);
+    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
     ASSERT_EQ_CI_L(y, val);
   }}
 
@@ -270,28 +293,28 @@ TEST(CiInt, assign_from_value) {
     const int val = rrand(0, 1<<5);
     const unsigned val_size = (unsigned)ceil(log2(val+1));
     CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, true);
+    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
     ASSERT_EQ_CI_L(y, val);
   }
   {
     const int val = rrand(-(1<<5), -1);
     const unsigned val_size = (unsigned)ceil(log2(-val+1))+1;
     CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, true);
+    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
     ASSERT_EQ_CI_L(y, val);
   }
   {
     const unsigned val = rrand(0, 1<<5);
     const unsigned val_size = (unsigned)ceil(log2(val+1));
     CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, false);
+    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
     ASSERT_EQ_CI_L(y, val);
   }
   {
     const unsigned val = rrand(-(1<<5), -1);
     const unsigned val_size = 8*sizeof(unsigned);
     CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, false);
+    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
     ASSERT_EQ_CI_L(y, val);
   }
 }

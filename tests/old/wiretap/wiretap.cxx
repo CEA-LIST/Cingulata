@@ -18,8 +18,8 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 #include <integer.hxx>
 
@@ -28,22 +28,20 @@ using namespace std;
 
 #define QUERY_SIZE 10
 
-int main()
-{
-	Integer32 w,q[QUERY_SIZE];
+int main() {
+  Integer32 w, q[QUERY_SIZE];
 
-	cin>>w;
-	for(int i=0;i<QUERY_SIZE;i++)
-		cin>>q[i];
+  cin >> w;
+  for (int i = 0; i < QUERY_SIZE; i++)
+    cin >> q[i];
 
-	Integer8 r=0;
-	for(int i=0;i<QUERY_SIZE;i++)
-		r+=(w==q[i])*Integer8(i+1);
-	r-=1;
-	r&=0xf;
+  Integer8 r = 0;
+  for (int i = 0; i < QUERY_SIZE; i++)
+    r += (w == q[i]) * Integer8(i + 1);
+  r -= 1;
+  r &= 0xf;
 
-	cout<<r;
+  cout << r;
 
-	FINALIZE_CIRCUIT(blif_name);
+  FINALIZE_CIRCUIT(blif_name);
 }
-
