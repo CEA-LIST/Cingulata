@@ -33,9 +33,22 @@ namespace cingulata
     constexpr static bool default_is_signed = false;
 
     /**
-     * @name Helper encodings of zero
+     * @name Helper functions for @c CiInt objects creation
      * @{
      */
+    /**
+     * Functions to create @c CiInt object from a native integer and predefined sizes and signedness.
+     */
+    static CiInt u8v(const uint8_t = 0);
+    static CiInt u16v(const uint16_t = 0);
+    static CiInt u32v(const uint32_t = 0);
+    static CiInt u64v(const uint64_t = 0);
+
+    static CiInt s8v(const int8_t = 0);
+    static CiInt s16v(const int16_t = 0);
+    static CiInt s32v(const int32_t = 0);
+    static CiInt s64v(const int64_t = 0);
+
     /**
      * Zero encoding objects of different sizes and signedness. Provided to
      * facilitate the creation of native type equivalents of @c CiInt objects.

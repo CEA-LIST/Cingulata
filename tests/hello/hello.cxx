@@ -35,9 +35,9 @@ int main() {
    * operations */
   CiContext::set_config(new BitTracker(), new IntOpGenDepth());
 
-  CiInt a{CiInt::u8};     // create from unsigned 8-bit template
-  CiInt b{0, 8, false};   // manually specify value, size and signedness
-  CiInt c{(uint16_t)-1};  // automatically determine size and signedness from value
+  CiInt a{CiInt::u8};      // create from unsigned 8-bit template
+  CiInt b{CiInt::u8v(42)}; // use helper function to create an unsigned 8-bit
+  CiInt c{-1, 16, false};  // or manually specify value, size and signedness
 
   a.read("a");            // read variable a and set name
 

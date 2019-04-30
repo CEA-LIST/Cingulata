@@ -12,15 +12,26 @@ using namespace cingulata;
 template<>
 string IoNameVec<CiInt>::m_name_fmt{ "%s_%d" };
 
-const CiInt CiInt::u8   {0,  8, false};
-const CiInt CiInt::u16  {0, 16, false};
-const CiInt CiInt::u32  {0, 32, false};
-const CiInt CiInt::u64  {0, 64, false};
 
-const CiInt CiInt::s8   {0,  8, true };
-const CiInt CiInt::s16  {0, 16, true };
-const CiInt CiInt::s32  {0, 32, true };
-const CiInt CiInt::s64  {0, 64, true };
+CiInt CiInt::u8v(const uint8_t p_val)    { return CiInt(p_val, 8, false); }
+CiInt CiInt::u16v(const uint16_t p_val)  { return CiInt(p_val, 16, false); }
+CiInt CiInt::u32v(const uint32_t p_val)  { return CiInt(p_val, 32, false); }
+CiInt CiInt::u64v(const uint64_t p_val)  { return CiInt(p_val, 64, false); }
+
+CiInt CiInt::s8v(const int8_t p_val)     { return CiInt(p_val, 8, true); }
+CiInt CiInt::s16v(const int16_t p_val)   { return CiInt(p_val, 16, true); }
+CiInt CiInt::s32v(const int32_t p_val)   { return CiInt(p_val, 32, true); }
+CiInt CiInt::s64v(const int64_t p_val)   { return CiInt(p_val, 64, true); }
+
+const CiInt CiInt::u8   (CiInt::u8v(0));
+const CiInt CiInt::u16  (CiInt::u16v(0));
+const CiInt CiInt::u32  (CiInt::u32v(0));
+const CiInt CiInt::u64  (CiInt::u64v(0));
+
+const CiInt CiInt::s8   (CiInt::s8v(0));
+const CiInt CiInt::s16  (CiInt::s16v(0));
+const CiInt CiInt::s32  (CiInt::s32v(0));
+const CiInt CiInt::s64  (CiInt::s64v(0));
 
 CiInt::CiInt(const int64_t p_val, const unsigned p_bit_cnt,
              const bool p_is_signed)
