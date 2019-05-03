@@ -25,8 +25,7 @@ set(SRCS
     bit_exec/clear.cxx
     )
 
-include_directories(${INCLUDE_DIR})
-
 add_library(common ${SRCS})
 
+target_include_directories(common PUBLIC ${INCLUDE_DIR})
 target_compile_options(common PRIVATE -Wall)
