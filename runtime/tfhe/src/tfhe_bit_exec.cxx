@@ -75,7 +75,7 @@ ObjHandle TfheBitExec::encrypt(const bit_plain_t pt_val) {
   return hdl;
 }
 
-IBitExec::bit_plain_t TfheBitExec::decrypt(const ObjHandle& in) {
+bit_plain_t TfheBitExec::decrypt(const ObjHandle& in) {
   return (bit_plain_t)bootsSymDecrypt(in.get<LweSample>(), context.sk());
 }
 
