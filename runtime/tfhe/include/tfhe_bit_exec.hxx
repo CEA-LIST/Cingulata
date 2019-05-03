@@ -15,7 +15,7 @@ namespace cingulata {
       Public
     };
 
-    TfheBitExec(const std::string p_filename, const KeyType p_keytype);
+    TfheBitExec(const std::string& p_filename, const KeyType p_keytype);
 
     ObjHandle   encode      (const bit_plain_t pt_val)                      override;
     ObjHandle   encrypt     (const bit_plain_t pt_val)                      override;
@@ -42,8 +42,8 @@ namespace cingulata {
     void*       new_obj     ()                                              override;
     void        del_obj     (void * obj_ptr)                                override;
 
-    class TfheContext;
-    const TfheContext *const tfhe_context;
+    class Context;
+    const Context& context;
   };
 };
 
