@@ -2,6 +2,7 @@
 #define BIT_TRACKER
 
 #include <bit_exec/interface.hxx>
+#include <bit_exec/mem_man_basic.hxx>
 
 #include <iostream>
 #include <vector>
@@ -59,8 +60,7 @@ namespace cingulata
                               const std::string& model_name = "CIRCUIT");
 
   protected:
-    void*       new_obj     ()                                                override;
-    void        del_obj     (void * obj_ptr)                                  override;
+    MemManBasic<Allocator<BTI::Node>> mm;
 
     ObjHandle   add_gate    (BTI::GateType gate_type,
                               const std::initializer_list<ObjHandleT<BTI::Node>> inps_p);

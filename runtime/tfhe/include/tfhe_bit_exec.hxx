@@ -2,6 +2,7 @@
 #define TFHE_EXECUTOR
 
 #include <bit_exec/interface.hxx>
+#include <bit_exec/mem_man_basic.hxx>
 
 namespace cingulata {
 
@@ -16,6 +17,7 @@ namespace cingulata {
     };
 
     TfheBitExec(const std::string& p_filename, const KeyType p_keytype);
+    ~TfheBitExec();
 
     ObjHandle   encode      (const bit_plain_t pt_val)                      override;
     ObjHandle   encrypt     (const bit_plain_t pt_val)                      override;
@@ -39,11 +41,11 @@ namespace cingulata {
     ObjHandle   op_mux      (const ObjHandle& cond,
                               const ObjHandle& in1, const ObjHandle& in2)   override;
   protected:
-    void*       new_obj     ()                                              override;
-    void        del_obj     (void * obj_ptr)                                override;
-
     class Context;
-    const Context& context;
+    const Context* context;
+
+    class Alloc;
+    MemManBasic<Alloc> *mm;
   };
 };
 

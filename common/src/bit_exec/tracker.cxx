@@ -123,7 +123,7 @@ void BitTracker::reset() {
 }
 
 ObjHandle BitTracker::add_gate(BTI::GateType gate_type, const initializer_list<ObjHandleT<BTI::Node>> inps_p) {
-  ObjHandleT<BTI::Node> hdl = new_handle();
+  ObjHandleT<BTI::Node> hdl = mm.new_handle();
   hdl->type = BTI::NodeType::LOGIC_GATE;
   hdl->gate_type = gate_type;
   hdl->inps.assign(inps_p);
@@ -132,7 +132,7 @@ ObjHandle BitTracker::add_gate(BTI::GateType gate_type, const initializer_list<O
 }
 
 ObjHandle BitTracker::add_input(const string& name) {
-  ObjHandleT<BTI::Node> hdl = new_handle();
+  ObjHandleT<BTI::Node> hdl = mm.new_handle();
   hdl->type = BTI::NodeType::INPUT;
   hdl->name = name;
   inputs.push_back(hdl);
@@ -197,14 +197,6 @@ DEFINE_2_INP_OPER(op_xnor, XNOR);
 
 ObjHandle BitTracker::op_mux(const ObjHandle& cond, const ObjHandle& in1, const ObjHandle& in2) {
   return add_gate(BTI::GateType::MUX, {cond, in1, in2});
-}
-
-void* BitTracker::new_obj() {
-  return new BTI::Node();
-}
-
-void BitTracker::del_obj(void * obj) {
-  delete (BTI::Node*)obj;
 }
 
 void BitTracker::export_blif(ostream& stream, const string& model_name) {

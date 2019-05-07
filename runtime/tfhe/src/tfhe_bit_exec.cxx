@@ -59,24 +59,42 @@ private:
   const TFheGateBootstrappingParameterSet* m_params = nullptr;
 };
 
-TfheBitExec::TfheBitExec(const string& p_filename, KeyType p_keytype)
-    : context(Context(p_filename, p_keytype)) {
+class TfheBitExec::Alloc {
+  const TFheGateBootstrappingParameterSet *params = nullptr;
+
+public:
+  Alloc(const TFheGateBootstrappingParameterSet *params) : params(params) {}
+
+  void *new_obj() const { return new_gate_bootstrapping_ciphertext(params); }
+
+  void del_obj(void *obj_ptr) const {
+    delete_gate_bootstrapping_ciphertext(static_cast<LweSample *>(obj_ptr));
+  }
+};
+
+TfheBitExec::TfheBitExec(const string &p_filename, KeyType p_keytype)
+    : context(new Context(p_filename, p_keytype)),
+      mm(new MemManBasic<Alloc>(Alloc(context->params()))) {}
+
+TfheBitExec::~TfheBitExec() {
+  delete mm;
+  delete context;
 }
 
 ObjHandle TfheBitExec::encode(const bit_plain_t pt_val) {
-  ObjHandleT<LweSample> hdl = new_handle();
-  bootsCONSTANT(hdl.get(), pt_val, context.pk());
+  ObjHandleT<LweSample> hdl = mm->new_handle();
+  bootsCONSTANT(hdl.get(), pt_val, context->pk());
   return hdl;
 }
 
 ObjHandle TfheBitExec::encrypt(const bit_plain_t pt_val) {
-  ObjHandleT<LweSample> hdl = new_handle();
-  bootsSymEncrypt(hdl.get(), pt_val%2, context.sk());
+  ObjHandleT<LweSample> hdl = mm->new_handle();
+  bootsSymEncrypt(hdl.get(), pt_val%2, context->sk());
   return hdl;
 }
 
 bit_plain_t TfheBitExec::decrypt(const ObjHandle& in) {
-  return (bit_plain_t)bootsSymDecrypt(in.get<LweSample>(), context.sk());
+  return (bit_plain_t)bootsSymDecrypt(in.get<LweSample>(), context->sk());
 }
 
 ObjHandle TfheBitExec::read(const string& name) {
@@ -86,9 +104,9 @@ ObjHandle TfheBitExec::read(const string& name) {
     abort();
   }
 
-  ObjHandleT<LweSample> hdl = new_handle();
+  ObjHandleT<LweSample> hdl = mm->new_handle();
   import_gate_bootstrapping_ciphertext_fromStream(file, hdl.get(),
-                                                  context.params());
+                                                  context->params());
   file.close();
 
   return hdl;
@@ -101,20 +119,20 @@ void TfheBitExec::write(const ObjHandle& in, const string& name) {
     abort();
   }
   export_gate_bootstrapping_ciphertext_toStream(file, in.get<LweSample>(),
-                                                context.params());
+                                                context->params());
 }
 
 ObjHandle TfheBitExec::op_not(const ObjHandle& in) {
-  ObjHandleT<LweSample> hdl = new_handle();
-  bootsNOT(hdl.get(), in.get<LweSample>(), context.pk());
+  ObjHandleT<LweSample> hdl = mm->new_handle();
+  bootsNOT(hdl.get(), in.get<LweSample>(), context->pk());
   return hdl;
 }
 
 #define TFHE_EXEC_OPER(OPER, TFHE_FNC)                                         \
   ObjHandle TfheBitExec::OPER(const ObjHandle &in1, const ObjHandle &in2) {   \
-    ObjHandleT<LweSample> hdl = new_handle();                                  \
+    ObjHandleT<LweSample> hdl = mm->new_handle();                                  \
     TFHE_FNC(hdl.get(), in1.get<LweSample>(), in2.get<LweSample>(),            \
-             context.pk());                                                   \
+             context->pk());                                                   \
     return hdl;                                                                \
   }
 
@@ -131,18 +149,8 @@ TFHE_EXEC_OPER(op_xnor,   bootsXNOR);
 
 ObjHandle TfheBitExec::op_mux(const ObjHandle &cond, const ObjHandle &in1,
                                const ObjHandle &in2) {
-  ObjHandleT<LweSample> hdl = new_handle();
+  ObjHandleT<LweSample> hdl = mm->new_handle();
   bootsMUX(hdl.get(), cond.get<LweSample>(), in1.get<LweSample>(),
-           in2.get<LweSample>(), context.pk());
+           in2.get<LweSample>(), context->pk());
   return hdl;
 }
-
-void* TfheBitExec::new_obj() {
-  return new_gate_bootstrapping_ciphertext(context.params());
-}
-
-void TfheBitExec::del_obj(void * obj_ptr) {
-  delete_gate_bootstrapping_ciphertext((LweSample*)obj_ptr);
-}
-
-

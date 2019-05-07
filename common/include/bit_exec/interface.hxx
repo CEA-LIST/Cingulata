@@ -67,29 +67,6 @@ namespace cingulata
     /** Ternary operator cond?in1:in2, i.e. oblivious select */
     virtual ObjHandle   op_mux      (const ObjHandle& cond,
                                       const ObjHandle& in1, const ObjHandle& in2);
-
-  protected:
-    /**
-     * @brief Create a new object
-     * @return pointer to new object
-     */
-    virtual void*       new_obj     () { return nullptr; }
-
-    /**
-     * @brief Delete an object
-     * @param ptr pointer to object to delete
-     */
-    virtual void        del_obj     (void* ptr) { }
-
-    /**
-     * @brief Create a generic object handle
-     * @details Use method \c new_obj to create a new object for the generic
-     *  object handle and method \c del_obj to delete this object when
-     *  it is not used anymore.
-     *
-     * @return a new generic object handle
-     */
-    ObjHandle   new_handle();
   };
 }
 
