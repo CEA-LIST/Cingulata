@@ -67,6 +67,7 @@ namespace cingulata
       assert(m_int_op_gen != nullptr);
       return dynamic_cast<T*>(get_bit_exec());
     }
+
     /**
      * @brief      Get int operation generator
      *

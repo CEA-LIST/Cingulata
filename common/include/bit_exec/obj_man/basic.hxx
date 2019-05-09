@@ -1,10 +1,11 @@
 #ifndef MEM_MAN_BASIC
 #define MEM_MAN_BASIC
 
-#include <bit_exec/allocator.hxx>
 #include <bit_exec/obj_handle.hxx>
+#include <bit_exec/obj_man/allocator.hxx>
 
 namespace cingulata {
+namespace obj_man {
 
 /**
  * @brief      A basic memory management class
@@ -13,14 +14,14 @@ namespace cingulata {
  *
  * @tparam     AllocT  Allocator type
  */
-template <typename AllocT> class MemManBasic {
+template <typename AllocT> class Basic {
 public:
   /**
    * @brief      Constructs the basic memory management object
    *
    * @param[in]  alloc  The allocator to use
    */
-  MemManBasic(const AllocT &alloc = AllocT()) : m_alloc(alloc) {}
+  Basic(const AllocT &alloc = AllocT());
 
   /**
    * @brief      Create a generic object handle
@@ -34,15 +35,15 @@ public:
    *
    * @return     a new generic object handle
    */
-  template <typename... Args> ObjHandle new_handle(Args... args) {
-    return ObjHandle(m_alloc.new_obj(std::forward<args>...),
-                     [this](void *ptr) { m_alloc.del_obj(ptr); });
-  }
+  template <typename... Args> ObjHandle new_handle(Args... args);
 
 protected:
   const AllocT &m_alloc;
 };
 
+#include "basic-impl.hxx"
+
+} // namespace obj_man
 } // namespace cingulata
 
 #endif

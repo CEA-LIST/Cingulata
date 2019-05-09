@@ -2,6 +2,7 @@
 #define ALLOCATOR
 
 namespace cingulata {
+namespace obj_man {
 
 /**
  * @brief      Generic allocator class for type @c ObjT objects
@@ -31,6 +32,7 @@ public:
   void del_obj(void *ptr) const { delete static_cast<ObjT *>(ptr); }
 };
 
+} // namespace obj_man
 } // namespace cingulata
 
 #endif

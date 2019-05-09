@@ -2,7 +2,8 @@
 #define BIT_EXEC_PLAIN
 
 #include <bit_exec/interface.hxx>
-#include <bit_exec/mem_man_basic.hxx>
+#include <bit_exec/obj_man/allocator.hxx>
+#include <bit_exec/obj_man/basic.hxx>
 
 namespace cingulata {
 
@@ -23,7 +24,7 @@ public:
   ObjHandle op_xor(const ObjHandle &in1, const ObjHandle &in2) override;
 
 protected:
-  MemManBasic<Allocator<bit_plain_t>> mm;
+  obj_man::Basic<obj_man::Allocator<bit_plain_t>> mm;
 };
 
 } // namespace cingulata

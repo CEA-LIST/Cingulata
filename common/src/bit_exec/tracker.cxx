@@ -139,7 +139,7 @@ ObjHandle BitTracker::add_input(const string& name) {
   return hdl;
 }
 
-void BitTracker::make_output(const ObjHandleT<BTI::Node>& inp, const std::string& name) {
+void BitTracker::make_output(const ObjHandleT<BTI::Node>& inp, const string& name) {
   ObjHandleT<BTI::Node> hdl = inp;
   if (hdl->is_input() or hdl->is_output()) {
     hdl = (ObjHandleT<BTI::Node>)add_gate(BTI::GateType::BUF, {hdl});
@@ -166,11 +166,11 @@ bit_plain_t BitTracker::decrypt(const ObjHandle& hdl) {
   return 0;
 }
 
-ObjHandle BitTracker::read(const std::string& name) {
+ObjHandle BitTracker::read(const string& name) {
   return add_input(name);
 }
 
-void BitTracker::write(const ObjHandle& hdl, const std::string& name) {
+void BitTracker::write(const ObjHandle& hdl, const string& name) {
   make_output(hdl, name);
 }
 
@@ -230,8 +230,8 @@ void BitTracker::export_blif(ostream& stream, const string& model_name) {
   stream << ".end" << endl;
 }
 
-void BitTracker::export_blif(const std::string& file_name,
-                             const std::string& model_name) {
+void BitTracker::export_blif(const string& file_name,
+                             const string& model_name) {
   ofstream file(file_name);
   if (file.is_open()) {
     export_blif(file, model_name);

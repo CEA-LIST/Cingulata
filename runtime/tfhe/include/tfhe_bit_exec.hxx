@@ -1,24 +1,30 @@
 #ifndef TFHE_EXECUTOR
 #define TFHE_EXECUTOR
 
+#define USE_OBJ_POOL
+
 #include <bit_exec/interface.hxx>
-#include <bit_exec/mem_man_basic.hxx>
+#include <bit_exec/obj_man/allocator.hxx>
+
+#ifdef USE_OBJ_POOL
+  #include <bit_exec/obj_man/pool.hxx>
+#else
+  #include <bit_exec/obj_man/basic.hxx>
+#endif
 
 namespace cingulata {
 
-  /**
-   * @brief      Bit executor implemenation for TFHE library.
-   */
-  class TfheBitExec : public IBitExec {
-  public:
-    enum KeyType {
-      Secret,
-      Public
-    };
+/**
+ * @brief      Bit executor implemenation for TFHE library.
+ */
+class TfheBitExec : public IBitExec {
+public:
+  enum KeyType { Secret, Public };
 
-    TfheBitExec(const std::string& p_filename, const KeyType p_keytype);
-    ~TfheBitExec();
+  TfheBitExec(const std::string &p_filename, const KeyType p_keytype);
+  ~TfheBitExec();
 
+  /* clang-format off */
     ObjHandle   encode      (const bit_plain_t pt_val)                      override;
     ObjHandle   encrypt     (const bit_plain_t pt_val)                      override;
     bit_plain_t decrypt     (const ObjHandle& in1)                          override;
@@ -40,13 +46,24 @@ namespace cingulata {
 
     ObjHandle   op_mux      (const ObjHandle& cond,
                               const ObjHandle& in1, const ObjHandle& in2)   override;
-  protected:
-    class Context;
-    const Context* context;
+  /* clang-format on */
 
-    class Alloc;
-    MemManBasic<Alloc> *mm;
-  };
+protected:
+  class Context;
+  const Context *context;
+
+  class Alloc;
+  const Alloc *alloc;
+
+#ifdef USE_OBJ_POOL
+  using ObjMan = obj_man::Pool<Alloc>;
+#else
+  using ObjMan = obj_man::Basic<Alloc>;
+#endif
+
+  ObjMan *mm;
 };
+
+} // namespace cingulata
 
 #endif
