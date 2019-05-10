@@ -6,7 +6,7 @@ using namespace std;
 using namespace cingulata;
 
 enum class BitTrackerInternal::NodeType : uint8_t {
-  UNKNOWN        = 0,
+  UNKNOWN     = 0,
   INPUT       = 1<<0,
   OUTPUT      = 1<<1,
   LOGIC_GATE  = 1<<2,

@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
   int b_val = atoi(argv[2]);
 
   /* Only tfhe bit executor is needed for encryption/decryption and IO operations  */
-  CiContext::set_bit_exec(new TfheBitExec("tfhe.sk", TfheBitExec::Secret));
+  CiContext::set_bit_exec(make_shared<TfheBitExec>("tfhe.sk", TfheBitExec::Secret));
 
   CiInt a{a_val, 8, false};
   CiInt b{b_val, 8, false};

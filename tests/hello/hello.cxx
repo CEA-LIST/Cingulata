@@ -33,7 +33,7 @@ using namespace cingulata;
 int main() {
   /* Set context to bit tracker and multiplicative depth minimized integer
    * operations */
-  CiContext::set_config(new BitTracker(), new IntOpGenDepth());
+  CiContext::set_config(make_shared<BitTracker>(), make_shared<IntOpGenDepth>());
 
   CiInt a{CiInt::u8};      // create from unsigned 8-bit template
   CiInt b{CiInt::u8v(42)}; // use helper function to create an unsigned 8-bit

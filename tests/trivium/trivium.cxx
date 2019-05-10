@@ -102,7 +102,7 @@ void readKeyAndRunTrivium(void)
 }
 
 int main() {
-  CiContext::set_config(new BitTracker(), new IntOpGenDepth());
+  CiContext::set_bit_exec(make_shared<BitTracker>());
 
   readKeyAndRunTrivium();
 

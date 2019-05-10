@@ -33,7 +33,7 @@ using namespace cingulata;
 int main() {
   /* Set context to bit tracker and multiplicative depth minimized integer
    * operations */
-  CiContext::set_config(new TfheBitExec("tfhe.pk", TfheBitExec::Public), new IntOpGenSize());
+  CiContext::set_config(make_shared<TfheBitExec>("tfhe.pk", TfheBitExec::Public), make_shared<IntOpGenSize>());
 
   CiInt a{CiInt::u8};     // create from unsigned 8-bit template
   CiInt b{0, 8, false};   // manually specify value, size and signedness

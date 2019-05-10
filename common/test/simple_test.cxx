@@ -5,7 +5,7 @@
 using namespace cingulata;
 
 int main() {
-  CiContext::set_bit_exec(new BitTracker());
+  CiContext::set_bit_exec(std::make_shared<BitTracker>());
 
   CiBit a;
   a.encrypt();

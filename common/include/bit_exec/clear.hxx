@@ -20,6 +20,7 @@ public:
   bit_plain_t decrypt(const ObjHandle &in1) override;
   ObjHandle read(const std::string &name) override;
   void write(const ObjHandle &in1, const std::string &name) override;
+
   ObjHandle op_and(const ObjHandle &in1, const ObjHandle &in2) override;
   ObjHandle op_xor(const ObjHandle &in1, const ObjHandle &in2) override;
 

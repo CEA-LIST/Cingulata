@@ -593,16 +593,12 @@ TEST(CiInt, ror) {
 template<typename IntOpGenT>
 class CiInt_OpGen : public ::testing::Test {
 protected:
-  IntOpGenT* m_op_gen;
-
   void SetUp() override {
-    m_op_gen = new IntOpGenT();
-    CiContext::set_int_op_gen(m_op_gen);
+    CiContext::set_int_op_gen(make_shared<IntOpGenT>());
   }
 
   void TearDown() override {
-    delete m_op_gen;
-    CiContext::set_int_op_gen(nullptr);
+    CiContext::clear_int_op_gen();
   }
 };
 

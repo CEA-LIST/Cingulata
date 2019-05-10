@@ -117,7 +117,7 @@ CiBitVector kreyvium_stream(CiBitVector &state, CiBitVector &RKEY,
 }
 
 int main() {
-  CiContext::set_bit_exec(new BitTracker());
+  CiContext::set_bit_exec(make_shared<BitTracker>());
 
   CiBitVector key{128}, iv{128};
 

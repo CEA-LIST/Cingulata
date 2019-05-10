@@ -8,7 +8,7 @@ using namespace cingulata;
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
 
-  CiContext::set_bit_exec(new BitExecClear());
+  CiContext::set_bit_exec(std::make_shared<BitExecClear>());
 
   return RUN_ALL_TESTS();
 }
