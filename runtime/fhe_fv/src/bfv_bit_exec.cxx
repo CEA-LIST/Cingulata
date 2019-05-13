@@ -66,22 +66,23 @@ private:
 
 BfvBitExec::BfvBitExec(const string &p_param, const string &p_key_prefix,
                        const KeyType p_keytype)
-    : context(Context(p_param, p_key_prefix, p_keytype)) {}
+    : context(new Context(p_param, p_key_prefix, p_keytype)),
+      mm(new ObjMan()) {}
 
 ObjHandle BfvBitExec::encode(const bit_plain_t pt_val) {
   // return ObjHandle<CipherText>(EncDec::Encrypt(pt_val));
 }
 
 ObjHandle BfvBitExec::encrypt(const bit_plain_t pt_val) {
-  // return ObjHandle<CipherText>(EncDec::Encrypt(pt_val, context.pk()));
+  // return ObjHandle<CipherText>(EncDec::Encrypt(pt_val, context->pk()));
 }
 
 bit_plain_t BfvBitExec::decrypt(const ObjHandle& in) {
-  return EncDec::Decrypt(*in.get<CipherText>(), context.sk());
+  return EncDec::Decrypt(*in.get<CipherText>(), context->sk());
 }
 
 ObjHandle BfvBitExec::read(const std::string& name) {
-  ObjHandleT<CipherText> hdl = new_handle();
+  ObjHandleT<CipherText> hdl = mm->new_handle();
   hdl->read(name);
   return hdl;
 }
@@ -91,30 +92,30 @@ void BfvBitExec::write(const ObjHandle& in, const std::string& name) {
 }
 
 ObjHandle BfvBitExec::op_and(const ObjHandle& in1, const ObjHandle& in2) {
-  ObjHandleT<CipherText> hdl = new_handle(*in1.get<CipherText>());
+  ObjHandleT<CipherText> hdl = mm->new_handle(*in1.get<CipherText>());
 //  ct = new CipherText(*in1.get<CipherText>());
-  //CipherText::multiply(hdl.get(), *in2.get<CipherText>(), context.evk());
+  //CipherText::multiply(hdl.get(), *in2.get<CipherText>(), context->evk());
   return hdl;
 }
 
 ObjHandle BfvBitExec::op_xor(const ObjHandle& in1, const ObjHandle& in2) {
-  ObjHandleT<CipherText> hdl = new_handle();
+  ObjHandleT<CipherText> hdl = mm->new_handle();
 //  ct = new CipherText(*in1.get<CipherText>());
   //CipherText::add(hdl.get(), *in2.get<CipherText>());
   return hdl;
 }
 
-void* BfvBitExec::new_obj() {
-  return new CipherText();
-}
+// void* BfvBitExec::new_obj() {
+//   return new CipherText();
+// }
 
-void* BfvBitExec::new_obj(const CipherText& ct) {
-  return new CipherText(ct);
-}
+// void* BfvBitExec::new_obj(const CipherText& ct) {
+//   return new CipherText(ct);
+// }
 
-void BfvBitExec::del_obj(void * obj_ptr) {
-  delete static_cast<CipherText*>(obj_ptr);
-}
+// void BfvBitExec::del_obj(void * obj_ptr) {
+//   delete static_cast<CipherText*>(obj_ptr);
+// }
 
 
 

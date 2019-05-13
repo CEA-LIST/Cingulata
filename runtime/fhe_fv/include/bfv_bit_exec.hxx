@@ -21,8 +21,18 @@
 #ifndef BFV_BIT_EXECUTOR
 #define BFV_BIT_EXECUTOR
 
-#include <bit_exec/interface.hxx>
+#define USE_OBJ_POOL
+
 #include <fv.hxx>
+
+#include <bit_exec/interface.hxx>
+#include <bit_exec/obj_man/allocator.hxx>
+
+#ifdef USE_OBJ_POOL
+#include <bit_exec/obj_man/pool.hxx>
+#else
+#include <bit_exec/obj_man/basic.hxx>
+#endif
 
 namespace cingulata {
 
@@ -46,15 +56,20 @@ public:
   ObjHandle   op_and      (const ObjHandle& in1, const ObjHandle& in2)    override;
   ObjHandle   op_xor      (const ObjHandle& in1, const ObjHandle& in2)    override;
 
-protected:
-  void*       new_obj     ()                                              override;
-  void*       new_obj     (const CipherText&)                                              override;
-  void        del_obj     (void * obj_ptr)                                override;
-
   /* clang-format on */
 
+protected:
+
   class Context;
-  const Context& context;
+  const Context *context;
+
+#ifdef USE_OBJ_POOL
+  using ObjMan = obj_man::Pool<obj_man::Allocator<CipherText>>;
+#else
+  using ObjMan = obj_man::Basic<obj_man::Allocator<CipherText>>;
+#endif
+
+  ObjMan *mm;
 };
 
 }; // namespace cingulata
