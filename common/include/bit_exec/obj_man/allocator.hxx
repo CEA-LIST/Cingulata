@@ -20,8 +20,8 @@ public:
    *
    * @return     pointer to new object
    */
-  template <typename... Args> void *new_obj(Args... args) const {
-    return new ObjT(std::forward<args>...);
+  template <typename... Args> void *new_obj(Args&& ... args) const {
+    return new ObjT(std::forward<Args>(args)...);
   }
 
   /**

@@ -18,10 +18,10 @@ template <typename AllocT> void Pool<AllocT>::clear() {
 
 template <typename AllocT>
 template <typename... Args>
-ObjHandle Pool<AllocT>::new_handle(Args... args) {
+ObjHandle Pool<AllocT>::new_handle(Args&& ... args) {
   void *ptr = nullptr;
   if (m_alloc_obj.empty()) {
-    ptr = m_alloc.new_obj(std::forward<args>...);
+    ptr = m_alloc.new_obj(std::forward<Args>(args)...);
   } else {
     ptr = m_alloc_obj.back();
     m_alloc_obj.pop_back();

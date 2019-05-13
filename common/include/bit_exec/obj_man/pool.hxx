@@ -41,7 +41,7 @@ public:
    *
    * @return     a new generic object handle
    */
-  template <typename... Args> ObjHandle new_handle(Args... args);
+  template <typename... Args> ObjHandle new_handle(Args&& ... args);
 
   /**
    * @brief      Destroys all objects in pool
