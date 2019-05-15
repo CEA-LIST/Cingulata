@@ -40,7 +40,7 @@ using namespace cingulata;
 int main() {
   /* Set context to bit tracker and multiplicative depth minimized integer
    * operations */
-  CiContext::set_config(new BitTracker(), new IntOpGenDepth());
+  CiContext::set_config(make_shared<BitTracker>(), make_shared<IntOpGenDepth>());
 
   CiInt flags{0,5}; // 5 flags
   flags.read("flags");

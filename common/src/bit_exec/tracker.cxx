@@ -6,7 +6,7 @@ using namespace std;
 using namespace cingulata;
 
 enum class BitTrackerInternal::NodeType : uint8_t {
-  UNKNOWN        = 0,
+  UNKNOWN     = 0,
   INPUT       = 1<<0,
   OUTPUT      = 1<<1,
   LOGIC_GATE  = 1<<2,
@@ -123,7 +123,7 @@ void BitTracker::reset() {
 }
 
 ObjHandle BitTracker::add_gate(BTI::GateType gate_type, const initializer_list<ObjHandleT<BTI::Node>> inps_p) {
-  ObjHandleT<BTI::Node> hdl = new_handle();
+  ObjHandleT<BTI::Node> hdl = mm.new_handle();
   hdl->type = BTI::NodeType::LOGIC_GATE;
   hdl->gate_type = gate_type;
   hdl->inps.assign(inps_p);
@@ -132,14 +132,14 @@ ObjHandle BitTracker::add_gate(BTI::GateType gate_type, const initializer_list<O
 }
 
 ObjHandle BitTracker::add_input(const string& name) {
-  ObjHandleT<BTI::Node> hdl = new_handle();
+  ObjHandleT<BTI::Node> hdl = mm.new_handle();
   hdl->type = BTI::NodeType::INPUT;
   hdl->name = name;
   inputs.push_back(hdl);
   return hdl;
 }
 
-void BitTracker::make_output(const ObjHandleT<BTI::Node>& inp, const std::string& name) {
+void BitTracker::make_output(const ObjHandleT<BTI::Node>& inp, const string& name) {
   ObjHandleT<BTI::Node> hdl = inp;
   if (hdl->is_input() or hdl->is_output()) {
     hdl = (ObjHandleT<BTI::Node>)add_gate(BTI::GateType::BUF, {hdl});
@@ -166,11 +166,11 @@ bit_plain_t BitTracker::decrypt(const ObjHandle& hdl) {
   return 0;
 }
 
-ObjHandle BitTracker::read(const std::string& name) {
+ObjHandle BitTracker::read(const string& name) {
   return add_input(name);
 }
 
-void BitTracker::write(const ObjHandle& hdl, const std::string& name) {
+void BitTracker::write(const ObjHandle& hdl, const string& name) {
   make_output(hdl, name);
 }
 
@@ -197,14 +197,6 @@ DEFINE_2_INP_OPER(op_xnor, XNOR);
 
 ObjHandle BitTracker::op_mux(const ObjHandle& cond, const ObjHandle& in1, const ObjHandle& in2) {
   return add_gate(BTI::GateType::MUX, {cond, in1, in2});
-}
-
-void* BitTracker::new_obj() {
-  return new BTI::Node();
-}
-
-void BitTracker::del_obj(void * obj) {
-  delete (BTI::Node*)obj;
 }
 
 void BitTracker::export_blif(ostream& stream, const string& model_name) {
@@ -238,8 +230,8 @@ void BitTracker::export_blif(ostream& stream, const string& model_name) {
   stream << ".end" << endl;
 }
 
-void BitTracker::export_blif(const std::string& file_name,
-                             const std::string& model_name) {
+void BitTracker::export_blif(const string& file_name,
+                             const string& model_name) {
   ofstream file(file_name);
   if (file.is_open()) {
     export_blif(file, model_name);

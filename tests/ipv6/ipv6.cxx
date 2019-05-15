@@ -39,7 +39,7 @@ int main() {
 
     /* Set context to bit tracker and multiplicative depth minimized integer
     * operations */
-    CiContext::set_config(new BitTracker(), new IntOpGenDepth());
+    CiContext::set_config(make_shared<BitTracker>(), make_shared<IntOpGenDepth>());
 
    /** ipv6 contains 128 bits **/
     CiInt IP1(0,128,false);  // CiInt is a vector of CiBit

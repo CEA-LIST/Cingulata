@@ -32,7 +32,7 @@ using namespace cingulata;
 
 int main() {
   /* Only tfhe bit executor is needed for encryption/decryption and IO operations  */
-  CiContext::set_bit_exec(new TfheBitExec("tfhe.sk", TfheBitExec::Secret));
+  CiContext::set_bit_exec(make_shared<TfheBitExec>("tfhe.sk", TfheBitExec::Secret));
 
   CiInt c{(uint16_t)-1};  // automatically determine size and signedness from value
 

@@ -37,11 +37,11 @@ using namespace cingulata;
 
 int main() {
 
-  CiContext::set_config(new BitTracker(), new IntOpGenDepth());
+  CiContext::set_config(make_shared<BitTracker>(), make_shared<IntOpGenDepth>());
 
   CiInt IP1{CiInt::s32};   // create from signed 32-bit template
   CiInt IP2{CiInt::s32};
-  
+
   IP1.read("a");
   IP2.read("b");
 

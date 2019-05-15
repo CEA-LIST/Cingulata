@@ -2,6 +2,8 @@
 #define BIT_EXEC_PLAIN
 
 #include <bit_exec/interface.hxx>
+#include <bit_exec/obj_man/allocator.hxx>
+#include <bit_exec/obj_man/basic.hxx>
 
 namespace cingulata {
 
@@ -18,12 +20,12 @@ public:
   bit_plain_t decrypt(const ObjHandle &in1) override;
   ObjHandle read(const std::string &name) override;
   void write(const ObjHandle &in1, const std::string &name) override;
+
   ObjHandle op_and(const ObjHandle &in1, const ObjHandle &in2) override;
   ObjHandle op_xor(const ObjHandle &in1, const ObjHandle &in2) override;
 
 protected:
-  void *new_obj() override;
-  void del_obj(void *obj_ptr) override;
+  obj_man::Basic<obj_man::Allocator<bit_plain_t>> mm;
 };
 
 } // namespace cingulata

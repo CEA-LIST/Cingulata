@@ -42,7 +42,3 @@ ObjHandle IBitExec::op_xnor(const ObjHandle& in1, const ObjHandle& in2) {
 ObjHandle IBitExec::op_mux(const ObjHandle& c, const ObjHandle& in1, const ObjHandle& in2) {
   return op_xor(op_and(c, op_xor(in1, in2)), in2);
 }
-
-ObjHandle IBitExec::new_handle() {
-  return ObjHandle(new_obj(), [this](void* p) { del_obj(p); });
-}
