@@ -61,6 +61,8 @@ public:
    */
   static CipherText EncryptPoly(const PolyRing& pTxt, const CipherText& publicKey);
 
+  static void EncryptPoly(CipherText& ctxt, const PolyRing& pTxt, const CipherText& publicKey);
+
   /**
    * @brief Builds a "plain" ciphertext object
    * @details Builds a "plain" ciphertext object used in combined computations
@@ -71,6 +73,8 @@ public:
    *    ciphertext domain
    */
   static CipherText EncryptPoly(const PolyRing& pTxt);
+
+  static void EncryptPoly(CipherText& ctxt, const PolyRing& pTxt);
 
   /**
    * @brief Decrypts a ciphertext
@@ -94,6 +98,8 @@ public:
    */
   static CipherText Encrypt(const unsigned int pTxt, const CipherText& publicKey);
 
+  static void Encrypt(CipherText& ctxt, const unsigned int pTxt, const CipherText& publicKey);
+
   /**
    * @brief Builds a "plain" ciphertext object
    * @details Builds a "plain" ciphertext object used in combined computations
@@ -104,6 +110,8 @@ public:
    *    ciphertext domain
    */
   static CipherText Encrypt(const unsigned int pTxt);
+
+  static void Encrypt(CipherText &ctxt, const unsigned int pTxt);
 
   /**
    * @brief Decrypts a ciphertext

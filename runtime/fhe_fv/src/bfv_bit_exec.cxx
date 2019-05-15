@@ -70,11 +70,15 @@ BfvBitExec::BfvBitExec(const string &p_param, const string &p_key_prefix,
       mm(new ObjMan()) {}
 
 ObjHandle BfvBitExec::encode(const bit_plain_t pt_val) {
-  // return ObjHandle<CipherText>(EncDec::Encrypt(pt_val));
+  ObjHandleT<CipherText> hdl = mm->new_handle();
+  EncDec::Encrypt(*hdl.get(), pt_val);
+  return hdl;
 }
 
 ObjHandle BfvBitExec::encrypt(const bit_plain_t pt_val) {
-  // return ObjHandle<CipherText>(EncDec::Encrypt(pt_val, context->pk()));
+  ObjHandleT<CipherText> hdl = mm->new_handle();
+  EncDec::Encrypt(*hdl.get(), pt_val, context->pk());
+  return hdl;
 }
 
 bit_plain_t BfvBitExec::decrypt(const ObjHandle& in) {

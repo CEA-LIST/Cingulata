@@ -29,9 +29,15 @@ thread_local CipherText EncDec::tmp_ctxt(2);
 
 /** @brief See header for description
  */
-CipherText EncDec::EncryptPoly(const PolyRing& plainTxt_p, const CipherText& publicKey)
+CipherText EncDec::EncryptPoly(const PolyRing& plainTxt_p, const CipherText& publicKey) {
+  CipherText ctxt;
+  EncryptPoly(ctxt, plainTxt_p, publicKey);
+  return ctxt;
+}
+
+void EncDec::EncryptPoly(CipherText& ct, const PolyRing& plainTxt_p, const CipherText& publicKey)
 {
-  CipherText ct(publicKey);
+  ct = publicKey;
 
   /* Sample uniform binary and normal distributed polynomials  */
   PolyRing &u = tmp_poly;
@@ -49,16 +55,23 @@ CipherText EncDec::EncryptPoly(const PolyRing& plainTxt_p, const CipherText& pub
   PolyRing::add(ct[0], tmp_poly);
 
   CipherText::modulo(ct, FheParams::Q);
-
-  return ct;
 }
 
 /** @brief See header for description
  */
 CipherText EncDec::EncryptPoly(const PolyRing& plainTxt)
 {
-  ScalePlainTextPoly(tmp_poly, plainTxt);
-  return CipherText({tmp_poly});
+  CipherText ctxt(1);
+  EncryptPoly(ctxt, plainTxt);
+  return ctxt;
+}
+
+/** @brief See header for description
+ */
+void EncDec::EncryptPoly(CipherText& ctxt, const PolyRing& plainTxt)
+{
+  ScalePlainTextPoly(ctxt[0], plainTxt);
+  ctxt.resize(1);
 }
 
 /** @brief See header for description
@@ -112,21 +125,34 @@ void EncDec::ScalePlainTextPoly(PolyRing& poly, const PolyRing& plainTxt)
  */
 CipherText EncDec::Encrypt(const unsigned int pTxt, const CipherText& publicKey)
 {
+  CipherText ctxt;
+  Encrypt(ctxt, pTxt, publicKey);
+  return ctxt;
+}
+
+void EncDec::Encrypt(CipherText& ctxt, const unsigned int pTxt, const CipherText& publicKey)
+{
   PolyRing poly;
   poly.setCoeffUi(0, pTxt);
-
-  return EncryptPoly(poly, publicKey);
+  EncryptPoly(ctxt, poly, publicKey);
 }
 
 /** @brief See header for description
  */
 CipherText EncDec::Encrypt(const unsigned int pTxt)
 {
-  PolyRing poly0;
-  poly0.setCoeffUi(0, pTxt);
-
-  return EncryptPoly(poly0);
+  CipherText ctxt;
+  Encrypt(ctxt, pTxt);
+  return ctxt;
 }
+
+void EncDec::Encrypt(CipherText& ctxt, const unsigned int pTxt)
+{
+  PolyRing poly;
+  poly.setCoeffUi(0, pTxt);
+  EncryptPoly(ctxt, poly);
+}
+
 
 /** @brief See header for description
  */
