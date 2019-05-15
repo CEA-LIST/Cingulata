@@ -40,6 +40,16 @@
  */
 class PolyRing {
 private:
+  static thread_local fmpz_poly_t tmp_poly;
+
+  /** @brief      Initialize static members
+   */
+  static thread_local class _init {
+    public:
+      _init();
+      ~_init();
+  } _initializer;
+
   /** @brief Polynomial with coefficients mod N
    */
   fmpz_poly_t polyData;
@@ -51,7 +61,7 @@ protected:
    *
    *  @param poly the polynomial to reduce
    */
-  static void reduce(PolyRing &poly);
+  static void reduce(fmpz_poly_t out, const fmpz_poly_t inp);
 
 public:
   /** @brief Build an empty polynomial
@@ -67,7 +77,7 @@ public:
    *  @param copy full-copy the list of coefficients when true (default)
    *                and assign-copy when false
    */
-  PolyRing(fmpz_poly_t poly, bool copy = true);
+  PolyRing(fmpz_poly_t poly);
 
   /**
    * @brief Build a polynomial ring element from a vector of uint coefficients
@@ -201,6 +211,8 @@ public:
    */
   static void square(PolyRing &poly);
 
+  static void copy(PolyRing& out, const PolyRing& inp);
+
   /** @brief Assignment operator
    *
    *  Assigns a copy of polynomial object \c poly to current object.
@@ -213,7 +225,7 @@ public:
    * @brief Sets polynomial coefficient with a \c fmpz_t
    */
   void setCoeff(const unsigned int idx, const fmpz_t value) {
-    fmpz_poly_set_coeff_fmpz(this->polyData, idx, value);
+    fmpz_set(polyData->coeffs + idx, value);
   }
 
   /**
@@ -228,7 +240,7 @@ public:
    * @brief Sets polynomial coefficient with an \c unsigned
    */
   void setCoeffUi(const unsigned int idx, const unsigned int value) {
-    fmpz_poly_set_coeff_ui(this->polyData, idx, value);
+    fmpz_set_ui(polyData->coeffs + idx, value);
   }
 
   /**
@@ -261,18 +273,21 @@ public:
    */
   unsigned int length() const;
 
+  fmpz_poly_struct *poly() { return polyData; }
+  const fmpz_poly_struct *const poly() const { return polyData; }
+
   /**
    * @brief write an fmpz to a file
-   * 
+   *
    * @param d fmpz number to write
    * @param stream file descriptor to write to
    * @param binary write in binary or string form
    */
   static void write_fmpz(FILE* const stream, fmpz_t d, const bool binary);
-  
+
   /**
    * @brief read an fmpz from a file
-   * 
+   *
    * @param d fmpz number to read
    * @param stream file descriptor to read from
    * @param binary read in binary or string form

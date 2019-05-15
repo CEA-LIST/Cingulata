@@ -22,70 +22,55 @@
 #include "uniform.hxx"
 #include "normal.hxx"
 
-/** @brief See header for description.
- */
-void RandPolynom::populateBinaryPolyRing(fmpz_poly_t poly, fmpz_t num) {
-  fmpz_poly_bit_unpack_unsigned(poly, num, 1);
-}
+#include <cassert>
 
 /** @brief See header for description.
  */
-void RandPolynom::sampleUniformBinary(fmpz_poly_t poly, unsigned int len) {
-  fmpz_t num;
-  fmpz_init(num);
+void RandPolynom::sampleUniformBinary(fmpz_poly_t poly) {
+  const unsigned len = fmpz_poly_length(poly);
+  const unsigned byte_cnt = (len / 8) + 1;
+  char buff[byte_cnt];
+  UniformRng::sample(buff, byte_cnt);
 
-  UniformRng::sample(num, len);
-
-  populateBinaryPolyRing(poly, num);
-
-  fmpz_clear(num);
-}
-
-/** @brief See header for description.
- */
-void RandPolynom::sampleUniformBinary(fmpz_poly_t poly, unsigned int len, unsigned int hammingWeight) {
-  fmpz_t num;
-  fmpz_init(num);
-
-  UniformRng::sample(num, len, hammingWeight);
-
-  populateBinaryPolyRing(poly, num);
-
-  fmpz_clear(num);
-}
-
-/** @brief See header for description.
- */
-void RandPolynom::sampleUniform(fmpz_poly_t poly, unsigned int len, unsigned int coeffBitCnt) {
-  fmpz_t d;
-  fmpz_init(d);
-  
-  for (unsigned int i = 0; i < len; i++){
-    UniformRng::sample(d, coeffBitCnt);
-    fmpz_poly_set_coeff_fmpz(poly, i, d);
+  for (unsigned i = 0; i < len; ++i) {
+    const unsigned tmp = (buff[i / 8] >> (i%8)) & 1;
+    fmpz_set_ui(poly->coeffs + i, tmp);
   }
-
-  fmpz_clear(d);
 }
 
 /** @brief See header for description.
  */
-void RandPolynom::sampleUniform(fmpz_poly_t poly, unsigned int len, fmpz_t q) {
-  sampleUniform(poly, len, fmpz_sizeinbase(q, 2));
-}
+void RandPolynom::sampleUniformBinary(fmpz_poly_t poly, unsigned int hammingWeight) {
+  const unsigned len = fmpz_poly_length(poly);
+  assert(2 * hammingWeight <= len);
 
-/** @brief See header for description.
- */
-void RandPolynom::sampleNormal(fmpz_poly_t poly, unsigned int len, fmpz_t sigma, fmpz_t B) {
-  fmpz_t d;
-  fmpz_init(d);
-  
-  for (unsigned int i = 0; i < len; i++){
-    NormalRng::sample(d, sigma, B);
-    fmpz_poly_set_coeff_fmpz(poly, i, d);
+  unsigned bits_set = 0;
+  while (bits_set < hammingWeight) {
+    unsigned idx = UniformRng::sample();
+    idx %= len;
+    if (fmpz_get_ui(poly->coeffs + idx) == 0) {
+      fmpz_set_ui(poly->coeffs + idx, 1);
+      bits_set++;
+    }
   }
+}
 
-  fmpz_clear(d);
+/** @brief See header for description.
+ */
+void RandPolynom::sampleUniform(fmpz_poly_t poly, unsigned int coeffBitCnt) {
+  const unsigned len = fmpz_poly_length(poly);
+
+  for (unsigned int i = 0; i < len; i++)
+    UniformRng::sample(poly->coeffs + i, coeffBitCnt);
+}
+
+/** @brief See header for description.
+ */
+void RandPolynom::sampleNormal(fmpz_poly_t poly, fmpz_t sigma, fmpz_t B) {
+  const unsigned len = fmpz_poly_length(poly);
+
+  for (unsigned int i = 0; i < len; i++)
+    NormalRng::sample(poly->coeffs + i, sigma, B);
 }
 
 

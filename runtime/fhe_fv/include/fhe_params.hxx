@@ -54,6 +54,10 @@ class FheParams {
      */
     static fmpz_t PQ;
 
+    /** @brief Relinearization key (version 2) coefficient modulo, p.q
+     */
+    static unsigned int PQ_bitsize;
+
     /** @brief Is power of two cyclotomic
      *
      *  Boolean flag for identifying power of two cyclotomic as  modulo of
@@ -116,7 +120,7 @@ class FheParams {
     /** @brief Hide constructor
      */
     FheParams() {}
-  
+
     /** @brief Initialize FHE parameters class
      *
      *  A "static" class constructor/destructor

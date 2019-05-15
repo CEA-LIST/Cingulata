@@ -48,13 +48,13 @@ class KeysAll : public KeysShare {
      *
      *  @param in_io input stream from which read the key
      */
-    void readSecretKey(FILE* const stream, const bool binary = true);    
+    void readSecretKey(FILE* const stream, const bool binary = true);
 
     /** @brief Read secret key from a file
      *
      *  @param fileName input file name from which read the key
      */
-    void readSecretKey(const std::string& fileName, const bool binary = true);    
+    void readSecretKey(const std::string& fileName, const bool binary = true);
 
     /** @brief Write secret key from an input stream
      *
@@ -67,7 +67,7 @@ class KeysAll : public KeysShare {
      *  @param fileNamePrefix prefix of files names containing keys
      */
     void readKeys(const std::string& fileNamePrefix, const bool binary = true);
-  
+
     /** @brief Write all keys to files with a given prefix
      *
      *  @param fileNamePrefix prefix of files names containing keys

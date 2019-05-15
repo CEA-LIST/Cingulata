@@ -35,8 +35,8 @@
 
 class CipherText {
 private:
-    bool polysAllocated;
-    std::vector<PolyRing*> dataPoly;
+  std::vector<PolyRing> dataPoly;
+  static thread_local CipherText tmp_ctxt;
 
 protected:
 
@@ -50,9 +50,6 @@ protected:
    */
   static void multiply_by_poly(CipherText& ct1, const PolyRing& p2);
 
-
-public:
-
   /** @brief Relinearize ciphertext.
    *
    *  This function relinearizes in-place a degree two ciphertext \c ctr.
@@ -62,7 +59,8 @@ public:
    */
   static void relinearize(CipherText& ctr, const CipherText& EvalKey);
 
-  /** @brief In-place apply PolyRing::modulo operation to each ciphertext polynomial 
+public:
+  /** @brief In-place apply PolyRing::modulo operation to each ciphertext polynomial
    *
    *  Normalize each polynomial of ciphertext \c ctr with modulo \c q .
    *
@@ -75,7 +73,7 @@ public:
    *    round the result.
    *
    *  Call PolyRing::multiply_round method on each ciphertext polynomial
-   * 
+   *
    *  @param ctr ciphertext to multiply to.
    *  @param t numerator of the rational.
    *  @param t denominator of the rational.
@@ -87,51 +85,47 @@ public:
    *  @param left_ctr left side of component-wise multiplication, store result here
    *  @param right_ctr right side of component-wise multiplication
    */
-  static void multiply_comp(CipherText &left_ctr, const CipherText &right_ctr);
+  static void multiply_comp(CipherText &left_ctr, const std::initializer_list<PolyRing>& right_ctr);
 
   /** @brief Access ciphertext polynomials
-   */    
-  PolyRing& operator[](const unsigned int idx) const {
-    assert(idx < size());
-    return *dataPoly[idx];
+   */
+  PolyRing& operator[](const unsigned int idx) {
+    return dataPoly.at(idx);
+  };
+
+  /** @brief Access ciphertext polynomials
+   */
+  const PolyRing& operator[](const unsigned int idx) const {
+    return dataPoly.at(idx);
   };
 
   /** @brief Return number of polynomials in the ciphertext
-   */    
+   */
   unsigned int size() const {
     return dataPoly.size();
   }
 
   /** @brief Resize the number of polynomials in the ciphertext
-   */    
+   */
   void resize(const int newSize);
-    
+
   /** @brief Constructs an empty CipherText.
    */
   CipherText(unsigned int p_nrPolys = 2);
-  
+
   /** @brief Copy-constructs a CipherText object.
    */
   CipherText(const CipherText &ct);
-  
-  /** @brief Constructs a CipherText object from a polynomial copy.
-   */
-  CipherText(const PolyRing &cp0);
 
-  /** @brief Constructs a CipherText object from copies of two polynomials.
+  /** @brief Constructs a CipherText object from a list of polynomials.
    */
-  CipherText(const PolyRing &cp0, const PolyRing &cp1);
-  
-  /** @brief Constructs a CipherText object from two polynomials.
-   *
-   *  \remarks No copies of polynomials \c cp0 and \c cp1 are made!
+  CipherText(const std::initializer_list<PolyRing>& cp);
+
+  /**
+   * @brief      Copy @c inp to @c out ciphertext
    */
-  CipherText(PolyRing* const cp0, PolyRing* const cp1);
-    
-  /** @brief Destructs an CipherText object.
-   */
-  ~CipherText();
-  
+  static void copy(CipherText& out, const CipherText& inp);
+
   /** @brief In-place add two ciphertexts.
    *
    *  Add ciphertext \c ct2 with ciphertext \c ct1 and
@@ -141,7 +135,7 @@ public:
      *  @param ct2 ciphertext to add.
    */
   static void add(CipherText &ct1, const CipherText& ct2);
-  
+
   /** @brief In-place subtract two ciphertexts.
    *
    *  Substract ciphertext \c ct2 from ciphertext \c ct1 and
@@ -185,13 +179,13 @@ public:
    *  @param inFileName name of the file from which to read
    */
   void read(const std::string& inFileName, const bool binary = true);
-  
+
   /** @brief Write ciphertext to an output stream
    *
    *  @param out_stream FILE pointer to which to write
    */
-  void write(FILE* const out_stream, const bool binary = true) const;    
-  
+  void write(FILE* const out_stream, const bool binary = true) const;
+
   /** @brief Write ciphertext to a file
    *
    *  @param outFileName file name to which to write

@@ -1,5 +1,5 @@
 /*
-    (C) Copyright 2017 CEA LIST. All Rights Reserved.
+    (C) Copyright 2019 CEA LIST. All Rights Reserved.
     Contributor(s): Cingulata team
 
     This software is governed by the CeCILL-C license under French law and
@@ -20,83 +20,62 @@
 
 #include "keygen.hxx"
 
-#include "fhe_params.hxx"
-#include "rand_polynom.hxx"
-#include "polyring.hxx"
 #include "ciphertext.hxx"
-
-#include <iostream>
-#include <fstream>
-
+#include "fhe_params.hxx"
+#include "polyring.hxx"
+#include "rand_polynom.hxx"
 
 using namespace std;
 
 void KeyGen::generateSecretKey() {
-  fmpz_poly_t tmp;
-  fmpz_poly_init(tmp);
-
-  RandPolynom::sampleUniformBinary(tmp, FheParams::D, FheParams::SK_H);
-  
-  keysAll.SecretKey = new PolyRing(tmp);
-
-  fmpz_poly_clear(tmp);
+  keysAll.SecretKey = new PolyRing();
+  PolyRing &sk = (*keysAll.SecretKey);
+  RandPolynom::sampleUniformBinary(sk.poly(), FheParams::SK_H);
 }
 
 void KeyGen::generatePublicKey() {
-  fmpz_poly_t tmp;
-  fmpz_poly_init(tmp);
-  
+  keysAll.PublicKey = new CipherText(2);
+  PolyRing &b = (*keysAll.PublicKey)[0];
+  PolyRing &a = (*keysAll.PublicKey)[1];
+
   /* Sample a <- Rq and e <- \chi */
-  RandPolynom::sampleUniform(tmp, FheParams::D, FheParams::Q);
-  PolyRing *a = new PolyRing(tmp);
+  RandPolynom::sampleUniform(a.poly(), FheParams::Q_bitsize);
 
-  RandPolynom::sampleNormal(tmp, FheParams::D, FheParams::SIGMA, FheParams::B);
-  PolyRing e(tmp);
+  PolyRing e;
+  RandPolynom::sampleNormal(e.poly(), FheParams::SIGMA, FheParams::B);
 
-  /* Compute ct1 = -(a . sk + e) mod q */
-  PolyRing *ct1 = new PolyRing(*a);
-  PolyRing::multiply(*ct1, *(keysAll.SecretKey));
-  PolyRing::add(*ct1, e);
-  PolyRing::negate(*ct1);
-  PolyRing::modulo(*ct1, FheParams::Q);
-
-  /* Store key */
-  keysAll.PublicKey = new CipherText(ct1, a);
-
-  fmpz_poly_clear(tmp);
+  /* Compute b = -(a . sk + e) mod q */
+  PolyRing::copy(b, a);
+  PolyRing::multiply(b, *(keysAll.SecretKey));
+  PolyRing::add(b, e);
+  PolyRing::negate(b);
+  PolyRing::modulo(b, FheParams::Q);
 }
 
 void KeyGen::generateEvalKey() {
-  fmpz_poly_t tmp;
-  fmpz_poly_init(tmp);
+  /* Re-linearization version 2 evaluation key */
+  keysAll.EvalKey = new CipherText(2);
+  PolyRing &b = (*keysAll.EvalKey)[0];
+  PolyRing &a = (*keysAll.EvalKey)[1];
 
-  /* Re-linearization version 1 evaluation key */
-
-  /* Re-linearization version 2 evaluation key */  
   /* Sample a <- Rpq and e <- \chi */
-  RandPolynom::sampleUniform(tmp, FheParams::D, FheParams::PQ);
-  PolyRing *a = new PolyRing(tmp);
-  
-  RandPolynom::sampleNormal(tmp, FheParams::D, FheParams::SIGMA_K, FheParams::B_K);
-  PolyRing e(tmp);
+  RandPolynom::sampleUniform(a.poly(), FheParams::PQ_bitsize);
 
-  /* Compute ct1 = -(a . sk + e) */
-  PolyRing *ct1 = new PolyRing(*a);
-  PolyRing::multiply(*ct1, *(keysAll.SecretKey));
-  PolyRing::add(*ct1, e);
-  PolyRing::negate(*ct1);
+  PolyRing e;
+  RandPolynom::sampleNormal(e.poly(), FheParams::SIGMA_K, FheParams::B_K);
 
-  /* Compute ct1 += p . sk^2 mod p.q */
+  /* Compute b = -(a . sk + e) */
+  PolyRing::copy(b, a);
+  PolyRing::multiply(b, *(keysAll.SecretKey));
+  PolyRing::add(b, e);
+  PolyRing::negate(b);
+
+  /* Compute b += p . sk^2 mod p.q */
   PolyRing sk_copy(*(keysAll.SecretKey));
   PolyRing::square(sk_copy);
   PolyRing::multiply(sk_copy, FheParams::P);
-  PolyRing::add(*ct1, sk_copy);  
-  PolyRing::modulo(*ct1, FheParams::PQ);
-  
-  /* Store key */
-  keysAll.EvalKey = new CipherText(ct1, a);
-
-  fmpz_poly_clear(tmp);
+  PolyRing::add(b, sk_copy);
+  PolyRing::modulo(b, FheParams::PQ);
 }
 
 void KeyGen::generateKeys() {

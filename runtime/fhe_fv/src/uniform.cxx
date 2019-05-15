@@ -43,11 +43,6 @@ UniformRng::_init::_init() {
  */
 UniformRng::_init UniformRng::_initializer;
 
-unsigned int sizeInBits(unsigned int bitCnt) {
-  double bitSize = ceil(log2((double)bitCnt + 0.5));
-  return (int)bitSize;
-}
-
 unsigned int bits2Bytes(unsigned int bitSize) {
   double byteSize = ceil((float)bitSize / 8);
   return (int)byteSize;
@@ -55,31 +50,16 @@ unsigned int bits2Bytes(unsigned int bitSize) {
 
 /** @brief See header for description.
  */
-void UniformRng::sample(fmpz_t num, unsigned int bitCnt) {
-  int randDev = open("/dev/urandom", O_RDONLY);
-  if (randDev == -1) {
-    cerr << "File: " << __FILE__ << " line: " << __LINE__
-      << " - cannot open random generator \"/dev/urandom\"" << endl;
-    exit(-1);
-  }
+void UniformRng::sample(fmpz_t num, const unsigned bitCnt) {
+  const unsigned int byteCnt = bits2Bytes(bitCnt);
+  char buff[byteCnt];
 
-  unsigned int byteCnt = bits2Bytes(bitCnt);
-  unsigned char buff[byteCnt];
-
-  unsigned int r = read(randDev, buff, byteCnt);
-  assert(r == byteCnt);
-  close(randDev);
+  sample(buff, byteCnt);
 
   fmpz_bit_unpack_unsigned(num, (mp_limb_t*)buff, 0, bitCnt);
 }
 
-/** @brief See header for description.
- */
-void UniformRng::sample(fmpz_t num_p,
-                        unsigned int bitCnt,
-                        unsigned int hammingWeight) {
-  assert(2 * hammingWeight <= bitCnt);
-
+void UniformRng::sample(char *buff, const unsigned size) {
   int randDev = open("/dev/urandom", O_RDONLY);
   if (randDev == -1) {
     cerr << "File: " << __FILE__ << " line: " << __LINE__
@@ -87,28 +67,19 @@ void UniformRng::sample(fmpz_t num_p,
     exit(-1);
   }
 
-  unsigned int bitSize = sizeInBits(bitCnt - 1);
-  assert(bitSize <= FLINT_BITS);
-  
-  unsigned int byteSize = bits2Bytes(bitSize);
-  unsigned int mask = (1 << bitSize) - 1;
-
-  fmpz_zero(num_p);
-
-  while (fmpz_popcnt(num_p) < hammingWeight) {
-    unsigned int pos = 0;
-    unsigned char b;
-
-    for (unsigned int i = 0; i < byteSize; i++) {
-      int r = read(randDev, &b, 1);
-      assert(r == 1);
-      pos |= (b << (8 * i));
-    }
-    pos &= mask;
-
-    if (pos < bitCnt) {
-      fmpz_combit(num_p, pos);
-    }
-  }  
+  assert(read(randDev, buff, size) == size);
+  close(randDev);
 }
 
+unsigned UniformRng::sample() {
+  constexpr unsigned size = sizeof(unsigned);
+  assert(size > 0);
+  char buff[size];
+  UniformRng::sample(buff, size);
+
+  unsigned result = 0;
+  for (unsigned i = 0; i < size; ++i)
+    result |= unsigned(buff[i]) << (8*i);
+
+  return result;
+}

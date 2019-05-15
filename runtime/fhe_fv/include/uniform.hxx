@@ -52,26 +52,21 @@ class UniformRng {
      */
     static void sample(fmpz_t num, unsigned int bitCnt);
 
-    /** @brief Sample number from uniform distribution with a given
-     *     Hamming weight.
+    /**
+     * @brief      Sample @c size random bytes
      *
-     *  This method samples a number \c num uniformly. The resulting
-     *    \c num has a Hamming weight \c hammingWeight, thus \c hammingWeight 
-     *    bits of \c num will be logical ones.
-     *  The number of bits in \c num is given by \c bitCnt.
-     *  Variable \c num should be initialized.
-     *
-     *  @remarks Runtime of this function depends statistically on
-     *    the ratio between \c hammingWeight and \c bitCnt.
-     *    For performance reason \c hammingWeight is limited to half of
-     *    \c bitCnt.
-     *
-     *  @param num sampled number
-     *  @param bitCnt number of bits in \c num
-     *  @param hammingWeight Hamming weight of obtained \c num
+     * @param      buff  buffer where bytes are written
+     * @param[in]  size  number of bytes to sample
      */
-    static void sample(fmpz_t num, unsigned int bitCnt,
-                        unsigned int hammingWeight);
+    static void sample(char *buff, const unsigned size);
+
+
+    /**
+     * @brief      Sample an unsigned integer
+     *
+     * @return     uniformely distributed unsigned integer
+     */
+    static unsigned sample();
 };
 
 #endif

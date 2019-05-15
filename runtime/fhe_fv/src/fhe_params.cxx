@@ -54,6 +54,10 @@ fmpz_t FheParams::PQ;
 
 /** @brief See header for description
  */
+unsigned int FheParams::PQ_bitsize;
+
+/** @brief See header for description
+ */
 bool FheParams::IsPowerOfTwoCyclotomic;
 
 /** @brief See header for description
@@ -99,7 +103,7 @@ FheParams::_init::_init() {
   FheParams::D = 0;
   FheParams::SK_H = 0;
   FheParams::POLY_RW_BASE = 62; //@todo read it from xml file
-  
+
   fmpz_init(FheParams::SIGMA);
   fmpz_init(FheParams::B);
   fmpz_init(FheParams::SIGMA_K);
@@ -123,7 +127,7 @@ FheParams::_init::~_init() {
   fmpz_clear(FheParams::P);
   fmpz_clear(FheParams::PQ);
   fmpz_clear(FheParams::Delta);
-  
+
   fmpz_poly_clear(FheParams::PolyRingModulo);
   fmpz_poly_powers_clear(FheParams::PolyRingModuloInv);
 
@@ -177,16 +181,16 @@ void parseParamsCt(xml_node node) {
   if (node.child("coeff_modulo_log2")) {
     unsigned int log2_q = node.child("coeff_modulo_log2").text().as_uint();
     fmpz_set_ui(FheParams::Q, 2);
-    fmpz_pow_ui(FheParams::Q, FheParams::Q, log2_q);  
+    fmpz_pow_ui(FheParams::Q, FheParams::Q, log2_q);
     FheParams::Q_bitsize = log2_q;
   } else {
     r = fmpz_set_str(FheParams::Q, node.child_value("coeff_modulo"), 10);
     assert(r == 0);
-    FheParams::Q_bitsize = fmpz_clog_ui(FheParams::Q, 2); 
+    FheParams::Q_bitsize = fmpz_clog_ui(FheParams::Q, 2);
   }
 
   node = node.child("normal_distribution");
-  
+
   r = fmpz_set_str(FheParams::SIGMA, node.child_value("sigma"), 10);
   assert(r == 0);
 
@@ -202,7 +206,7 @@ void parseParamsLi(xml_node node) {
   if (node.child("coeff_modulo_log2")) {
     unsigned int log2_p = node.child("coeff_modulo_log2").text().as_uint();
     fmpz_set_ui(FheParams::P, 2);
-    fmpz_pow_ui(FheParams::P, FheParams::P, log2_p);  
+    fmpz_pow_ui(FheParams::P, FheParams::P, log2_p);
   } else {
     r = fmpz_set_str(FheParams::P, node.child_value("coeff_modulo"), 10);
     assert(r == 0);
@@ -252,19 +256,20 @@ void FheParams::readXml(const char* const fileName) {
 
   FheParams::computeParams();
 }
-  
+
 /** @brief See header for description
  */
 void FheParams::computeParams() {
   fmpz_mul(FheParams::PQ, FheParams::P, FheParams::Q);
+  FheParams::PQ_bitsize = fmpz_clog_ui(FheParams::PQ, 2);
 
   fmpz_fdiv_q_ui(FheParams::Delta, FheParams::Q, FheParams::T);
 
-  /* Cyclotomic polynomial degree */
+  /* Cyclotomic polynomial degree and length */
   FheParams::D = fmpz_poly_degree(FheParams::PolyRingModulo);
 
   /* Verify if it's a power of two cyclotomic polynomial */
-  FheParams::IsPowerOfTwoCyclotomic = 
+  FheParams::IsPowerOfTwoCyclotomic =
     FheParams::isPowerOfTwoCyclotomicPolynomial(FheParams::PolyRingModulo);
 
   /* Precompute the inverse of the cyclotomic polynomial

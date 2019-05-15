@@ -38,7 +38,7 @@ public:
    * @param pTxt polynomial ring object
    * @return scaled polynomial ring object
    */
-  static PolyRing ScalePlainTextPoly(const PolyRing& pTxt);
+  static void ScalePlainTextPoly(PolyRing& poly, const PolyRing& pTxt);
 
   /**
    * @brief Decrypts a ciphertext together with its noise (as polynomial)
@@ -135,10 +135,10 @@ public:
    * @return number of bits of noise in the ciphertext
    */
   static double NoiseDbl(const CipherText& cTxt, const PolyRing& secretKey);
-  
+
   /**
-   * @brief Compute the noise amplitude of a noise polynomial. 
-   *    Use \c EncDec::DecryptPolyAndNoise to find the noise polynomial 
+   * @brief Compute the noise amplitude of a noise polynomial.
+   *    Use \c EncDec::DecryptPolyAndNoise to find the noise polynomial
    *    The polynomial is altered.
    *
    * @param polyNoise noise polynomial
@@ -146,6 +146,10 @@ public:
    * @return number of bits of noise in the ciphertext (floating-point)
    */
   static double NoiseDbl(const PolyRing& polyNoise);
+
+private:
+  static thread_local PolyRing tmp_poly;
+  static thread_local CipherText tmp_ctxt;
 };
 
 #endif
