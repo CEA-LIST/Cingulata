@@ -43,7 +43,8 @@ class BfvBitExec : public IBitExec {
 public:
   enum KeyType { Secret, Public };
 
-  BfvBitExec(const std::string& p_param, const std::string& p_key_prefix, const KeyType p_keytype);
+  BfvBitExec(const std::string &p_param, const std::string &p_key_prefix,
+             const KeyType p_keytype);
 
   /* clang-format off */
 
@@ -59,7 +60,6 @@ public:
   /* clang-format on */
 
 protected:
-
   class Context;
   const Context *context;
 
@@ -73,10 +73,5 @@ protected:
 };
 
 }; // namespace cingulata
-
-class BfvAlloc {
-
-};
-
 
 #endif

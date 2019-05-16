@@ -50,14 +50,14 @@ public:
     }
   }
 
-  const PolyRing& sk() const {
+  const PolyRing &sk() const {
     assert(m_sk != nullptr && "secret key was not set");
     return *(m_sk->SecretKey);
   }
 
-  const CipherText& pk() const { return *(m_pk->PublicKey); }
+  const CipherText &pk() const { return *(m_pk->PublicKey); }
 
-  const CipherText& evk() const { return *(m_pk->EvalKey); }
+  const CipherText &evk() const { return *(m_pk->EvalKey); }
 
 private:
   KeysAll *m_sk = nullptr;
@@ -66,8 +66,8 @@ private:
 
 BfvBitExec::BfvBitExec(const string &p_param, const string &p_key_prefix,
                        const KeyType p_keytype)
-    : context(new Context(p_param, p_key_prefix, p_keytype)),
-      mm(new ObjMan()) {}
+    : context(new Context(p_param, p_key_prefix, p_keytype)), mm(new ObjMan()) {
+}
 
 ObjHandle BfvBitExec::encode(const bit_plain_t pt_val) {
   ObjHandleT<CipherText> hdl = mm->new_handle();
@@ -81,28 +81,28 @@ ObjHandle BfvBitExec::encrypt(const bit_plain_t pt_val) {
   return hdl;
 }
 
-bit_plain_t BfvBitExec::decrypt(const ObjHandle& in) {
+bit_plain_t BfvBitExec::decrypt(const ObjHandle &in) {
   return EncDec::Decrypt(*in.get<CipherText>(), context->sk());
 }
 
-ObjHandle BfvBitExec::read(const std::string& name) {
+ObjHandle BfvBitExec::read(const std::string &name) {
   ObjHandleT<CipherText> hdl = mm->new_handle();
   hdl->read(name);
   return hdl;
 }
 
-void BfvBitExec::write(const ObjHandle& in, const std::string& name) {
+void BfvBitExec::write(const ObjHandle &in, const std::string &name) {
   in.get<CipherText>()->write(name);
 }
 
-ObjHandle BfvBitExec::op_and(const ObjHandle& in1, const ObjHandle& in2) {
+ObjHandle BfvBitExec::op_and(const ObjHandle &in1, const ObjHandle &in2) {
   ObjHandleT<CipherText> hdl = mm->new_handle();
   CipherText::copy(*hdl.get(), *in1.get<CipherText>());
   CipherText::multiply(*hdl.get(), *in2.get<CipherText>(), context->evk());
   return hdl;
 }
 
-ObjHandle BfvBitExec::op_xor(const ObjHandle& in1, const ObjHandle& in2) {
+ObjHandle BfvBitExec::op_xor(const ObjHandle &in1, const ObjHandle &in2) {
   ObjHandleT<CipherText> hdl = mm->new_handle();
   CipherText::copy(*hdl.get(), *in1.get<CipherText>());
   CipherText::add(*hdl.get(), *in2.get<CipherText>());

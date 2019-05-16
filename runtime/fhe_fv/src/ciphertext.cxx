@@ -88,7 +88,7 @@ CipherText::CipherText(const CipherText& ct) {
  */
 CipherText::CipherText(const initializer_list<PolyRing>& cp) {
   dataPoly.resize(cp.size());
-  for (int i = 0; i < cp.size(); ++i)
+  for (unsigned i = 0; i < cp.size(); ++i)
     PolyRing::copy(dataPoly[i], *(cp.begin() + i));
 }
 
