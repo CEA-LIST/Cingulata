@@ -21,8 +21,8 @@
 #include "fhe_params.hxx"
 
 #include <assert.h>
-#include <iostream>
 #include <flint/arith.h>
+#include <iostream>
 #include <pugixml.hpp>
 
 using namespace pugi;
@@ -161,8 +161,8 @@ void parseParamsPr(xml_node node) {
     unsigned int index = node1.child("index").text().as_uint();
     arith_cyclotomic_polynomial(FheParams::PolyRingModulo, index);
   } else {
-    cerr << "Error parsing XML params file: " <<
-      "no ring modulo polynomial specified" << endl;
+    cerr << "Error parsing XML params file: "
+         << "no ring modulo polynomial specified" << endl;
     exit(0);
   }
 }
@@ -229,14 +229,14 @@ void parseParamsSk(xml_node node) {
 
 /** @brief See header for description
  */
-void FheParams::readXml(const char* const fileName) {
+void FheParams::readXml(const char *const fileName) {
   xml_document doc;
 
   xml_parse_result result = doc.load_file(fileName);
 
   if (result.status != status_ok) {
     cerr << "Cannot read parameters file '" << fileName
-        << "' in method FheParams::readXml" << endl;
+         << "' in method FheParams::readXml" << endl;
     exit(0);
   }
 
@@ -244,7 +244,7 @@ void FheParams::readXml(const char* const fileName) {
 
   if (!params) {
     cerr << "Error parsing file '" << fileName
-        << "' in method FheParams::readXml" << endl;
+         << "' in method FheParams::readXml" << endl;
     exit(0);
   }
 
@@ -270,7 +270,7 @@ void FheParams::computeParams() {
 
   /* Verify if it's a power of two cyclotomic polynomial */
   FheParams::IsPowerOfTwoCyclotomic =
-    FheParams::isPowerOfTwoCyclotomicPolynomial(FheParams::PolyRingModulo);
+      FheParams::isPowerOfTwoCyclotomicPolynomial(FheParams::PolyRingModulo);
 
   /* Precompute the inverse of the cyclotomic polynomial
    *  used in ring modulo reduction if not power of two cyclotomic */
@@ -302,4 +302,3 @@ bool FheParams::isPowerOfTwoCyclotomicPolynomial(fmpz_poly_t poly) {
 
   return b;
 }
-

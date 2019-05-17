@@ -23,7 +23,7 @@
  * @brief Utility for encrypting messages using homomorphic encryption
  */
 
-#include "fv.hxx"
+#include "bfv_bit_exec.hxx"
 
 #include <string>
 #include <iostream>
@@ -36,6 +36,7 @@
 using namespace std;
 namespace po = boost::program_options;
 namespace ba = boost::algorithm;
+namespace cingu = cingulata;
 
 struct Options {
   string FheParamsFile;
@@ -52,8 +53,8 @@ struct Options {
  * @brief Parses output files and messages from tokenized command line string
  * @details This methods takes tokenized command line arguments and groups them
  *  into pairs of "file name" and "messages".
- *  Messages split by space are polynomial coefficients. 
- * 
+ *  Messages split by space are polynomial coefficients.
+ *
  * @param msgs_tokens tokenized command line
  * @param outputFilesMessages Output sfile and messages pairs
  */
@@ -97,7 +98,7 @@ void parseMessages(const vector<string>& msgs_tokens, vector< pair<string, vecto
 
     vector<string> coef_msgs;
     ba::split(coef_msgs, msgs, ba::is_space(), ba::token_compress_on);
-    
+
     vector<unsigned int> coefs;
     for (const string& msg: coef_msgs) {
       coefs.push_back(boost::lexical_cast<unsigned int>(msg));
@@ -150,19 +151,19 @@ Options parseArgs(int argc, char** argv) {
               "\t'1 + X + X^3' should be encrypted.\n\n";
 
       cout << "Usage: " << argv[0] <<
-              " [options] [<output file> [[<message>,]+]+]+\n";
+              " [options] [<output file> [<message> ]+ ]+\n";
       cout << "\toutput file names cannot start by a digit\n\n";
       cout << "Examples:\n";
       cout << "\tExample 1 - encrypt single message per ciphertext:\n\t"
            << argv[0] << " [options] f0.ct 0 f1.ct 1 f2.ct 0\n";
       cout << "\tExample 2 - encrypt several messages into a ciphertext using"
               " coefficient packing:\n\t" << argv[0] <<
-              " [options] f0.ct 0 f1.ct 1 0 1 f2.ct 1 1\n"; 
+              " [options] f0.ct 0 f1.ct 1 0 1 f2.ct 1 1\n";
 
       cout << config << endl;
       exit(0);
     }
-    
+
     po::notify(vm);
 
     if (vm.count("public-key") == 0) {
@@ -231,7 +232,7 @@ Options parseArgs(int argc, char** argv) {
 int main(int argc, char **argv) {
   Options options = parseArgs(argc, argv);
 
-  FheParams::readXml(options.FheParamsFile.c_str());
+  cingu::BfvBitExec bfv_exec(options.FheParamsFile.c_str(), options.PublicKeyFile, cingu::BfvBitExec::Public);
 
   /* Validate options vs FHE parameters */
   unsigned int availNbCoefs = FheParams::D;
@@ -257,9 +258,6 @@ int main(int argc, char **argv) {
     }
   }
 
-  KeysShare keys;
-  keys.readPublicKey(options.PublicKeyFile);
-
   #pragma omp parallel for num_threads(options.nrThreads)
   for (unsigned int i = 0; i < options.OutputFilesMessages.size(); ++i) {
     const string& out_fn = options.OutputFilesMessages[i].first;
@@ -267,21 +265,17 @@ int main(int argc, char **argv) {
 
     #pragma omp critical
     if (options.verbose) {
-      cout << "Encrypting message [";
+      printf("Encrypting message [");
       for (unsigned int i = 0; i < msgs.size(); ++i) {
-        cout << msgs[i];
-        if (i < msgs.size()-1)
-          cout << " ";
+        printf("%d%s", msgs[i], i < msgs.size()-1 ? " " : "");
       }
-      cout << "] into file " << out_fn << endl;
+      printf("] into file '%s'\n", out_fn.c_str());
     }
 
-    PolyRing pTxtPoly(msgs);
-
     if (options.clear) {
-      EncDec::EncryptPoly(pTxtPoly).write(out_fn);
+      bfv_exec.write(bfv_exec.encode(msgs), out_fn);
     } else {
-      EncDec::EncryptPoly(pTxtPoly, *keys.PublicKey).write(out_fn);
+      bfv_exec.write(bfv_exec.encrypt(msgs), out_fn);
     }
   }
 

@@ -1,5 +1,5 @@
 /*
-    (C) Copyright 2017 CEA LIST. All Rights Reserved.
+    (C) Copyright 2019 CEA LIST. All Rights Reserved.
     Contributor(s): Cingulata team
 
     This software is governed by the CeCILL-C license under French law and
@@ -18,29 +18,40 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-/** @file keygen.hxx
- *  @brief Generate secret, public and evaluation keys
- */
-
-#ifndef __KEYGEN_HXX__
-#define __KEYGEN_HXX__
-
-#include "keys_all.hxx"
+#ifndef SECRET_KEY
+#define SECRET_KEY
 
 #include <string>
 
-class KeyGen {
-  private:
-    KeysAll keysAll;
+#include "polyring.hxx"
 
-  protected:
-    void generateSecretKey();
-    void generatePublicKey();
-    void generateEvalKey();
+class SecretKey {
+public:
+  const PolyRing &get() const { return m_sk; }
 
-  public:
-    void generateKeys();
-    void writeKeys(const std::string& fileNamePrefix, const bool binary = true);
+  /**
+   * @brief      Read secret key
+   *
+   * @param      fileName  file name
+   * @param[in]  binary    binary or text mode
+   */
+  void read(const std::string &fileName, const bool binary = true);
+
+  /**
+   * @brief      Write secret key
+   *
+   * @param      fileName  file name
+   * @param[in]  binary    binary or text mode
+   */
+  void write(const std::string &fileName, const bool binary = true) const;
+
+  /**
+   * @brief      Generate secret key
+   */
+  void generate();
+
+private:
+  PolyRing m_sk;
 };
 
 #endif

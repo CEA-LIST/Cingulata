@@ -1,16 +1,14 @@
 cmake_minimum_required(VERSION 3.0)
 
-add_compile_options(-std=c++11 -Wall)
-
 add_executable(encrypt encrypt.cxx)
-target_link_libraries(encrypt fhe_fv)
+target_link_libraries(encrypt fhe_fv_bit_exec)
 set_target_properties(encrypt PROPERTIES
                     COMPILE_FLAGS ${OpenMP_CXX_FLAGS}
                     LINK_FLAGS ${OpenMP_CXX_FLAGS})
 
 
 add_executable(decrypt decrypt.cxx)
-target_link_libraries(decrypt fhe_fv)
+target_link_libraries(decrypt fhe_fv_bit_exec)
 set_target_properties(decrypt PROPERTIES
                     COMPILE_FLAGS ${OpenMP_CXX_FLAGS}
                     LINK_FLAGS ${OpenMP_CXX_FLAGS})
@@ -21,8 +19,10 @@ target_link_libraries(generate_keys fhe_fv)
 
 
 add_executable(pack pack.cxx)
-target_link_libraries(pack fhe_fv)
-
+target_link_libraries(pack fhe_fv_bit_exec)
+set_target_properties(pack PROPERTIES
+                    COMPILE_FLAGS ${OpenMP_CXX_FLAGS}
+                    LINK_FLAGS ${OpenMP_CXX_FLAGS})
 
 add_executable(helper helper.cxx)
 target_link_libraries(helper)

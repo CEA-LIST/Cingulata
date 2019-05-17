@@ -22,11 +22,11 @@
  *  @brief EncDec - encryption/decryption class
  */
 
-#ifndef __ENCDEC_HXX__
-#define __ENCDEC_HXX__
+#ifndef ENCDEC_HXX
+#define ENCDEC_HXX
 
+#include "ciphertext.hxx"
 #include "polyring.hxx"
-#include "keys_all.hxx"
 
 class EncDec {
 public:
@@ -38,7 +38,7 @@ public:
    * @param pTxt polynomial ring object
    * @return scaled polynomial ring object
    */
-  static void ScalePlainTextPoly(PolyRing& poly, const PolyRing& pTxt);
+  static void ScalePlainTextPoly(PolyRing &poly, const PolyRing &pTxt);
 
   /**
    * @brief Decrypts a ciphertext together with its noise (as polynomial)
@@ -49,7 +49,9 @@ public:
    *
    * @return the decrypted polynomial ring element and the noise polynomial
    */
-  static PolyRing DecryptPolyAndNoise(const CipherText& cipherTxt, const PolyRing& secretKey, PolyRing& pNoise);
+  static PolyRing DecryptPolyAndNoise(const CipherText &cipherTxt,
+                                      const PolyRing &secretKey,
+                                      PolyRing &pNoise);
 
   /**
    * @brief Encrypts a polynomial ring element
@@ -59,9 +61,11 @@ public:
    *
    * @return a ciphertext object with encrypted polynomial
    */
-  static CipherText EncryptPoly(const PolyRing& pTxt, const CipherText& publicKey);
+  static CipherText EncryptPoly(const PolyRing &pTxt,
+                                const CipherText &publicKey);
 
-  static void EncryptPoly(CipherText& ctxt, const PolyRing& pTxt, const CipherText& publicKey);
+  static void EncryptPoly(CipherText &ctxt, const PolyRing &pTxt,
+                          const CipherText &publicKey);
 
   /**
    * @brief Builds a "plain" ciphertext object
@@ -72,9 +76,9 @@ public:
    * @return a ciphertext object which represent the plaintext in
    *    ciphertext domain
    */
-  static CipherText EncryptPoly(const PolyRing& pTxt);
+  static CipherText EncryptPoly(const PolyRing &pTxt);
 
-  static void EncryptPoly(CipherText& ctxt, const PolyRing& pTxt);
+  static void EncryptPoly(CipherText &ctxt, const PolyRing &pTxt);
 
   /**
    * @brief Decrypts a ciphertext
@@ -84,7 +88,8 @@ public:
    *
    * @return the decrypted polynomial ring element
    */
-  static PolyRing DecryptPoly(const CipherText& cTxt, const PolyRing& secretKey);
+  static PolyRing DecryptPoly(const CipherText &cTxt,
+                              const PolyRing &secretKey);
 
   /**
    * @brief Encrypts a single plaintext
@@ -96,9 +101,11 @@ public:
    *
    * @return a ciphertext object which encrypts the plaintext
    */
-  static CipherText Encrypt(const unsigned int pTxt, const CipherText& publicKey);
+  static CipherText Encrypt(const unsigned int pTxt,
+                            const CipherText &publicKey);
 
-  static void Encrypt(CipherText& ctxt, const unsigned int pTxt, const CipherText& publicKey);
+  static void Encrypt(CipherText &ctxt, const unsigned int pTxt,
+                      const CipherText &publicKey);
 
   /**
    * @brief Builds a "plain" ciphertext object
@@ -122,17 +129,8 @@ public:
    *
    * @return a plaintext element (integer modulo T)
    */
-  static unsigned int Decrypt(const CipherText& cTxt, const PolyRing& secretKey);
-
-  /**
-   * @brief Compute the noise amplitude in a ciphertext
-   *
-   * @param cTxt ciphertext
-   * @param secretKey decryption key
-   *
-   * @return number of bits of noise in the ciphertext
-   */
-  static unsigned int Noise(const CipherText& cTxt, const PolyRing& secretKey);
+  static unsigned int Decrypt(const CipherText &cTxt,
+                              const PolyRing &secretKey);
 
   /**
    * @brief Compute the noise amplitude in a ciphertext (float version)
@@ -142,7 +140,7 @@ public:
    *
    * @return number of bits of noise in the ciphertext
    */
-  static double NoiseDbl(const CipherText& cTxt, const PolyRing& secretKey);
+  static double Noise(const CipherText &cTxt, const PolyRing &secretKey);
 
   /**
    * @brief Compute the noise amplitude of a noise polynomial.
@@ -153,7 +151,7 @@ public:
    *
    * @return number of bits of noise in the ciphertext (floating-point)
    */
-  static double NoiseDbl(const PolyRing& polyNoise);
+  static double Noise(const PolyRing &polyNoise);
 
 private:
   static thread_local PolyRing tmp_poly;

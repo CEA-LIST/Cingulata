@@ -41,7 +41,7 @@ struct Options {
 Options parseArgs(int argc, char** argv) {
   Options options;
   string prefix;
-  
+
   po::options_description config("Options");
   config.add_options()
       ("fhe-params", po::value<string>(&options.FheParamsFile)->default_value("fhe_params.xml"), "FHE parameters file")
@@ -61,16 +61,16 @@ Options parseArgs(int argc, char** argv) {
       cout << "Generate homomorphic cryptosystem keychain file(s)" << endl;
       cout << config << endl;
       exit(0);
-    }    
-    
+    }
+
     po::notify(vm);
   } catch (po::error& e) {
     cerr << "ERROR: " << e.what() << endl;
-    cerr << config << endl; 
+    cerr << config << endl;
     exit(-1);
   } catch (...) {
     cerr << "Something went wrong!!!" << endl;
-    cerr << config << endl; 
+    cerr << config << endl;
     exit(-1);
   }
 
@@ -84,12 +84,17 @@ int main(int argc, char** argv) {
 
   FheParams::readXml(options.FheParamsFile.c_str());
 
-  KeyGen keygen;
-
-  keygen.generateKeys();
-
-  keygen.writeKeys(options.KeyFilePrefix);
+  SecretKey sk;
+  sk.generate();
+  sk.write(options.KeyFilePrefix + ".sk");
   if (options.strOutput) {
-    keygen.writeKeys(options.KeyFilePrefix + "_str", false);
+    sk.write(options.KeyFilePrefix + "_str.sk", false);
+  }
+
+  PublicKey pk;
+  pk.generate(sk);
+  pk.write(options.KeyFilePrefix + ".pk");
+  if (options.strOutput) {
+    pk.write(options.KeyFilePrefix + "_str.pk", false);
   }
 }

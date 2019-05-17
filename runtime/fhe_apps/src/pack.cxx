@@ -24,7 +24,7 @@
  */
 
 
-#include "fv.hxx"
+#include "bfv_bit_exec.hxx"
 
 #include <string>
 #include <iostream>
@@ -34,12 +34,14 @@
 
 using namespace std;
 namespace po = boost::program_options;
+namespace cingu = cingulata;
 
 struct Options {
-  string EvalKeyFile;
+  string PublicKeyFile;
   string FheParamsFile;
   vector<string> FileNames;
   bool stringOutput;
+  unsigned int nrThreads;
 };
 
 Options parseArgs(int argc, char** argv) {
@@ -48,8 +50,9 @@ Options parseArgs(int argc, char** argv) {
   po::options_description config("Options");
   config.add_options()
       ("fhe-params", po::value<string>(&options.FheParamsFile)->default_value("fhe_params.xml"), "FHE parameters file")
-      ("eval-key", po::value<string>(&options.EvalKeyFile)->default_value("fhe_key.evk"), "Eval key file")
+      ("public-key", po::value<string>(&options.PublicKeyFile)->default_value("fhe_key.pk"), "Eval key file")
       ("strout", po::bool_switch(&options.stringOutput)->default_value(false), "enable ciphertext string output")
+      ("threads", po::value<unsigned int>(&options.nrThreads)->default_value(1), "Number of parallel execution threads")
       ("help,h", "produce help message")
   ;
 
@@ -83,7 +86,7 @@ Options parseArgs(int argc, char** argv) {
     }
 
     po::notify(vm);
-    
+
     if (options.FileNames.size() == 0) {
       cerr << "Please specify the output file!" << endl;
       cerr << config << endl;
@@ -109,29 +112,26 @@ Options parseArgs(int argc, char** argv) {
 int main(int argc, char **argv) {
   Options options = parseArgs(argc, argv);
 
-  FheParams::readXml(options.FheParamsFile.c_str());
+  cingu::BfvBitExec bfv_exec(options.FheParamsFile.c_str(), options.PublicKeyFile, cingu::BfvBitExec::Public);
 
-  KeysShare keys;
-  keys.readEvalKey(options.EvalKeyFile);
+  auto ct_res = bfv_exec.read(options.FileNames[0]);
 
-  CipherText ct_res;
-  ct_res.read(options.FileNames[0]);
-
+  #pragma omp parallel for num_threads(options.nrThreads)
   for (unsigned int i = 1; i < options.FileNames.size() - 1; i++) {
-    string fileName = options.FileNames[i];
+    string& fileName = options.FileNames[i];
 
-    CipherText ct;
-    ct.read(fileName);
+    vector<cingu::bit_plain_t> mask(i+1, 0);
+    mask[i] = 1;
 
-    PolyRing poly_x;
-    poly_x.setCoeffUi(i, 1);
+    auto a = bfv_exec.encode(mask); // a = X^i
+    auto ct = bfv_exec.read(fileName);
+    auto ct1 = bfv_exec.op_and(ct, a);
 
-    CipherText poly_x_ct = EncDec::EncryptPoly(poly_x);
-    CipherText::multiply(ct, poly_x_ct, *keys.EvalKey);
-    CipherText::add(ct_res, ct);
+    #pragma omp critical
+    ct_res = bfv_exec.op_xor(ct_res, ct1);
   }
 
-  ct_res.write(options.FileNames.back(), not options.stringOutput);
+  bfv_exec.write(ct_res, options.FileNames.back());
 
   return 0;
 }

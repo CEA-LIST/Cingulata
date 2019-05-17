@@ -22,51 +22,50 @@
  *  @brief Uniform random number generator (uses /dev/urandom).
  */
 
-#ifndef __UNIFORM_HXX__
-#define __UNIFORM_HXX__
+#ifndef UNIFORM_HXX
+#define UNIFORM_HXX
 
 #include <flint/fmpz.h>
 
 class UniformRng {
-  protected:
-    /** @brief Initializes uniform RNG.
-     */
-    static inline void init();
+public:
+  /** @brief Sample number from uniform distribution.
+   *
+   *  This method samples a number \c num uniformly
+   *    defined on interval [0;2^bitCnt).
+   *  Variable \c num should be initialized.
+   *
+   *  @param num sampled number
+   *  @param bitCnt number of bits in \c num
+   */
+  static void sample(fmpz_t num, unsigned int bitCnt);
 
-    /** @brief Automatic initializer
-     */
-    static class _init {
-      public:
-        inline _init();
-    } _initializer;
+  /**
+   * @brief      Sample @c size random bytes
+   *
+   * @param      buff  buffer where bytes are written
+   * @param[in]  size  number of bytes to sample
+   */
+  static void sample(char *buff, const unsigned size);
 
+  /**
+   * @brief      Sample an unsigned integer
+   *
+   * @return     uniformely distributed unsigned integer
+   */
+  static unsigned sample();
+
+protected:
+  /** @brief Initializes uniform RNG.
+   */
+  static inline void init();
+
+  /** @brief Automatic initializer
+   */
+  static class _init {
   public:
-    /** @brief Sample number from uniform distribution.
-     *
-     *  This method samples a number \c num uniformly
-     *    defined on interval [0;2^bitCnt).
-     *  Variable \c num should be initialized.
-     *
-     *  @param num sampled number
-     *  @param bitCnt number of bits in \c num
-     */
-    static void sample(fmpz_t num, unsigned int bitCnt);
-
-    /**
-     * @brief      Sample @c size random bytes
-     *
-     * @param      buff  buffer where bytes are written
-     * @param[in]  size  number of bytes to sample
-     */
-    static void sample(char *buff, const unsigned size);
-
-
-    /**
-     * @brief      Sample an unsigned integer
-     *
-     * @return     uniformely distributed unsigned integer
-     */
-    static unsigned sample();
+    inline _init();
+  } _initializer;
 };
 
 #endif

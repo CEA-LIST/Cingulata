@@ -20,12 +20,12 @@
 
 #include "uniform.hxx"
 
-#include <iostream>
-#include <fcntl.h>
-#include <unistd.h>
-#include <math.h>
 #include <assert.h>
+#include <fcntl.h>
+#include <iostream>
+#include <math.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -35,9 +35,7 @@ void UniformRng::init() {}
 
 /** @brief See header for description.
  */
-UniformRng::_init::_init() {
-  UniformRng::init();
-}
+UniformRng::_init::_init() { UniformRng::init(); }
 
 /** @brief See header for description.
  */
@@ -56,14 +54,14 @@ void UniformRng::sample(fmpz_t num, const unsigned bitCnt) {
 
   sample(buff, byteCnt);
 
-  fmpz_bit_unpack_unsigned(num, (mp_limb_t*)buff, 0, bitCnt);
+  fmpz_bit_unpack_unsigned(num, (mp_limb_t *)buff, 0, bitCnt);
 }
 
 void UniformRng::sample(char *buff, const unsigned size) {
   int randDev = open("/dev/urandom", O_RDONLY);
   if (randDev == -1) {
     cerr << "File: " << __FILE__ << " line: " << __LINE__
-      << " - cannot open random generator \"/dev/urandom\"" << endl;
+         << " - cannot open random generator \"/dev/urandom\"" << endl;
     exit(-1);
   }
 
@@ -79,7 +77,7 @@ unsigned UniformRng::sample() {
 
   unsigned result = 0;
   for (unsigned i = 0; i < size; ++i)
-    result |= unsigned(buff[i]) << (8*i);
+    result |= unsigned(buff[i]) << (8 * i);
 
   return result;
 }

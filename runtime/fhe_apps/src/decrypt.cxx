@@ -23,7 +23,7 @@
  * @brief Utility for decrypting messages using homomorphic encryption
  */
 
-#include "fv.hxx"
+#include "bfv_bit_exec.hxx"
 
 #include <string>
 #include <iostream>
@@ -33,6 +33,7 @@
 
 using namespace std;
 namespace po = boost::program_options;
+namespace cingu = cingulata;
 
 struct Options {
   string FheParamsFile;
@@ -92,7 +93,7 @@ Options parseArgs(int argc, char** argv) {
       cout << config << endl;
       exit(0);
     }
-    
+
     po::notify(vm);
   } catch (po::error& e) {
     cerr << "ERROR: " << e.what() << endl;
@@ -110,7 +111,7 @@ Options parseArgs(int argc, char** argv) {
 int main(int argc, char **argv) {
   Options options = parseArgs(argc, argv);
 
-  FheParams::readXml(options.FheParamsFile.c_str());
+  cingu::BfvBitExec bfv_exec(options.FheParamsFile.c_str(), options.SecretKeyFile, cingu::BfvBitExec::Secret);
 
   /* Validate options vs FHE parameters */
   unsigned int availNbCoefs = FheParams::D;
@@ -128,37 +129,37 @@ int main(int argc, char **argv) {
 
   if (options.verbose) {
     cout << "Command line arguments:" << endl;
-    cout << "FHE parameters file " << options.FheParamsFile << endl;
-    cout << "Secret key file " << options.SecretKeyFile << endl;
+    cout << "\tFHE parameters file " << options.FheParamsFile << endl;
+    cout << "\tSecret key file " << options.SecretKeyFile << endl;
     if (options.nbCoeffs > 1) {
-      cout << "Decrypt packed ciphertext: ";
+      cout << "\tDecrypt packed ciphertext: ";
       cout << "use coefficient packing for the first ";
       cout << options.nbCoeffs << " coefficients" << endl;
     }
   }
 
-  KeysAll keys;
-  keys.readSecretKey(options.SecretKeyFile.c_str());
-
   #pragma omp parallel for ordered num_threads(options.nrThreads)
   for (unsigned int i = 0; i < options.InputFiles.size(); i++) {
-    string fileName = options.InputFiles[i];
+    const string& fileName = options.InputFiles[i];
 
-    CipherText ct;
-    ct.read(fileName.c_str());
+    // read ciphertext
+    auto ctxt_hdl = bfv_exec.read(fileName);
 
-    PolyRing pTxtPoly = EncDec::DecryptPoly(ct, *keys.SecretKey);
-    unsigned int noise;
+    vector<cingu::bit_plain_t> vals;
+    bfv_exec.decrypt(vals, ctxt_hdl);
+
+    double noise = -1;
     if (options.noise) {
-      noise = EncDec::Noise(ct, *keys.SecretKey);
+      noise = bfv_exec.noise(ctxt_hdl);
     }
 
     vector<int> msgs;
     for (unsigned int c = 0; c < options.nbCoeffs; ++c) {
-      if (c < pTxtPoly.length()) {
-        int msg = pTxtPoly.getCoeffUi(c);
-        if (options.signedMessage and (unsigned int)msg > FheParams::T/2) msg -= FheParams::T;
-        msgs.push_back(msg);
+      if (c < vals.size()) {
+        auto val = vals[c];
+        if (options.signedMessage and val > FheParams::T/2)
+          val -= FheParams::T;
+        msgs.push_back(val);
       } else {
         msgs.push_back(0);
       }
@@ -167,22 +168,20 @@ int main(int argc, char **argv) {
     #pragma omp ordered
     {
       if (options.verbose) {
-        cout << "Decrypting file " << fileName;
+        printf("Decrypting file '%s' ", fileName.c_str());
         if (options.noise) {
-          cout << " - noise " << noise << "/" << FheParams::Q_bitsize;
+          printf("- noise %.3lf/%u ", noise, FheParams::Q_bitsize);
         }
-        cout << " - message [";
+        printf("- message [");
       }
 
       for (unsigned int i = 0; i < msgs.size(); ++i) {
-        cout << msgs[i];
-        if (i < msgs.size()-1)
-          cout << " ";
+        printf("%d%s", msgs[i], i < msgs.size()-1 ? " " : "");
       }
       if (options.verbose) {
-        cout << "]";  
+        printf("]");
       }
-      cout << endl;
+      printf("\n");
     }
   }
 

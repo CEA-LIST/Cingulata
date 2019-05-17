@@ -22,8 +22,8 @@
  *  @brief Random polynomial generator with different distributions.
  */
 
-#ifndef __RAND_POLYNOM_HXX__
-#define __RAND_POLYNOM_HXX__
+#ifndef RAND_POLYNOM_HXX
+#define RAND_POLYNOM_HXX
 
 #include <flint/fmpz_poly.h>
 

@@ -4,13 +4,12 @@ set(SRCS
     ciphertext.cxx
     encdec.cxx
     fhe_params.cxx
-    keygen.cxx
-    keys_all.cxx
-    keys_share.cxx
     normal.cxx
     polyring.cxx
     rand_polynom.cxx
     uniform.cxx
+    secret_key.cxx
+    public_key.cxx
     )
 
 add_compile_options(-Wall)
@@ -28,4 +27,4 @@ add_library(fhe_fv_bit_exec ${SRCS})
 
 target_include_directories(fhe_fv_bit_exec PRIVATE ../include)
 target_include_directories(fhe_fv_bit_exec PUBLIC ${COMMON_INCLUDE_DIR})
-target_link_libraries(fhe_fv_bit_exec fhe_fv)
+target_link_libraries(fhe_fv_bit_exec fhe_fv common)

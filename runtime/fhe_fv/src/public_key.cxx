@@ -18,25 +18,51 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-#include "keygen.hxx"
-
-#include "ciphertext.hxx"
-#include "fhe_params.hxx"
-#include "polyring.hxx"
+#include "public_key.hxx"
 #include "rand_polynom.hxx"
+
+#include <iostream>
 
 using namespace std;
 
-void KeyGen::generateSecretKey() {
-  keysAll.SecretKey = new PolyRing();
-  PolyRing &sk = (*keysAll.SecretKey);
-  RandPolynom::sampleUniformBinary(sk.poly(), FheParams::SK_H);
+void PublicKey::read(const std::string &fileName, const bool binary) {
+  FILE *stream = fopen(fileName.c_str(), binary ? "rb" : "r");
+
+  if (stream == nullptr) {
+    cout << "PublicKey::read -- Cannot open public key file: '" << fileName
+         << "'" << endl;
+    abort();
+  }
+
+  m_pk.read(stream, binary);
+  m_evk.read(stream, binary);
+
+  fclose(stream);
 }
 
-void KeyGen::generatePublicKey() {
-  keysAll.PublicKey = new CipherText(2);
-  PolyRing &b = (*keysAll.PublicKey)[0];
-  PolyRing &a = (*keysAll.PublicKey)[1];
+void PublicKey::write(const std::string &fileName, const bool binary) const {
+  FILE *stream = fopen(fileName.c_str(), binary ? "wb" : "w");
+
+  if (stream == nullptr) {
+    cout << "PublicKey::write -- Cannot open public key file: '" << fileName
+         << "'" << endl;
+    abort();
+  }
+
+  m_pk.write(stream, binary);
+  m_evk.write(stream, binary);
+
+  fclose(stream);
+}
+
+void PublicKey::generate(const SecretKey &p_sk) {
+  generate_pk(p_sk);
+  generate_evk_v2(p_sk);
+}
+
+void PublicKey::generate_pk(const SecretKey &p_sk) {
+  PolyRing &b = m_pk[0];
+  PolyRing &a = m_pk[1];
 
   /* Sample a <- Rq and e <- \chi */
   RandPolynom::sampleUniform(a.poly(), FheParams::Q_bitsize);
@@ -46,17 +72,16 @@ void KeyGen::generatePublicKey() {
 
   /* Compute b = -(a . sk + e) mod q */
   PolyRing::copy(b, a);
-  PolyRing::multiply(b, *(keysAll.SecretKey));
+  PolyRing::multiply(b, p_sk.get());
   PolyRing::add(b, e);
   PolyRing::negate(b);
   PolyRing::modulo(b, FheParams::Q);
 }
 
-void KeyGen::generateEvalKey() {
+void PublicKey::generate_evk_v2(const SecretKey &p_sk) {
   /* Re-linearization version 2 evaluation key */
-  keysAll.EvalKey = new CipherText(2);
-  PolyRing &b = (*keysAll.EvalKey)[0];
-  PolyRing &a = (*keysAll.EvalKey)[1];
+  PolyRing &b = m_evk[0];
+  PolyRing &a = m_evk[1];
 
   /* Sample a <- Rpq and e <- \chi */
   RandPolynom::sampleUniform(a.poly(), FheParams::PQ_bitsize);
@@ -66,24 +91,14 @@ void KeyGen::generateEvalKey() {
 
   /* Compute b = -(a . sk + e) */
   PolyRing::copy(b, a);
-  PolyRing::multiply(b, *(keysAll.SecretKey));
+  PolyRing::multiply(b, p_sk.get());
   PolyRing::add(b, e);
   PolyRing::negate(b);
 
   /* Compute b += p . sk^2 mod p.q */
-  PolyRing sk_copy(*(keysAll.SecretKey));
+  PolyRing sk_copy(p_sk.get());
   PolyRing::square(sk_copy);
   PolyRing::multiply(sk_copy, FheParams::P);
   PolyRing::add(b, sk_copy);
   PolyRing::modulo(b, FheParams::PQ);
-}
-
-void KeyGen::generateKeys() {
-  generateSecretKey();
-  generatePublicKey();
-  generateEvalKey();
-}
-
-void KeyGen::writeKeys(const string& fileNamePrefix, const bool binary) {
-  keysAll.writeKeys(fileNamePrefix, binary);
 }

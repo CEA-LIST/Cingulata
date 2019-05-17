@@ -18,12 +18,10 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-#include "fhe_params.hxx"
 #include "ciphertext.hxx"
+#include "fhe_params.hxx"
 
-#include <stdlib.h>
 #include <iostream>
-#include <fstream>
 
 using namespace std;
 
@@ -31,7 +29,7 @@ thread_local CipherText CipherText::tmp_ctxt(3);
 
 /** @brief See header for a description
  */
-void CipherText::relinearize(CipherText& ctr, const CipherText& EvalKey) {
+void CipherText::relinearize(CipherText &ctr, const CipherText &EvalKey) {
   assert(ctr.size() == 3);
 
   /* Relinearization version 2 */
@@ -48,7 +46,7 @@ void CipherText::relinearize(CipherText& ctr, const CipherText& EvalKey) {
 
 /** @brief See header for a description
  */
-void CipherText::modulo(CipherText& ctr, const fmpz_t q) {
+void CipherText::modulo(CipherText &ctr, const fmpz_t q) {
   for (unsigned int i = 0; i < ctr.size(); i++) {
     PolyRing::modulo(ctr[i], q);
   }
@@ -56,7 +54,8 @@ void CipherText::modulo(CipherText& ctr, const fmpz_t q) {
 
 /** @brief See header for a description
  */
-void CipherText::multiply_round(CipherText& ctr, const unsigned int t, const fmpz_t q) {
+void CipherText::multiply_round(CipherText &ctr, const unsigned int t,
+                                const fmpz_t q) {
   for (unsigned int i = 0; i < ctr.size(); i++) {
     PolyRing::multiply_round(ctr[i], t, q);
   }
@@ -64,7 +63,8 @@ void CipherText::multiply_round(CipherText& ctr, const unsigned int t, const fmp
 
 /** @brief See header for a description
  */
-void CipherText::multiply_comp(CipherText& left_ctr, const initializer_list<PolyRing>& right_ctr) {
+void CipherText::multiply_comp(CipherText &left_ctr,
+                               const initializer_list<PolyRing> &right_ctr) {
   assert(left_ctr.size() == right_ctr.size());
 
   for (unsigned int i = 0; i < left_ctr.size(); i++) {
@@ -74,19 +74,15 @@ void CipherText::multiply_comp(CipherText& left_ctr, const initializer_list<Poly
 
 /** @brief See header for a description
  */
-CipherText::CipherText(unsigned int p_nrPolys) {
-  dataPoly.resize(p_nrPolys);
-}
+CipherText::CipherText(unsigned int p_nrPolys) { dataPoly.resize(p_nrPolys); }
 
 /** @brief See header for a description
  */
-CipherText::CipherText(const CipherText& ct) {
-  CipherText::copy(*this, ct);
-}
+CipherText::CipherText(const CipherText &ct) { CipherText::copy(*this, ct); }
 
 /** @brief See header for a description
  */
-CipherText::CipherText(const initializer_list<PolyRing>& cp) {
+CipherText::CipherText(const initializer_list<PolyRing> &cp) {
   dataPoly.resize(cp.size());
   for (unsigned i = 0; i < cp.size(); ++i)
     PolyRing::copy(dataPoly[i], *(cp.begin() + i));
@@ -94,17 +90,16 @@ CipherText::CipherText(const initializer_list<PolyRing>& cp) {
 
 /** @brief See header for a description
  */
-void CipherText::copy(CipherText& out, const CipherText& inp) {
+void CipherText::copy(CipherText &out, const CipherText &inp) {
   out.resize(inp.size());
   for (unsigned int i = 0; i < out.size(); ++i) {
     PolyRing::copy(out[i], inp[i]);
   }
 }
 
-
 /** @brief See header for a description
  */
-void CipherText::add(CipherText& ct1, const CipherText& ct2) {
+void CipherText::add(CipherText &ct1, const CipherText &ct2) {
   if (ct1.size() < ct2.size()) {
     ct1.resize(ct2.size());
   }
@@ -118,7 +113,7 @@ void CipherText::add(CipherText& ct1, const CipherText& ct2) {
 
 /** @brief See header for a description
  */
-void CipherText::sub(CipherText& ct1, const CipherText& ct2) {
+void CipherText::sub(CipherText &ct1, const CipherText &ct2) {
   if (ct1.size() < ct2.size()) {
     ct1.resize(ct2.size());
   }
@@ -132,7 +127,8 @@ void CipherText::sub(CipherText& ct1, const CipherText& ct2) {
 
 /** @brief See header for a description
  */
-void CipherText::multiply(CipherText& ct1, const CipherText& ct2, const CipherText& EvalKey) {
+void CipherText::multiply(CipherText &ct1, const CipherText &ct2,
+                          const CipherText &EvalKey) {
   /* Multiply ciphertexts */
   CipherText::multiply(ct1, ct2);
 
@@ -144,11 +140,10 @@ void CipherText::multiply(CipherText& ct1, const CipherText& ct2, const CipherTe
 
 /** @brief See header for a description
  */
-void CipherText::multiply(CipherText& ct1, const CipherText& ct2) {
+void CipherText::multiply(CipherText &ct1, const CipherText &ct2) {
   if (ct2.size() == 1) {
     CipherText::multiply_by_poly(ct1, ct2[0]);
-  }
-  else if (ct2.size() >= 2) {
+  } else if (ct2.size() >= 2) {
     CipherText ct1_cpy(ct1);
 
     /* multiply first ct2 polynomial */
@@ -162,7 +157,7 @@ void CipherText::multiply(CipherText& ct1, const CipherText& ct2) {
       CipherText ct1_tmp(ct1_cpy);
       CipherText::multiply_by_poly(ct1_tmp, ct2[i]);
       for (unsigned int k = 0; k < ct1_tmp.size(); ++k) {
-        PolyRing::add(ct1[k+i], ct1_tmp[k]);
+        PolyRing::add(ct1[k + i], ct1_tmp[k]);
       }
     }
 
@@ -170,7 +165,7 @@ void CipherText::multiply(CipherText& ct1, const CipherText& ct2) {
     unsigned int i = ct2.size() - 1;
     CipherText::multiply_by_poly(ct1_cpy, ct2[i]);
     for (unsigned int k = 0; k < ct1_cpy.size(); ++k) {
-      PolyRing::add(ct1[k+i], ct1_cpy[k]);
+      PolyRing::add(ct1[k + i], ct1_cpy[k]);
     }
   }
 
@@ -182,7 +177,7 @@ void CipherText::multiply(CipherText& ct1, const CipherText& ct2) {
 
 /** @brief See header for a description
  */
-void CipherText::multiply_by_poly(CipherText& ct1, const PolyRing& p2) {
+void CipherText::multiply_by_poly(CipherText &ct1, const PolyRing &p2) {
   for (unsigned int i = 0; i < ct1.size(); ++i) {
     PolyRing::multiply(ct1[i], p2);
   }
@@ -190,7 +185,7 @@ void CipherText::multiply_by_poly(CipherText& ct1, const PolyRing& p2) {
 
 /** @brief See header for a description
  */
-void CipherText::read(FILE* const stream, const bool binary) {
+void CipherText::read(FILE *const stream, const bool binary) {
   fmpz_t size_fmpz;
   fmpz_init(size_fmpz);
 
@@ -207,12 +202,13 @@ void CipherText::read(FILE* const stream, const bool binary) {
 
 /** @brief See header for a description
  */
-void CipherText::read(const string& inFileName, const bool binary) {
-  FILE* stream;
+void CipherText::read(const string &inFileName, const bool binary) {
+  FILE *stream;
 
   stream = fopen(inFileName.c_str(), binary ? "rb" : "r");
   if (stream == NULL) {
-    cerr << "ERROR: Ciphertext::read cannot open file '" << inFileName << "'" << endl;
+    cerr << "ERROR: Ciphertext::read cannot open file '" << inFileName << "'"
+         << endl;
     exit(-1);
   }
 
@@ -222,7 +218,7 @@ void CipherText::read(const string& inFileName, const bool binary) {
 
 /** @brief See header for a description
  */
-void CipherText::write(FILE* const stream, const bool binary) const {
+void CipherText::write(FILE *const stream, const bool binary) const {
   fmpz_t size;
   fmpz_init_set_ui(size, this->size());
 
@@ -237,15 +233,12 @@ void CipherText::write(FILE* const stream, const bool binary) const {
 
 /** @brief See header for a description
  */
-void CipherText::write(const string& outFileName, const bool binary) const {
-  FILE* stream;
+void CipherText::write(const string &outFileName, const bool binary) const {
+  FILE *stream;
 
   stream = fopen(outFileName.c_str(), binary ? "wb" : "w");
   write(stream, binary);
   fclose(stream);
 }
 
-
-void CipherText::resize(const int newSize) {
-  dataPoly.resize(newSize);
-}
+void CipherText::resize(const int newSize) { dataPoly.resize(newSize); }

@@ -25,28 +25,27 @@
 #include <sstream>
 #include <stdlib.h>
 
-#include <flint/fmpz_vec.h>
 #include <flint/fmpq.h>
+#include <flint/fmpz_vec.h>
 
 using namespace std;
 
-thread_local fmpz_poly_t PolyRing::tmp_poly;
+thread_local fmpz_poly_t PolyRing::sm_tmp_poly;
 
 PolyRing::_init::_init() {
-  fmpz_poly_init2(PolyRing::tmp_poly, 2 * FheParams::D - 1); // 2x size for multiplication
+  fmpz_poly_init2(PolyRing::sm_tmp_poly,
+                  2 * FheParams::D - 1); // 2x size for multiplication
 }
 
-PolyRing::_init::~_init() {
-  fmpz_poly_clear(PolyRing::tmp_poly);
-}
+PolyRing::_init::~_init() { fmpz_poly_clear(PolyRing::sm_tmp_poly); }
 
 /** @brief See header for a description
  */
-void PolyRing::write_fmpz(FILE* const stream, fmpz_t d, const bool binary) {
+void PolyRing::write_fmpz(FILE *const stream, fmpz_t d, const bool binary) {
   if (binary) {
     fmpz_out_raw(stream, d);
   } else {
-    char* buff = fmpz_get_str(NULL, FheParams::POLY_RW_BASE, d);
+    char *buff = fmpz_get_str(NULL, FheParams::POLY_RW_BASE, d);
     fprintf(stream, "%s\n", buff);
     free(buff);
   }
@@ -54,11 +53,11 @@ void PolyRing::write_fmpz(FILE* const stream, fmpz_t d, const bool binary) {
 
 /** @brief See header for a description
  */
-void PolyRing::read_fmpz(fmpz_t d, FILE* const stream, const bool binary) {
+void PolyRing::read_fmpz(fmpz_t d, FILE *const stream, const bool binary) {
   if (binary) {
     fmpz_inp_raw(d, stream);
   } else {
-    char* buff;
+    char *buff;
     fscanf(stream, "%ms", &buff);
     fmpz_set_str(d, buff, FheParams::POLY_RW_BASE);
     free(buff);
@@ -66,14 +65,14 @@ void PolyRing::read_fmpz(fmpz_t d, FILE* const stream, const bool binary) {
 }
 
 namespace {
-  void fmpz_copy(fmpz_poly_t out, const fmpz_poly_t inp) {
-    assert(out->length >= inp->length);
-    for (unsigned i = 0; i < inp->length; i++)
-      fmpz_set(out->coeffs + i, inp->coeffs + i);
-    for (unsigned i = inp->length; i < out->length; i++)
-      fmpz_zero(out->coeffs + i);
-  }
+void fmpz_copy(fmpz_poly_t out, const fmpz_poly_t inp) {
+  assert(out->length >= inp->length);
+  for (unsigned i = 0; i < inp->length; i++)
+    fmpz_set(out->coeffs + i, inp->coeffs + i);
+  for (unsigned i = inp->length; i < out->length; i++)
+    fmpz_zero(out->coeffs + i);
 }
+} // namespace
 
 /** @brief See header for a description
  */
@@ -84,22 +83,21 @@ PolyRing::PolyRing() {
 
 /** @brief See header for a description
  */
-PolyRing::PolyRing(fmpz_poly_t poly) : PolyRing() {
-  fmpz_copy(polyData, poly);
-}
+PolyRing::PolyRing(fmpz_poly_t poly) : PolyRing() { fmpz_copy(polyData, poly); }
 
 /** @brief See header for a description
  */
-PolyRing::PolyRing(const PolyRing& prElem) : PolyRing() {
+PolyRing::PolyRing(const PolyRing &prElem) : PolyRing() {
   fmpz_copy(polyData, prElem.polyData);
 }
 
 /**
  * @brief See header for a description
  */
-PolyRing::PolyRing(const vector<unsigned int>& poly_coeff) : PolyRing() {
+PolyRing::PolyRing(const vector<unsigned int> &poly_coeff) : PolyRing() {
   unsigned int n = poly_coeff.size();
-  if (n > length()) n = length();
+  if (n > length())
+    n = length();
   for (unsigned int i = 0; i < n; ++i) {
     fmpz_poly_set_coeff_ui(polyData, i, poly_coeff[i]);
   }
@@ -107,13 +105,11 @@ PolyRing::PolyRing(const vector<unsigned int>& poly_coeff) : PolyRing() {
 
 /** @brief See header for a description
  */
-PolyRing::~PolyRing() {
-  fmpz_poly_clear(polyData);
-}
+PolyRing::~PolyRing() { fmpz_poly_clear(polyData); }
 
 /** @brief See header for a description
  */
-void PolyRing::modulo(PolyRing& prElem, const unsigned int q) {
+void PolyRing::modulo(PolyRing &prElem, const unsigned int q) {
   fmpz_t q_mpz;
   fmpz_init_set_ui(q_mpz, q);
 
@@ -124,20 +120,22 @@ void PolyRing::modulo(PolyRing& prElem, const unsigned int q) {
 
 /** @brief See header for a description
  */
-void PolyRing::modulo(PolyRing& prElem, const fmpz_t q) {
-  _fmpz_vec_scalar_mod_fmpz(prElem.polyData->coeffs, prElem.polyData->coeffs, prElem.polyData->length, q);
-  // _fmpz_vec_scalar_smod_fmpz(prElem.polyData->coeffs, prElem.polyData->coeffs, prElem.polyData->length, q);
+void PolyRing::modulo(PolyRing &prElem, const fmpz_t q) {
+  _fmpz_vec_scalar_mod_fmpz(prElem.polyData->coeffs, prElem.polyData->coeffs,
+                            prElem.polyData->length, q);
+  // _fmpz_vec_scalar_smod_fmpz(prElem.polyData->coeffs,
+  // prElem.polyData->coeffs, prElem.polyData->length, q);
 }
 
 /** @brief See header for a description
  */
-void PolyRing::negate(PolyRing& prElem) {
+void PolyRing::negate(PolyRing &prElem) {
   fmpz_poly_neg(prElem.polyData, prElem.polyData);
 }
 
 /** @brief See header for a description
  */
-void PolyRing::add(PolyRing& left, const PolyRing& right) {
+void PolyRing::add(PolyRing &left, const PolyRing &right) {
   assert(left.polyData->length == right.polyData->length);
   _fmpz_poly_add(left.polyData->coeffs, left.polyData->coeffs,
                  left.polyData->length, right.polyData->coeffs,
@@ -146,7 +144,7 @@ void PolyRing::add(PolyRing& left, const PolyRing& right) {
 
 /** @brief See header for a description
  */
-void PolyRing::sub(PolyRing& left, const PolyRing& right) {
+void PolyRing::sub(PolyRing &left, const PolyRing &right) {
   assert(left.polyData->length == right.polyData->length);
   _fmpz_poly_sub(left.polyData->coeffs, left.polyData->coeffs,
                  left.polyData->length, right.polyData->coeffs,
@@ -173,30 +171,32 @@ void PolyRing::reduce(fmpz_poly_t out, const fmpz_poly_t inp) {
 
 /** @brief See header for a description
  */
-void PolyRing::multiply(PolyRing& result, const PolyRing& left,
-                              const PolyRing& right) {
+void PolyRing::multiply(PolyRing &result, const PolyRing &left,
+                        const PolyRing &right) {
   /* Multiply polynomials  */
-  fmpz_poly_mul(PolyRing::tmp_poly, left.polyData, right.polyData);
+  fmpz_poly_mul(PolyRing::sm_tmp_poly, left.polyData, right.polyData);
 
   /* Reduce the product by polynomial ring modulo */
-  reduce(result.polyData, PolyRing::tmp_poly);
+  reduce(result.polyData, PolyRing::sm_tmp_poly);
 }
 
 /** @brief See header for a description
  */
-void PolyRing::multiply(PolyRing& result, const PolyRing& right) {
+void PolyRing::multiply(PolyRing &result, const PolyRing &right) {
   PolyRing::multiply(result, result, right);
 }
 
 /** @brief See header for a description
  */
-void PolyRing::multiply(PolyRing& prElem, const fmpz_t t) {
-  _fmpz_vec_scalar_mul_fmpz(prElem.polyData->coeffs, prElem.polyData->coeffs, prElem.polyData->length, t);
+void PolyRing::multiply(PolyRing &prElem, const fmpz_t t) {
+  _fmpz_vec_scalar_mul_fmpz(prElem.polyData->coeffs, prElem.polyData->coeffs,
+                            prElem.polyData->length, t);
 }
 
 /** @brief See header for a description
  */
-void PolyRing::multiply_round(PolyRing& prElem, const  unsigned int t, const fmpz_t q) {
+void PolyRing::multiply_round(PolyRing &prElem, const unsigned int t,
+                              const fmpz_t q) {
   fmpq_t b, frac, r;
   fmpq_init(b);
 
@@ -212,7 +212,8 @@ void PolyRing::multiply_round(PolyRing& prElem, const  unsigned int t, const fmp
   fmpz_set_ui(fmpq_numref(r), 1);
   fmpz_set_ui(fmpq_denref(r), 2);
 
-  /* Multiply each polynomial coefficient by \c frac, add 1/2 and set polynomial coefficient*/
+  /* Multiply each polynomial coefficient by \c frac, add 1/2 and set polynomial
+   * coefficient*/
   for (unsigned int i = 0; i < prElem.length(); i++) {
     fmpq_set(b, frac);
     fmpq_mul_fmpz(b, b, prElem.getCoeff(i));
@@ -227,22 +228,22 @@ void PolyRing::multiply_round(PolyRing& prElem, const  unsigned int t, const fmp
 
 /** @brief See header for a description
  */
-void PolyRing::square(PolyRing& prElem) {
+void PolyRing::square(PolyRing &prElem) {
   /* Square polynomial */
-  fmpz_poly_sqr(PolyRing::tmp_poly, prElem.polyData);
+  fmpz_poly_sqr(PolyRing::sm_tmp_poly, prElem.polyData);
 
   /* Reduce the square by polynomial ring modulo */
-  reduce(prElem.polyData, PolyRing::tmp_poly);
+  reduce(prElem.polyData, PolyRing::sm_tmp_poly);
 }
 
-void PolyRing::copy(PolyRing& out, const PolyRing& inp) {
+void PolyRing::copy(PolyRing &out, const PolyRing &inp) {
   assert(out.length() == inp.length());
   fmpz_copy(out.polyData, inp.polyData);
 }
 
 /** @brief See header for a description
  */
-PolyRing& PolyRing::operator=(const PolyRing& prElem) {
+PolyRing &PolyRing::operator=(const PolyRing &prElem) {
   if (this != &prElem) {
     copy(*this, prElem);
   }
@@ -251,7 +252,7 @@ PolyRing& PolyRing::operator=(const PolyRing& prElem) {
 
 /** @brief See header for a description
  */
-void PolyRing::read(FILE* const stream, const bool binary) {
+void PolyRing::read(FILE *const stream, const bool binary) {
   fmpz_t size_fmpz;
   fmpz_init(size_fmpz);
 
@@ -271,7 +272,7 @@ void PolyRing::read(FILE* const stream, const bool binary) {
 
 /** @brief See header for a description
  */
-void PolyRing::write(FILE* const stream, const bool binary) const {
+void PolyRing::write(FILE *const stream, const bool binary) const {
   fmpz_t d;
   fmpz_init_set_ui(d, length());
 
@@ -286,15 +287,14 @@ void PolyRing::write(FILE* const stream, const bool binary) const {
 
 /** @brief See header for a description
  */
-void PolyRing::print(FILE* const stream) const {
+void PolyRing::print(FILE *const stream) const {
   int r = fmpz_poly_fprint_pretty(stream, polyData, "X");
   assert(r != 0);
 }
 
 /** @brief See header for a description
  */
-unsigned int PolyRing::length() const
-{
+unsigned int PolyRing::length() const {
   assert(fmpz_poly_length(polyData) == FheParams::D);
   return FheParams::D;
 }

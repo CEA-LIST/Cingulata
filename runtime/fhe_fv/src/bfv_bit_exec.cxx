@@ -18,56 +18,56 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-#include <bfv_bit_exec.hxx>
-#include <fv.hxx>
+#include "bfv_bit_exec.hxx"
 
 using namespace std;
 using namespace cingulata;
 
 class BfvBitExec::Context {
 public:
-  Context(const string &p_param, const string &p_key_prefix,
+  Context(const string &p_param, const string &p_key_filename,
           const KeyType p_keytype) {
     /* read BFV scheme parameters */
     FheParams::readXml(p_param.c_str());
 
     if (p_keytype == Secret) {
-      m_sk = new KeysAll();
-      m_sk->readKeys(p_key_prefix);
-      m_pk = static_cast<KeysShare *>(m_sk);
+      m_sk = new SecretKey();
+      m_sk->read(p_key_filename);
+      m_pk = nullptr;
     } else {
       m_sk = nullptr;
-      m_pk = new KeysShare();
-      m_pk->readKeys(p_key_prefix);
+      m_pk = new PublicKey();
+      m_pk->read(p_key_filename);
     }
   }
 
   ~Context() {
     if (m_sk != nullptr) {
       delete m_sk;
-    } else {
+    }
+    if (m_pk != nullptr) {
       delete m_pk;
     }
   }
 
   const PolyRing &sk() const {
     assert(m_sk != nullptr && "secret key was not set");
-    return *(m_sk->SecretKey);
+    return m_sk->get();
   }
 
-  const CipherText &pk() const { return *(m_pk->PublicKey); }
+  const CipherText &pk() const { return (m_pk->get()); }
 
-  const CipherText &evk() const { return *(m_pk->EvalKey); }
+  const CipherText &evk() const { return m_pk->get_evk(); }
 
 private:
-  KeysAll *m_sk = nullptr;
-  KeysShare *m_pk = nullptr;
+  SecretKey *m_sk = nullptr;
+  PublicKey *m_pk = nullptr;
 };
 
-BfvBitExec::BfvBitExec(const string &p_param, const string &p_key_prefix,
+BfvBitExec::BfvBitExec(const string &p_param, const string &p_key_filename,
                        const KeyType p_keytype)
-    : context(new Context(p_param, p_key_prefix, p_keytype)), mm(new ObjMan()) {
-}
+    : context(new Context(p_param, p_key_filename, p_keytype)),
+      mm(new ObjMan()) {}
 
 ObjHandle BfvBitExec::encode(const bit_plain_t pt_val) {
   ObjHandleT<CipherText> hdl = mm->new_handle();
@@ -97,14 +97,53 @@ void BfvBitExec::write(const ObjHandle &in, const std::string &name) {
 
 ObjHandle BfvBitExec::op_and(const ObjHandle &in1, const ObjHandle &in2) {
   ObjHandleT<CipherText> hdl = mm->new_handle();
-  CipherText::copy(*hdl.get(), *in1.get<CipherText>());
-  CipherText::multiply(*hdl.get(), *in2.get<CipherText>(), context->evk());
+  CipherText &ctxt_out = *hdl.get();
+  const CipherText &ctxt_in1 = *in1.get<CipherText>();
+  const CipherText &ctxt_in2 = *in2.get<CipherText>();
+
+  CipherText::copy(ctxt_out, ctxt_in1);
+  CipherText::multiply(ctxt_out, ctxt_in2, context->evk());
   return hdl;
 }
 
 ObjHandle BfvBitExec::op_xor(const ObjHandle &in1, const ObjHandle &in2) {
   ObjHandleT<CipherText> hdl = mm->new_handle();
-  CipherText::copy(*hdl.get(), *in1.get<CipherText>());
-  CipherText::add(*hdl.get(), *in2.get<CipherText>());
+  CipherText &ctxt_out = *hdl.get();
+  const CipherText &ctxt_in1 = *in1.get<CipherText>();
+  const CipherText &ctxt_in2 = *in2.get<CipherText>();
+
+  CipherText::copy(ctxt_out, ctxt_in1);
+  CipherText::add(ctxt_out, ctxt_in2);
   return hdl;
+}
+
+ObjHandle BfvBitExec::encode(const vector<bit_plain_t> &vals) {
+  ObjHandleT<CipherText> hdl = mm->new_handle();
+  CipherText &ctxt_out = *hdl.get();
+
+  PolyRing pTxtPoly(vals);
+  EncDec::EncryptPoly(ctxt_out, pTxtPoly);
+  return hdl;
+}
+
+ObjHandle BfvBitExec::encrypt(const vector<bit_plain_t> &vals) {
+  ObjHandleT<CipherText> hdl = mm->new_handle();
+  CipherText &ctxt_out = *hdl.get();
+
+  PolyRing pTxtPoly(vals);
+  EncDec::EncryptPoly(ctxt_out, pTxtPoly, context->pk());
+  return hdl;
+}
+
+void BfvBitExec::decrypt(vector<bit_plain_t> &vals, const ObjHandle &in) {
+  const CipherText &ctxt_in = *in.get<CipherText>();
+  PolyRing ptxt_poly = EncDec::DecryptPoly(ctxt_in, context->sk());
+  vals.resize(ptxt_poly.length());
+  for (unsigned i = 0; i < vals.size(); ++i)
+    vals[i] = ptxt_poly.getCoeffUi(i);
+}
+
+double BfvBitExec::noise(const ObjHandle &in) {
+  const CipherText &ctxt_in = *in.get<CipherText>();
+  return EncDec::Noise(ctxt_in, context->sk());
 }

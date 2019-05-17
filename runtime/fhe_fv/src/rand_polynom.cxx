@@ -19,8 +19,8 @@
 */
 
 #include "rand_polynom.hxx"
-#include "uniform.hxx"
 #include "normal.hxx"
+#include "uniform.hxx"
 
 #include <cassert>
 
@@ -33,14 +33,15 @@ void RandPolynom::sampleUniformBinary(fmpz_poly_t poly) {
   UniformRng::sample(buff, byte_cnt);
 
   for (unsigned i = 0; i < len; ++i) {
-    const unsigned tmp = (buff[i / 8] >> (i%8)) & 1;
+    const unsigned tmp = (buff[i / 8] >> (i % 8)) & 1;
     fmpz_set_ui(poly->coeffs + i, tmp);
   }
 }
 
 /** @brief See header for description.
  */
-void RandPolynom::sampleUniformBinary(fmpz_poly_t poly, unsigned int hammingWeight) {
+void RandPolynom::sampleUniformBinary(fmpz_poly_t poly,
+                                      unsigned int hammingWeight) {
   const unsigned len = fmpz_poly_length(poly);
   assert(2 * hammingWeight <= len);
 
@@ -72,5 +73,3 @@ void RandPolynom::sampleNormal(fmpz_poly_t poly, fmpz_t sigma, fmpz_t B) {
   for (unsigned int i = 0; i < len; i++)
     NormalRng::sample(poly->coeffs + i, sigma, B);
 }
-
-

@@ -1,5 +1,5 @@
 /*
-    (C) Copyright 2017 CEA LIST. All Rights Reserved.
+    (C) Copyright 2019 CEA LIST. All Rights Reserved.
     Contributor(s): Cingulata team
 
     This software is governed by the CeCILL-C license under French law and
@@ -18,18 +18,39 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-#ifndef FV_HXX
-#define FV_HXX
-
-#include "ciphertext.hxx"
-#include "encdec.hxx"
-#include "fhe_params.hxx"
-#include "fv.hxx"
-#include "normal.hxx"
-#include "polyring.hxx"
-#include "public_key.hxx"
 #include "rand_polynom.hxx"
 #include "secret_key.hxx"
-#include "uniform.hxx"
 
-#endif
+#include <iostream>
+
+using namespace std;
+
+void SecretKey::read(const std::string &fileName, const bool binary) {
+  FILE *stream = fopen(fileName.c_str(), binary ? "rb" : "r");
+
+  if (stream == nullptr) {
+    cout << "SecretKey::read -- Cannot open public key file: '" << fileName
+         << "'" << endl;
+    abort();
+  }
+
+  m_sk.read(stream, binary);
+  fclose(stream);
+}
+
+void SecretKey::write(const std::string &fileName, const bool binary) const {
+  FILE *stream = fopen(fileName.c_str(), binary ? "wb" : "w");
+
+  if (stream == nullptr) {
+    cout << "SecretKey::write -- Cannot open public key file: '" << fileName
+         << "'" << endl;
+    abort();
+  }
+
+  m_sk.write(stream, binary);
+  fclose(stream);
+}
+
+void SecretKey::generate() {
+  RandPolynom::sampleUniformBinary(m_sk.poly(), FheParams::SK_H);
+}
