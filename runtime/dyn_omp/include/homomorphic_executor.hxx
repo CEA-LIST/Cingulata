@@ -23,147 +23,133 @@
  * @brief class which tracks boolean circuit execution on HE data
  */
 
-#ifndef __HOMOMORPHIC_EXECUTOR_HXX__
-#define __HOMOMORPHIC_EXECUTOR_HXX__
+#ifndef HOMOMORPHIC_EXECUTOR_HXX
+#define HOMOMORPHIC_EXECUTOR_HXX
 
-#include "fv.hxx"
+#include "bfv_bit_exec.hxx"
 #include "blif_circuit.hxx"
 
-#include <unordered_map>
-#include <string>
-#include <mutex>
-#include <chrono>
 #include <atomic>
+#include <chrono>
+#include <mutex>
+#include <string>
+#include <unordered_map>
+
+namespace cingu = cingulata;
 
 class HomomorphicExecutor {
-  private:
-    /* Executed circuit */
-    Circuit circuit;
+private:
+  /* Homomorphic keys, ciphertexts, constants and parameters */
+  cingulata::BfvBitExec &m_exec;
+  std::unordered_map<Circuit::vertex_descriptor, cingu::ObjHandle> cipherTxts;
 
-    /* Homomorphic keys, ciphertexts, constants and parameters */
-    KeysShare* keys;
-    std::unordered_map<Circuit::vertex_descriptor, CipherText*> cipherTxts;
-    CipherText* ct_const_0;
-    CipherText* ct_const_1;
+  /* Executed circuit */
+  Circuit circuit;
 
-    /* Execution logs */
-    std::unordered_map<std::string, double> execTime;
-    std::unordered_map<std::string, int> execCnt;
-    std::unordered_map<std::string, std::mutex*> execMtx;
+  /* Execution logs */
+  std::unordered_map<std::string, double> execTime;
+  std::unordered_map<std::string, int> execCnt;
+  std::unordered_map<std::string, std::mutex *> execMtx;
 
-    /* Number of allocated ciphertexts */
-    std::atomic<int> allocatedCnt;
-    int maxAllocatedCnt = 0;
+  /* Number of allocated ciphertexts */
+  std::atomic<int> allocatedCnt;
+  int maxAllocatedCnt = 0;
 
-    /* Verbose flag and logging mutex */
-    bool verbose;
-    std::mutex verboseMtx;
+  /* Verbose flag and logging mutex */
+  bool verbose;
+  std::mutex verboseMtx;
 
-    std::string inpsDir = "input/";
-    std::string outsDir = "output/";
-    bool stringOutput;
+  std::string inpsDir = "input/";
+  std::string outsDir = "output/";
+  bool stringOutput;
 
-  private:
-    /**
-     * @brief Updates \c execTime and \c execCnt for metric \c name
-     */
-    void updateMeasures(const std::chrono::steady_clock::time_point& start, const std::string& name);
+private:
+  /**
+   * @brief Updates \c execTime and \c execCnt for metric \c name
+   */
+  void updateMeasures(const std::chrono::steady_clock::time_point &start,
+                      const std::string &name);
 
-    /**
-     * @brief Prints out \c gate properties, used for logging
-     */
-    void printGateInfo(const GateProperties& gate,
-        const Circuit::vertex_descriptor pred1 = Circuit::null_vertex(),
-        const Circuit::vertex_descriptor pred2 = Circuit::null_vertex());
+  /**
+   * @brief Prints out \c gate properties, used for logging
+   */
+  void printGateInfo(
+      const GateProperties &gate,
+      const Circuit::vertex_descriptor pred1 = Circuit::null_vertex(),
+      const Circuit::vertex_descriptor pred2 = Circuit::null_vertex());
 
-    /**
-     * @brief Allocates a new ciphertext
-     */
-    void Allocate(CipherText*& ct);
-    
-    /**
-     * @brief Copies a ciphertext
-     */
-    void Copy(CipherText*& ct, const CipherText* const ct_cpy);
-    
-    /**
-     * @brief Reads ciphertext \c ct from file \c fn
-     */
-    void Read(CipherText*& ct, const std::string& fn);
+  /**
+   * @brief Reads ciphertext \c ct from file \c fn
+   */
+  void Read(cingu::ObjHandle &ct, const std::string &fn);
 
-    /**
-     * @brief Writes ciphertext \c ct to file \c fn
-     */
-    void Write(CipherText*& ct, const std::string& fn);
+  /**
+   * @brief Writes ciphertext \c ct to file \c fn
+   */
+  void Write(cingu::ObjHandle &ct, const std::string &fn);
 
-    /**
-     * @brief Execute XOR gate
-     * @details \code{ct_res = ct_n1 XOR ct_n2}
-     */
-    void ExecuteXOR(
-      CipherText *&ct_res,
-      const CipherText* const ct_n1,
-      const CipherText* const ct_n2);
+  /**
+   * @brief Execute XOR gate
+   * @details \code{ct_res = ct_n1 XOR ct_n2}
+   */
+  void ExecuteXOR(cingu::ObjHandle &ct_res, const cingu::ObjHandle &ct_n1,
+                  const cingu::ObjHandle &ct_n2);
 
-    /**
-     * @brief Execute NOT gate
-     * @details \code{ct_res = NOT ct_n1}
-     */
-    void ExecuteNOT(
-      CipherText *&ct_res,
-      const CipherText* const ct_n1);
+  /**
+   * @brief Execute NOT gate
+   * @details \code{ct_res = NOT ct_n1}
+   */
+  void ExecuteNOT(cingu::ObjHandle &ct_res, const cingu::ObjHandle &ct_n1);
 
-    /**
-     * @brief Execute AND gate
-     * @details \code{ct_res = ct_n1 AND ct_n2}
-     */
-    void ExecuteAND(
-      CipherText *&ct_res,
-      const CipherText* const ct_n1,
-      const CipherText* const ct_n2);
+  /**
+   * @brief Execute AND gate
+   * @details \code{ct_res = ct_n1 AND ct_n2}
+   */
+  void ExecuteAND(cingu::ObjHandle &ct_res, const cingu::ObjHandle &ct_n1,
+                  const cingu::ObjHandle &ct_n2);
 
-    /**
-     * @brief Execute OR gate
-     * @details \code{ct_res = ct_n1 OR ct_n2}
-     */
-    void ExecuteOR(
-      CipherText *&ct_res,
-      const CipherText* const ct_n1,
-      const CipherText* const ct_n2);
-  
-  public:
-    /**
-     * @brief Builds a homomorphic executor object
-     * 
-     * @param[in] circuit boolean circuit to execute homomorphically
-     * @param[in] evalKeyFile evaluation key file name
-     * @param[in] publicKeyFile public key file name
-     * @param[in] verbose_p verbose execution
-     * @param[in] stringOutput write outputs in string format
-     */
-    HomomorphicExecutor(const Circuit& circuit,
-              const std::string& evalKeyFile, const std::string& publicKeyFile,
-              const bool verbose_p, const bool stringOutput);
+  /**
+   * @brief Execute OR gate
+   * @details \code{ct_res = ct_n1 OR ct_n2}
+   */
+  void ExecuteOR(cingu::ObjHandle &ct_res, const cingu::ObjHandle &ct_n1,
+                 const cingu::ObjHandle &ct_n2);
 
-    /**
-     * @brief Destructs homomorphic executor object
-     */
-    ~HomomorphicExecutor();
+public:
+  /**
+   * @brief      Builds a homomorphic executor object
+   *
+   * @param[in]  p_exec          B/FV bit executor
+   * @param[in]  circuit_p       boolean circuit to execute homomorphically
+   * @param[in]  verbose_p       verbose execution
+   * @param[in]  stringOutput_p  write outputs in string format
+   */
+  HomomorphicExecutor(cingu::BfvBitExec &p_exec, const Circuit &circuit_p,
+                      const bool verbose_p, const bool stringOutput_p);
 
-    /**
-     * @brief Delete data (ciphertext object) corresponding to gate \c idx
-     */
-    void DeleteGateData(const Circuit::vertex_descriptor idx);
+  /**
+   * @brief      Destructs homomorphic executor object
+   */
+  ~HomomorphicExecutor();
 
-    /**
-     * @brief Executes gate \c idx
-     */
-    void ExecuteGate(const Circuit::vertex_descriptor idx);
+  /**
+   * @brief      Delete data (ciphertext object) corresponding to gate @c idx
+   *
+   * @param[in]  idx   The index
+   */
+  void DeleteGateData(const Circuit::vertex_descriptor idx);
 
-    /**
-     * @brief Prints logged information about execution
-     */
-    void printExecTime();
+  /**
+   * @brief      Executes gate @c idx
+   *
+   * @param[in]  idx   The index
+   */
+  void ExecuteGate(const Circuit::vertex_descriptor idx);
+
+  /**
+   * @brief      Prints logged information about execution
+   */
+  void printExecTime();
 };
 
 #endif

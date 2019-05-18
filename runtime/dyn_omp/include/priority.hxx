@@ -23,81 +23,84 @@
  * @brief implements scheduler priority functions
  */
 
-#ifndef __PRIORITY_HXX__
-#define __PRIORITY_HXX__
+#ifndef PRIORITY_HXX
+#define PRIORITY_HXX
 
 #include "blif_circuit.hxx"
 
-#include <unordered_map>
 #include <boost/graph/adjacency_list.hpp>
+#include <unordered_map>
 
 class Priority {
-  public:
-    virtual int value(const Circuit::vertex_descriptor node) = 0;
-    virtual ~Priority() {}
+public:
+  virtual int value(const Circuit::vertex_descriptor node) = 0;
+  virtual ~Priority() {}
 };
 
-class PriorityStatic: public Priority {
-  protected:
-    std::unordered_map<Circuit::vertex_descriptor, int> priorities;
-  public:
-    virtual int value(const Circuit::vertex_descriptor node) = 0;
+class PriorityStatic : public Priority {
+protected:
+  std::unordered_map<Circuit::vertex_descriptor, int> priorities;
+
+public:
+  virtual int value(const Circuit::vertex_descriptor node) = 0;
 };
 
 /**
  * @brief Node in lowest topological group takes precedence
  */
-class PriorityTopological: public PriorityStatic {
-  public:
-    PriorityTopological(const Circuit& circuit);
-    virtual int value(const Circuit::vertex_descriptor node);
+class PriorityTopological : public PriorityStatic {
+public:
+  PriorityTopological(const Circuit &circuit);
+  virtual int value(const Circuit::vertex_descriptor node);
 };
 
 /**
  * @brief Node in highest topological group takes precedence
  */
-class PriorityInverseTopological: public PriorityStatic {
-  public:
-    PriorityInverseTopological(const Circuit& circuit);
-    virtual int value(const Circuit::vertex_descriptor node);
+class PriorityInverseTopological : public PriorityStatic {
+public:
+  PriorityInverseTopological(const Circuit &circuit);
+  virtual int value(const Circuit::vertex_descriptor node);
 };
 
 /**
  * @brief Earliest available node takes precedence
  */
-class PriorityEarliest: public PriorityStatic {
-  private:
-    int lastValue = 0;
-  public:
-    virtual int value(const Circuit::vertex_descriptor node);
+class PriorityEarliest : public PriorityStatic {
+private:
+  int lastValue = 0;
+
+public:
+  virtual int value(const Circuit::vertex_descriptor node);
 };
 
 /**
  * @brief Latest available node takes precedence
  */
-class PriorityLatest: public PriorityStatic {
-  private:
-    int lastValue = 0;
-  public:
-    virtual int value(const Circuit::vertex_descriptor node);
+class PriorityLatest : public PriorityStatic {
+private:
+  int lastValue = 0;
+
+public:
+  virtual int value(const Circuit::vertex_descriptor node);
 };
 
 /**
  * @brief Node with maximum out degree takes precedence
  */
-class PriorityMaxOutDegree: public PriorityStatic {
-  public:
-    PriorityMaxOutDegree(const Circuit& circuit);
-    virtual int value(const Circuit::vertex_descriptor node);
+class PriorityMaxOutDegree : public PriorityStatic {
+public:
+  PriorityMaxOutDegree(const Circuit &circuit);
+  virtual int value(const Circuit::vertex_descriptor node);
 };
 
 /**
  * @brief Node with minimum out degree takes precedence
  */
-class PriorityMinOutDegree: public PriorityStatic {
-  public:
-    PriorityMinOutDegree(const Circuit& circuit);
-    virtual int value(const Circuit::vertex_descriptor node);
+class PriorityMinOutDegree : public PriorityStatic {
+public:
+  PriorityMinOutDegree(const Circuit &circuit);
+  virtual int value(const Circuit::vertex_descriptor node);
 };
 
 #endif

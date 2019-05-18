@@ -23,122 +23,120 @@
  * @brief scheduler class
  */
 
-#ifndef __SCHEDULER_HXX__
-#define __SCHEDULER_HXX__
+#ifndef SCHEDULER_HXX
+#define SCHEDULER_HXX
 
 #include "blif_circuit.hxx"
 #include "priority.hxx"
 
+#include <boost/graph/adjacency_list.hpp>
+#include <condition_variable>
+#include <mutex>
 #include <queue>
 #include <unordered_map>
 #include <vector>
-#include <mutex>
-#include <condition_variable>
-#include <boost/graph/adjacency_list.hpp>
 
 class Scheduler {
-  public:
-    /**
-     * @brief Scheduler base operation
-     */
-    struct Operation {
-      Circuit::vertex_descriptor node;
-      enum class Type {
-        Execute,
-        Delete,
-        Done
-      } type;
-    };
-    
+public:
+  /**
+   * @brief Scheduler base operation
+   */
+  struct Operation {
+    Circuit::vertex_descriptor node;
+    enum class Type { Execute, Delete, Done } type;
+  };
+
+private:
+  /**
+   * @brief Class used for comparing task priorities in the wait queue
+   */
+  class PriorityComparator {
   private:
-    /** 
-     * @brief Class used for comparing task priorities in the wait queue
-     */
-    class PriorityComparator {
-      private:
-        Priority* priority = nullptr;
-        
-      public:
-        PriorityComparator(Priority* const priority_p): priority(priority_p) {}
-
-        bool operator()(const Operation& x, const Operation& y) {
-          return priority->value(x.node) < priority->value(y.node);
-        }
-    };
-    
-  private:
-    Circuit circuit;
-
-    /* Number of gate successors/predecessors remaining to execute */
-    std::unordered_map<Circuit::vertex_descriptor, int> succ2ExecCnt;
-    std::unordered_map<Circuit::vertex_descriptor, int> pred2ExecCnt;    
-
-    /* Queue of finished schedule operations and synchronization variables */
-    std::queue<Operation> finishedQueue;
-    std::mutex finishedQueueMtx;
-    std::condition_variable finishedQueueCond;
-
-    /* Priority queue for available schedule operations and synchronization variables */
-    std::priority_queue<Operation, std::vector<Operation>, PriorityComparator> waitQueue;
-    std::mutex waitQueueMtx;
-    std::condition_variable waitQueueCond;
-    
-    unsigned int executedCnt = 0;
+    Priority *priority = nullptr;
 
   public:
-    /**
-     * @brief Initialize scheduler object
-     */
-    Scheduler(const Circuit& circuit, Priority* const priority_p);
+    PriorityComparator(Priority *const priority_p) : priority(priority_p) {}
 
-    /** @brief Get next operation to schedule
-     */
-    Operation next();
+    bool operator()(const Operation &x, const Operation &y) {
+      return priority->value(x.node) < priority->value(y.node);
+    }
+  };
 
-    /** @brief Notify operation finished
-     */
-    void done(const Operation& oper);
+private:
+  Circuit circuit;
 
-    /** @brief Execute scheduling loop
-     */
-    void doSchedule();
+  /* Number of gate successors/predecessors remaining to execute */
+  std::unordered_map<Circuit::vertex_descriptor, int> succ2ExecCnt;
+  std::unordered_map<Circuit::vertex_descriptor, int> pred2ExecCnt;
 
-  private:
+  /* Queue of finished schedule operations and synchronization variables */
+  std::queue<Operation> finishedQueue;
+  std::mutex finishedQueueMtx;
+  std::condition_variable finishedQueueCond;
 
-    /**
-     * @brief Initialize scheduler internal state variables
-     */    
-    void initScheduler();
+  /* Priority queue for available schedule operations and synchronization
+   * variables */
+  std::priority_queue<Operation, std::vector<Operation>, PriorityComparator>
+      waitQueue;
+  std::mutex waitQueueMtx;
+  std::condition_variable waitQueueCond;
 
-    /**
-     * @brief Gets next finished operation
-     */
-    Operation popFinishedQueue();
+  unsigned int executedCnt = 0;
 
-    /**
-     * @brief Push a schedule operation corresponding to \c node to the wait queue
-     */
-    void pushWaitQueue(const Circuit::vertex_descriptor node, const Operation::Type type);
+public:
+  /**
+   * @brief Initialize scheduler object
+   */
+  Scheduler(const Circuit &circuit, Priority *const priority_p);
 
-    /**
-     * @brief Specialization of \c pushWaitQueue for delete operations
-     */
-    void pushDeleteCmd(const Circuit::vertex_descriptor node);
-    
-    /**
-     * @brief Specialization of \c pushWaitQueue for gate execute operations
-     */
-    void pushExecuteCmd(const Circuit::vertex_descriptor node);
+  /** @brief Get next operation to schedule
+   */
+  Operation next();
 
-    /**
-     * @brief Executes finishing schedule operations (delete memory, etc.)
-     */
-    void executeOperFinished(const Operation& oper);
+  /** @brief Notify operation finished
+   */
+  void done(const Operation &oper);
 
-    /**
-     * @brief returns true when all gate execute operations are done
-     */
-    bool schedFinished() ;
+  /** @brief Execute scheduling loop
+   */
+  void doSchedule();
+
+private:
+  /**
+   * @brief Initialize scheduler internal state variables
+   */
+  void initScheduler();
+
+  /**
+   * @brief Gets next finished operation
+   */
+  Operation popFinishedQueue();
+
+  /**
+   * @brief Push a schedule operation corresponding to \c node to the wait queue
+   */
+  void pushWaitQueue(const Circuit::vertex_descriptor node,
+                     const Operation::Type type);
+
+  /**
+   * @brief Specialization of \c pushWaitQueue for delete operations
+   */
+  void pushDeleteCmd(const Circuit::vertex_descriptor node);
+
+  /**
+   * @brief Specialization of \c pushWaitQueue for gate execute operations
+   */
+  void pushExecuteCmd(const Circuit::vertex_descriptor node);
+
+  /**
+   * @brief Executes finishing schedule operations (delete memory, etc.)
+   */
+  void executeOperFinished(const Operation &oper);
+
+  /**
+   * @brief returns true when all gate execute operations are done
+   */
+  bool schedFinished();
 };
 
 #endif

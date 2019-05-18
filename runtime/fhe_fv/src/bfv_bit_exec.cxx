@@ -85,16 +85,6 @@ bit_plain_t BfvBitExec::decrypt(const ObjHandle &in) {
   return EncDec::Decrypt(*in.get<CipherText>(), context->sk());
 }
 
-ObjHandle BfvBitExec::read(const std::string &name) {
-  ObjHandleT<CipherText> hdl = mm->new_handle();
-  hdl->read(name);
-  return hdl;
-}
-
-void BfvBitExec::write(const ObjHandle &in, const std::string &name) {
-  in.get<CipherText>()->write(name);
-}
-
 ObjHandle BfvBitExec::op_and(const ObjHandle &in1, const ObjHandle &in2) {
   ObjHandleT<CipherText> hdl = mm->new_handle();
   CipherText &ctxt_out = *hdl.get();
@@ -116,6 +106,17 @@ ObjHandle BfvBitExec::op_xor(const ObjHandle &in1, const ObjHandle &in2) {
   CipherText::add(ctxt_out, ctxt_in2);
   return hdl;
 }
+
+ObjHandle BfvBitExec::read(const std::string& name, bool binary) {
+  ObjHandleT<CipherText> hdl = mm->new_handle();
+  hdl->read(name, binary);
+  return hdl;
+}
+
+void BfvBitExec::write(const ObjHandle& in, const std::string& name, bool binary) {
+  in.get<CipherText>()->write(name, binary);
+}
+
 
 ObjHandle BfvBitExec::encode(const vector<bit_plain_t> &vals) {
   ObjHandleT<CipherText> hdl = mm->new_handle();

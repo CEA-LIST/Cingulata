@@ -20,12 +20,12 @@
 
 #include "priority.hxx"
 
-#include <vector>
 #include <boost/graph/topological_sort.hpp>
+#include <vector>
 
 using namespace std;
 
-PriorityTopological::PriorityTopological(const Circuit& circuit) {
+PriorityTopological::PriorityTopological(const Circuit &circuit) {
   vector<Circuit::vertex_descriptor> topo_order;
   topological_sort(circuit, back_inserter(topo_order));
   int prior = 0;
@@ -38,7 +38,7 @@ int PriorityTopological::value(const Circuit::vertex_descriptor node) {
   return priorities.at(node);
 }
 
-PriorityInverseTopological::PriorityInverseTopological(const Circuit& circuit) {
+PriorityInverseTopological::PriorityInverseTopological(const Circuit &circuit) {
   vector<Circuit::vertex_descriptor> topo_order;
   topological_sort(circuit, back_inserter(topo_order));
   int prior = 0;
@@ -49,7 +49,7 @@ PriorityInverseTopological::PriorityInverseTopological(const Circuit& circuit) {
 
 int PriorityInverseTopological::value(const Circuit::vertex_descriptor node) {
   return priorities.at(node);
-} 
+}
 
 int PriorityEarliest::value(const Circuit::vertex_descriptor node) {
   if (priorities.find(node) == priorities.end()) {
@@ -65,9 +65,9 @@ int PriorityLatest::value(const Circuit::vertex_descriptor node) {
   return priorities.at(node);
 }
 
-PriorityMaxOutDegree::PriorityMaxOutDegree(const Circuit& circuit) {
-  for(auto it = vertices(circuit); it.first != it.second; ++it.first) {
-    const Circuit::vertex_descriptor& node = *(it.first);
+PriorityMaxOutDegree::PriorityMaxOutDegree(const Circuit &circuit) {
+  for (auto it = vertices(circuit); it.first != it.second; ++it.first) {
+    const Circuit::vertex_descriptor &node = *(it.first);
     priorities.emplace(node, out_degree(node, circuit));
   }
 }
@@ -76,9 +76,9 @@ int PriorityMaxOutDegree::value(const Circuit::vertex_descriptor node) {
   return priorities.at(node);
 }
 
-PriorityMinOutDegree::PriorityMinOutDegree(const Circuit& circuit) {
-  for(auto it = vertices(circuit); it.first != it.second; ++it.first) {
-    const Circuit::vertex_descriptor& node = *(it.first);
+PriorityMinOutDegree::PriorityMinOutDegree(const Circuit &circuit) {
+  for (auto it = vertices(circuit); it.first != it.second; ++it.first) {
+    const Circuit::vertex_descriptor &node = *(it.first);
     priorities.emplace(node, -out_degree(node, circuit));
   }
 }
