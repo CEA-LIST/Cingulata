@@ -30,17 +30,17 @@ add_custom_target(tests ALL
 #############################################
 add_subdirectory(old)
 
+add_custom_target(tests_all ALL
+  DEPENDS
+    tests
+    tests_old
+)
+
 #############################################
 # tfhe tests
 #############################################
 if(TFHE_EXEC)
   include_directories(${CMAKE_SOURCE_DIR}/runtime/tfhe/include)
   add_subdirectory(tfhe)
+  add_dependencies(tests_all tests_tfhe)
 endif(TFHE_EXEC)
-
-add_custom_target(tests_all ALL
-  DEPENDS
-    tests
-    tests_old
-    $<$<BOOL:TFHE_EXEC>:tests_tfhe>
-)

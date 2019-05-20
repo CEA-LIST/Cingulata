@@ -79,7 +79,7 @@ if __name__ == '__main__':
   shutil.copyfile(args.input_file, args.output_file)
 
   if args.verbose:
-    print('Înput circuit\n\tx depth {}, x gates {}, + gates {}'.format(*get_circuit_vals(circuit)))
+    print('Input circuit\n\tx depth {}, x gates {}, + gates {}'.format(*get_circuit_vals(circuit)))
 
   #optimization commands
   optim_cmds = DEFAULT_OPTIM_CMDS
