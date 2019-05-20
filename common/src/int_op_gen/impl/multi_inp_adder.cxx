@@ -41,31 +41,72 @@ CiBitVector MultiInputAdder::add(const std::vector<CiBitVector> &inps, const uns
   using T = tuple<int, CiBitVector>;
 
   priority_queue<T, vector<T>, function<bool(const T &, const T &)>>
-  elems_sorted_by_size(
+  elems_sorted_by_depth(
       [](const T &a, const T &b) -> bool { return get<0>(a) > get<0>(b); });
 
   for (const CiBitVector& inp: inps)
-    elems_sorted_by_size.push(forward_as_tuple(inp.size(), inp));
+    elems_sorted_by_depth.push(forward_as_tuple(1, inp));
 
-  while (elems_sorted_by_size.size() > 1) {
-    int sa, sb;
-    CiBitVector a, b;
+  while (elems_sorted_by_depth.size() > 2) {
+    int sa, sb, sc;
+    int da, db, dc;
+    CiBitVector a, b, c;
 
-    tie(sa, a) = elems_sorted_by_size.top();
-    elems_sorted_by_size.pop();
-    tie(sb, b) = elems_sorted_by_size.top();
-    elems_sorted_by_size.pop();
+    tie(da, a) = elems_sorted_by_depth.top();
+    elems_sorted_by_depth.pop();
+    tie(db, b) = elems_sorted_by_depth.top();
+    elems_sorted_by_depth.pop();
+    tie(dc, c) = elems_sorted_by_depth.top();
+    elems_sorted_by_depth.pop();
+    sa=a.size();
+    sb=b.size();
+    sc=c.size();
 
-    unsigned sr = (sa > sb ? sa : sb) + 1;
+    int stmp = (sa > sb ? sa : sb);
+    unsigned sr = (sc > stmp ? sc : stmp);
     sr = sr > max_size ? max_size : sr;
+    CiBitVector tmp1 = a ^ b ^ c;
+    /* equalize sizes */
     a.resize(sr);
     b.resize(sr);
+    c.resize(sr);
+    /* increase size if necessary */
+    if (sr < max_size)
+      if ( a[sr-1].get_val()==1 or b[sr-1].get_val()==1 or c[sr-1].get_val()==1){
+        sr+=1;
+        a.resize(sr);
+        b.resize(sr);
+        c.resize(sr);
+      }
+    a >>= 1;
+    b >>= 1;
+    c >>= 1;
+    CiBitVector tmp2 = ((a ^ c) & (b ^ c)) ^ c;
 
-    CiBitVector r = bin_adder(a,b);
+    elems_sorted_by_depth.push(forward_as_tuple(dc, tmp1));
+    elems_sorted_by_depth.push(forward_as_tuple(dc + 1, tmp2));
 
-    elems_sorted_by_size.push(forward_as_tuple(r.size(), r));
+
   }
 
-  return get<1>(elems_sorted_by_size.top());
+  int da, db;
+  CiBitVector a, b;
+
+  tie(da, a) = elems_sorted_by_depth.top();
+  elems_sorted_by_depth.pop();
+  tie(db, b) = elems_sorted_by_depth.top();
+  elems_sorted_by_depth.pop();
+
+  unsigned sr = (a.size() > b.size() ? a.size() : b.size());
+  /* equalize sizes */
+  a.resize(sr);
+  b.resize(sr);
+  if (sr < max_size)
+    if ( a[sr-1].get_val()==1 or b[sr-1].get_val()==1){
+      sr+=1;
+      a.resize(sr);
+      b.resize(sr);
+    }
+  return bin_adder(a,b);
 }
 
