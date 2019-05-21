@@ -96,6 +96,7 @@ CiBitVector MultiInputAdder::add(const std::vector<CiBitVector> &inps, const uns
   /* equalize sizes */
   a.resize(sr);
   b.resize(sr);
+
   return bin_adder(a,b);
 }
 
