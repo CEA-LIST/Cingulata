@@ -37,7 +37,7 @@ int main() {
 
   CiInt IP_target{CiInt::s32};
   vector<CiInt> IP(list_size, CiInt::s32);
-  //CiInt answer{0, 8, false};   
+  
   vector<CiInt> answer; ; 
   IP_target.read("a");
 
