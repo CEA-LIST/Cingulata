@@ -42,7 +42,7 @@ int main() {
   {
   
       cin >> IP_target[i];
-      //IP_target[i].read("a_"+to_string(i));
+  
   }
 
   for (int i = 0; i < list_size; i++)
@@ -52,8 +52,7 @@ int main() {
            
            // b_"i"_"j"_"bit number 0 7"
            IP[i][j].read("b_"+to_string(i)+"_"+to_string(j));
-           //cin >> IP[i][j];
-           
+         
        }
   }
 
