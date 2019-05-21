@@ -5,7 +5,7 @@ set(TEST_NAME membership)
 set(SRCS
     ${TEST_NAME}.cxx
     )
-set(LIST_SIZE  400)
+set(LIST_SIZE  100)
 set(BLIF_NAME ${TEST_NAME}.blif)
 set(BLOP_NAME ${TEST_NAME}-opt.blif)
 
