@@ -34,7 +34,6 @@ using namespace cingulata;
 
 int main()
 {
-	//Integer32 w,q[QUERY_SIZE];
     CiInt w{CiInt::s32};
     vector<CiInt> q(QUERY_SIZE,CiInt::u32);
 	cin>>w;
@@ -42,13 +41,9 @@ int main()
 		cin>>q[i];
 	
     CiInt r{0, 4, false};// result of 4 bits in run.sh.in
-	//Integer8 r=0;
 	for(int i=0;i<QUERY_SIZE;i++)
-		r+=(w==q[i])*CiInt(i+1,8,false); //4 ?
+		r+=(w==q[i])*CiInt(i+1,8,false); 
 	r-=1;
-	//r&=0xf; 
-
-	//cout<<r;
 	r.write("s");
 	CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name, "wiretap");
 }
