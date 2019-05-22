@@ -16,11 +16,11 @@ The homomorphic circuit computes if an IPv4 belongs to a list containing *list_s
 
 * The list used is in the file *plaintext/ipv4.dat*
 * The user has to give an IPv4.
-* IPV4 adress is coded on 4 bytes , therefore the following s procedure are used , 
+* IPV4 adress is coded on 4 bytes , therefore the following  procedures are used , 
 * completed IPV4 address crypted correspond to the membership test  and is not present in this test.  
 * 4.sh : only the 4th byte is crypted ,the other are not
 * 34.sh : the  3rd and 4th byte is crypted, the other are not
-* 234.sh : the  2nd 3rd 4th  byte is crypted, the first one is not  are not
+* 234.sh : the  2nd 3rd 4th  byte is crypted, the first one is not  
 
 ```sh
 $ bash 4.sh 192.168.10.0
