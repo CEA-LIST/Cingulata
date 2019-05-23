@@ -1,0 +1,87 @@
+#!/bin/bash 
+
+#
+#    (C) Copyright 2019 CEA LIST. All Rights Reserved.
+#    Contributor(s): Cingulata team (formerly Armadillo team)
+#
+#    This software is governed by the CeCILL-C license under French law and
+#    abiding by the rules of distribution of free software.  You can  use,
+#    modify and/ or redistribute the software under the terms of the CeCILL-C
+#    license as circulated by CEA, CNRS and INRIA at the following URL
+#    "http://www.cecill.info".
+#
+#    As a counterpart to the access to the source code and  rights to copy,
+#    modify and redistribute granted by the license, users are provided only
+#    with a limited warranty  and the software's author,  the holder of the
+#    economic rights,  and the successive licensors  have only  limited
+#    liability.
+#
+#    The fact that you are presently reading this means that you have had
+#    knowledge of the CeCILL-C license and that you accept its terms.
+#
+CIRCUIT=@CIRCUIT@
+APPS_DIR=@APPS_DIR@
+$APPS_DIR/generate_keys
+
+
+CURR_DIR=$PWD
+FILE=membership-partial
+
+#APPS_DIR=$CURR_DIR/../../apps/
+mkdir -p input
+rm -f input/*.ct
+mkdir -p output
+rm -f output/*.ct
+
+LIST_SIZE=@LIST_SIZE@
+
+ipv4byte () 
+{
+	declare -i x[0] x[1] x[2] x[3];
+	IFS=. read x[0] x[1] x[2] x[3] <<<"$1";
+	echo $((x[$2]));
+}
+
+# example:
+#ipv4byte 192.168.0.1 0 # first byte
+#ipv4byte 192.168.0.1 3 # last byte
+
+# extract each considered IP from file
+for (( i=1; i<=$LIST_SIZE; i++ ))
+do    
+    IP[i]=$(cat plaintext/ipv4.dat | head -$i | tail -1)
+done
+
+
+# Generate keys
+echo "FHE key generation"
+$APPS_DIR/generate_keys
+
+echo "Input encryption"
+NR_THREADS=$(nproc)
+
+# target IP
+$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS --clear `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i: --idx-places 0   $(ipv4byte $1 0) $(ipv4byte $1 1)`
+$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i: --idx-places 0 --start-idx 16   $(ipv4byte $1 2)  $(ipv4byte $1 3)`
+
+# We encrypt IP per IP then byte per byte
+for (( i=1; i<=$LIST_SIZE; i++ ))
+do
+    #$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS --clear `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i_ --idx-places 0 --start-idx $((34+32*($i-1))) $(ipv4byte ${IP[$i]} 0) $(ipv4byte ${IP[$i]} 1)`
+    #$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i_ --idx-places 0 --start-idx $((50+32*($i-1)))  $(ipv4byte ${IP[$i]} 2) $(ipv4byte ${IP[$i]} 3)`
+    k=$(($i-1))
+
+    $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS --clear `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i:b_"$k"_0_ --idx-places 0 --start-idx 0 $(ipv4byte ${IP[$i]} 0) `
+    $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS --clear `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i:b_"$k"_1_ --idx-places 0 --start-idx 0   $(ipv4byte ${IP[$i]} 1) `
+    $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS  `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i:b_"$k"_2_ --idx-places 0 --start-idx 0  $(ipv4byte ${IP[$i]} 2)`
+  
+    $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i:b_"$k"_3_ --idx-places 0 --start-idx 0 $(ipv4byte ${IP[$i]} 3)`
+ 
+done 
+
+echo "Homomorphic execution..."
+time $APPS_DIR/dyn_omp $FILE'-opt.blif' --threads $NR_THREADS # -v 
+ 
+echo "Output decryption"
+OUT_FILES=`ls -v output/*`
+$APPS_DIR/helper --from-bin --bit-cnt 1 --msb-first `$APPS_DIR/decrypt --threads $NR_THREADS --secret-key fhe_key.sk $OUT_FILES `

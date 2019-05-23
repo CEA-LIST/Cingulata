@@ -15,6 +15,11 @@ set(test_names
   ipv4
   ipv6
   kreyvium
+  ASCII
+  membership
+  multiplicity
+  membership-partial
+  wiretap
 )
 foreach (name IN ITEMS ${test_names})
   add_subdirectory(${name})
