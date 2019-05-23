@@ -18,42 +18,39 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-#include <cstdint>
-
 /* local includes */
 #include <bit_exec/tracker.hxx>
 #include <ci_context.hxx>
-#include <ci_int.hxx>
 #include <ci_fncs.hxx>
+#include <ci_int.hxx>
 #include <int_op_gen/mult_depth.hxx>
-
 
 /* namespaces */
 using namespace std;
 using namespace cingulata;
 
 int main() {
-  CiContext::set_config(make_shared<BitTracker>(), make_shared<IntOpGenDepth>());
+  CiContext::set_config(make_shared<BitTracker>(),
+                        make_shared<IntOpGenDepth>());
 
   CiInt IP_target{CiInt::s32};
   vector<CiInt> IP(list_size, CiInt::s32);
-  
-  vector<CiInt> answer; ; 
+
+  vector<CiInt> answer;
   IP_target.read("a");
 
   for (unsigned int i = 0; i < list_size; i++) {
-	IP[i].read("b_"+to_string(i));
+    IP[i].read("b_" + to_string(i));
   }
-  
-  for (int i = 0; i < list_size; i++) {
 
-    answer.push_back(select( (IP_target == IP[i]), 1, 0));
-    //answer = sum( answer,(IP_target == IP[i]) );
+  for (int i = 0; i < list_size; i++) {
+    answer.push_back(IP_target == IP[i]);
   }
   CiInt full_answer = sum(answer);
 
   full_answer.write("full_answer");
-  
-   /* Export to file the "tracked" circuit */
-  CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name, "multiplicity");
+
+  /* Export to file the "tracked" circuit */
+  CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name,
+                                                       "multiplicity");
 }

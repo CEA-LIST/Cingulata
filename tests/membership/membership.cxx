@@ -18,8 +18,6 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-#include <cstdint>
-
 /* local includes */
 #include <bit_exec/tracker.hxx>
 #include <ci_context.hxx>
@@ -32,25 +30,25 @@ using namespace cingulata;
 
 int main() {
 
-    CiContext::set_config(make_shared<BitTracker>(), make_shared<IntOpGenDepth>());
+  CiContext::set_config(make_shared<BitTracker>(),
+                        make_shared<IntOpGenDepth>());
 
   CiInt IP_target{CiInt::s32};
   vector<CiInt> IP(list_size, CiInt::s32);
-  
+
   IP_target.read("a");
 
   for (int i = 0; i < list_size; i++) {
-	IP[i].read("b_"+to_string(i));
+    IP[i].read("b_" + to_string(i));
   }
-  
-  CiBit  answer(0); 
 
+  CiBit answer(0);
   for (int i = 0; i < list_size; i++) {
-    answer = answer xor (IP_target == IP[i]); // list with no duplicate
+    answer = answer xor (IP_target == IP[i]); 
   }
-  
+
   answer.write("s");
-  
-   /* Export to file the "tracked" circuit */
+
+  /* Export to file the "tracked" circuit */
   CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name, "membership");
 }

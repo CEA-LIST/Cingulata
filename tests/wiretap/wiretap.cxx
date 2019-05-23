@@ -18,8 +18,6 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-#include <cstdint>
-
 /* local includes */
 #include <bit_exec/tracker.hxx>
 #include <ci_context.hxx>
@@ -32,19 +30,19 @@ using namespace cingulata;
 
 #define QUERY_SIZE 10
 
-int main()
-{
-    CiInt w{CiInt::s32};
-    vector<CiInt> q(QUERY_SIZE,CiInt::u32);
-	cin>>w;
-	for(int i=0;i<QUERY_SIZE;i++)
-		cin>>q[i];
-	
-    CiInt r{0, 4, false};// result of 4 bits in run.sh.in
-	for(int i=0;i<QUERY_SIZE;i++)
-		r+=(w==q[i])*CiInt(i+1,8,false); 
-	r-=1;
-	r.write("s");
-	CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name, "wiretap");
-}
+int main() {
+  CiInt w{CiInt::s32};
+  vector<CiInt> q(QUERY_SIZE, CiInt::u32);
+  cin >> w;
+  for (int i = 0; i < QUERY_SIZE; i++)
+    cin >> q[i];
 
+  CiInt r{QUERY_SIZE};   // automatically determine bit size
+  assert(r.size() == 4); // attention the run.sh size is 4 bits!!
+  r = 0;
+  for (int i = 0; i < QUERY_SIZE; i++)
+    r += (w == q[i]) * CiInt(i + 1);
+  r -= 1;
+  r.write("s");
+  CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name, "wiretap");
+}

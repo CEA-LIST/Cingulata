@@ -18,8 +18,6 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-#include <cstdint>
-
 /* local includes */
 #include <bit_exec/tracker.hxx>
 #include <ci_context.hxx>
@@ -32,28 +30,20 @@ using namespace cingulata;
 
 int main() {
 
-  CiContext::set_config(make_shared<BitTracker>(), make_shared<IntOpGenDepth>());
+  CiContext::set_config(make_shared<BitTracker>(),
+                        make_shared<IntOpGenDepth>());
 
-  
   vector<CiInt> IP_target(4, CiInt::u8);
-  vector < vector  <CiInt> >  IP        (list_size, vector<CiInt>(4,CiInt::u8));  
+  vector<vector<CiInt>> IP(list_size, vector<CiInt>(4, CiInt::u8));
 
-  for (int i=0; i<4; i++)
-  {
-  
-      cin >> IP_target[i];
-  
+  for (unsigned i = 0; i < IP_target.size(); i++) {
+    cin >> IP_target[i];
   }
 
-  for (int i = 0; i < list_size; i++)
-  {
-      for (int j=0; j<4; j++)
-       {
-           
-           // b_"i"_"j"_"bit number 0 7"
-           IP[i][j].read("b_"+to_string(i)+"_"+to_string(j));
-         
-       }
+  for (int i = 0; i < list_size; i++) {
+    for (unsigned j = 0; j < IP_target.size(); j++) {
+      IP[i][j].read("b_" + to_string(i) + "_" + to_string(j));
+    }
   }
 
   // Question: Does IP_target belongs to IP table?
@@ -61,20 +51,18 @@ int main() {
   // compute answer below, it is better to do so else, if we use or, then
   // multiplicative depth increases)
 
- 
-  
-
-
   CiBit answer(0);
 
   for (int i = 0; i < list_size; i++) {
-    answer = answer xor (((IP_target[0] == IP[i][0])*(IP_target[1] == IP[i][1]))*((IP_target[2] == IP[i][2])*(IP_target[3] == IP[i][3]))); // list with no duplicate
+    answer =
+        answer xor (((IP_target[0] == IP[i][0]) * (IP_target[1] == IP[i][1])) *
+                    ((IP_target[2] == IP[i][2]) *
+                     (IP_target[3] == IP[i][3])));
   }
 
   answer.write("s");
-  
+
   /* Export to file the "tracked" circuit */
-  CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name, "membership-partial");
-
-
+  CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name,
+                                                       "membership-partial");
 }

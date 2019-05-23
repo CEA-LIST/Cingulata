@@ -18,8 +18,6 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-#include <cstdint>
-
 /* local includes */
 #include <bit_exec/tracker.hxx>
 #include <ci_context.hxx>
@@ -31,18 +29,15 @@ using namespace std;
 using namespace cingulata;
 
 int main() {
+  CiContext::set_config(make_shared<BitTracker>(),
+                        make_shared<IntOpGenDepth>());
 
-  CiContext::set_config(make_shared<BitTracker>(), make_shared<IntOpGenDepth>());
-
-  //  
-  vector<CiInt> ASCII_target(nb_chars,CiInt::u8); 
-  vector < vector  <CiInt> >  ASCII_list(nb_chars,vector<CiInt>(list_size,CiInt::u8)); 
- 
-  // ASCII_target[nb_chars] = {},
-  // ASCII_list[nb_chars][list_size] = {};
   // The inputs are encrypted decimal encodings of ASCII characters of target
   // and then of each string in the list The output encrypted bit indicates if
   // target belongs to the list.
+  vector<CiInt> ASCII_target(nb_chars, CiInt::u8);
+  vector<vector<CiInt>> ASCII_list(nb_chars,
+                                   vector<CiInt>(list_size, CiInt::u8));
 
   for (int i = 0; i < nb_chars; i++) {
     cin >> ASCII_target[i];
@@ -53,8 +48,8 @@ int main() {
       cin >> ASCII_list[i][j];
     }
   }
-  CiBit answer(0); // response
- 
+  CiBit answer(0);
+
   CiBit is_equal[list_size];
   for (int j = 0; j < list_size; j++) {
     is_equal[j] = 1; // we need to initialize with 1 since we multiply to know
@@ -67,10 +62,9 @@ int main() {
     }
     answer = answer xor is_equal[j]; // list with no duplicate
   }
-  
-    
-   answer.write("s");
-  
+
+  answer.write("s");
+
   /* Export to file the "tracked" circuit */
   CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name, "ASCII");
 }
