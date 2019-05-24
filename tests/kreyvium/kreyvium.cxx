@@ -36,6 +36,9 @@ using namespace cingulata;
 
 void kreyvium_warm(CiBitVector &state, CiBitVector &RKEY, CiBitVector &RIV,
                    const CiBitVector &key, const CiBitVector &iv) {
+  assert(key.size() == 128);
+  assert(iv.size() == 128);
+
   RKEY.resize(128);
   RIV.resize(128);
 
@@ -45,7 +48,7 @@ void kreyvium_warm(CiBitVector &state, CiBitVector &RKEY, CiBitVector &RIV,
   // Insert the first 93 key bits @ position 0 (1 in the paper).
   state.slice() = key.slice(0, 93);
 
-  // Insert the first iv bits @ position 93 (94 in the paper).
+  // Insert the iv bits @ position 93 (94 in the paper).
   state.slice(93) = iv;
 
   // Set last pos (287) to 0 (288 in the paper).
