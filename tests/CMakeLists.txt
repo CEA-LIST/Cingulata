@@ -20,6 +20,7 @@ set(test_names
   multiplicity
   membership-partial
   wiretap
+  flip
 )
 foreach (name IN ITEMS ${test_names})
   add_subdirectory(${name})
