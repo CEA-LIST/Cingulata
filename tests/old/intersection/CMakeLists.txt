@@ -12,8 +12,6 @@ set(SECOND_LIST_SIZE 5)
 set(BLIF_NAME ${TEST_NAME}.blif)
 set(BLOP_NAME ${TEST_NAME}-opt.blif)
 
-
-
 add_compile_options(-Wall -std=c++11 -Dfirst_list_size=${FIRST_LIST_SIZE} -Dsecond_list_size=${SECOND_LIST_SIZE} -Dblif_name="${BLIF_NAME}")
 
 set(GEN_NAME ${TEST_NAME}-gen)
@@ -30,12 +28,11 @@ add_custom_command(OUTPUT ${BLOP_NAME}
   COMMAND python3 ${OPTIM_DIR}/abc_optimize.py -i ${BLIF_NAME} -o ${BLOP_NAME} -v
   DEPENDS abc ${BLIF_NAME})
 
-
 set(XML_PARAMS fhe_params.xml)
-set(SCRIPT_DIR ../../../runtime/fhe_fv/script)
+set(MUL_DEPTH_SCRIPT ${OPTIM_DIR}/graph_info.py)
 
 add_custom_command(OUTPUT ${XML_PARAMS}
-        COMMAND bash ${SCRIPT_DIR}/selectParams.sh ${TEST_NAME} ${BLOP_NAME} ${MODEL} ${MIN_SECU}
+        COMMAND bash ${SCRIPT_DIR}/selectParams.sh ${TEST_NAME} `python3 ${MUL_DEPTH_SCRIPT} ${BLOP_NAME} --mult_depth_max` ${MODEL} ${MIN_SECU}
         DEPENDS ${BLOP_NAME})
 
 add_custom_target(${TEST_NAME} ALL

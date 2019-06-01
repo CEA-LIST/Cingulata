@@ -4,6 +4,7 @@ project(tests)
 
 set(OPTIM_DIR ${CMAKE_CURRENT_BINARY_DIR}/../optim)
 set(RUNTIME_DIR ${CMAKE_CURRENT_BINARY_DIR}/../runtime)
+set(SCRIPT_DIR ${RUNTIME_DIR}/fhe_fv/script)
 
 if(NOT DEFINED MODEL)
   set(MODEL bkz_sieve)
