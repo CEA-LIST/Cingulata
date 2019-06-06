@@ -128,13 +128,14 @@ CiBit FLIP(CiBitVector state, long *indice, long *mf, long size) {
 
   // Computation of higher degree monomials
   for (i = 1; i < size; i++) {
-    for (j = 0; j < mf[i]; j++) {
-      temp = state[indice[nb]] * state[indice[nb + 1]];
-      nb += 2;
 
-      for (k = 2; k < (i + 1); k++) {
-        temp *= state[indice[nb++]];
+    for (j = 0; j < mf[i]; j++) {
+      CiBitVector tmp(i+1);
+      for (k = 0; k< i+1; k++){
+      	tmp[k]=state[indice[nb++]];
       }
+      temp = tmp.multvect();
+
 
       output ^= temp;
     }
