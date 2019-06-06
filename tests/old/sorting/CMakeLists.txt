@@ -25,16 +25,12 @@ add_custom_command(OUTPUT ${BLOP_NAME}
   COMMAND python3 ${OPTIM_DIR}/abc_optimize.py -i ${BLIF_NAME} -o ${BLOP_NAME} -v
   DEPENDS abc ${BLIF_NAME})
 
-
 set(XML_PARAMS fhe_params.xml)
 set(MUL_DEPTH_SCRIPT ${OPTIM_DIR}/graph_info.py)
-set(GEN_PARAM_SCRIPT ${RUNTIME_DIR}/fhe_fv/script/genParams.py)
 
 add_custom_command(OUTPUT ${XML_PARAMS}
-  COMMAND python3 ${GEN_PARAM_SCRIPT} --lambda_p 128 --mult_depth `python3 ${MUL_DEPTH_SCRIPT} ${BLOP_NAME} --mult_depth_max` --cyclotomic_poly_index 1024 --output_xml ${XML_PARAMS}
-  DEPENDS ${BLOP_NAME})
-
-set(LAST_DEPEND ${XML_PARAMS})
+        COMMAND bash ${SCRIPT_DIR}/selectParams.sh ${TEST_NAME} `python3 ${MUL_DEPTH_SCRIPT} ${BLOP_NAME} --mult_depth_max` ${MODEL} ${MIN_SECU}
+        DEPENDS ${BLOP_NAME})
 
 add_custom_target(${TEST_NAME} ALL
   DEPENDS ${XML_PARAMS} runtime)

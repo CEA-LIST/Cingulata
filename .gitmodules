@@ -4,3 +4,6 @@
 [submodule "abc"]
 	path = submodules/abc
 	url = https://github.com/berkeley-abc/abc
+[submodule "cinguparam"]
+	path = submodules/CinguParam
+	url = https://github.com/CEA-LIST/CinguParam.git
