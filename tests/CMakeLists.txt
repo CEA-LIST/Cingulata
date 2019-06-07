@@ -2,60 +2,44 @@ cmake_minimum_required(VERSION 3.9)
 
 project(tests)
 
-set(OPTIM_DIR ${CMAKE_CURRENT_BINARY_DIR}/../optim)
-set(RUNTIME_DIR ${CMAKE_CURRENT_BINARY_DIR}/../runtime)
-set(SCRIPT_DIR ${RUNTIME_DIR}/fhe_fv/script)
-
-if(NOT DEFINED MODEL)
-  set(MODEL bkz_sieve)
-endif()
-
-if(NOT DEFINED MIN_SECU)
-  set(MIN_SECU 128)
-endif()
+add_custom_target(tests_all ALL)
 
 #############################################
-# common interface tests
+# bfv tests
 #############################################
-set(test_names
-  hello
-  trivium
-  cardio
-  ipv4
-  ipv6
-  kreyvium
-  ASCII
-  membership
-  multiplicity
-  membership-partial
-  wiretap
-)
+if (USE_BFV)
+  set(OPTIM_DIR ${CMAKE_CURRENT_BINARY_DIR}/../optim)
+  set(RUNTIME_DIR ${CMAKE_CURRENT_BINARY_DIR}/../runtime)
+  set(SCRIPT_DIR ${RUNTIME_DIR}/fhe_fv/script)
 
-foreach (name IN ITEMS ${test_names})
-  add_subdirectory(${name})
-endforeach()
+  if(NOT DEFINED MODEL)
+    set(MODEL bkz_sieve)
+  endif()
 
-add_custom_target(tests ALL
-  DEPENDS
-    ${test_names}
-)
+  if(NOT DEFINED MIN_SECU)
+    set(MIN_SECU 128)
+  endif()
 
-#############################################
-# deprecated circuit frontend tests
-#############################################
-add_subdirectory(old)
+  #############################################
+  # common interface tests
+  #############################################
+  add_subdirectory(bfv)
+  add_dependencies(tests_all tests_bfv)
 
-add_custom_target(tests_all ALL
-  DEPENDS
-    tests
-    tests_old
-)
+  #############################################
+  # deprecated circuit frontend tests
+  #############################################
+  add_subdirectory(old_bfv)
+  add_dependencies(tests_all tests_old_bfv)
+
+endif(USE_BFV)
+
 
 #############################################
 # tfhe tests
 #############################################
-if(TFHE_EXEC)
+if(USE_TFHE)
   include_directories(${CMAKE_SOURCE_DIR}/runtime/tfhe/include)
   add_subdirectory(tfhe)
   add_dependencies(tests_all tests_tfhe)
-endif(TFHE_EXEC)
+endif(USE_TFHE)

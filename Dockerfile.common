@@ -1,0 +1,42 @@
+#######################################
+# Cingulata common interface
+#
+# docker build --target cingu_common -t cingu_common -f Dockerfile.common .
+#######################################
+
+FROM ubuntu:18.04 AS cingu_common
+
+# install dependencies
+RUN apt-get update -qq \
+ && apt-get install --no-install-recommends -y \
+    ca-certificates \
+    cmake \
+    g++ \
+    git \
+    libboost-program-options-dev \
+    make
+
+# copy repository contents
+COPY . /cingu
+
+# build cingulata common
+RUN mkdir -p /cingu/build \
+ && cd /cingu/build \
+ && cmake .. \
+ && make
+
+#######################################
+# common interface unittests
+#
+# docker build --target cingu_unittest -t cingu_unittest -f Dockerfile.common .
+# docker run -it --rm cingu_unittest:latest
+#######################################
+
+FROM cingu_common AS cingu_unittest
+
+RUN cd /cingu/build \
+ && cmake -DENABLE_UNITTEST=ON .. \
+ && make unittests
+
+# default command
+CMD ["/cingu/build/common/test/unittests"]

@@ -1,0 +1,29 @@
+
+#######################################
+# Cingulata with in-house B/FV SHE implementation
+#
+# docker build --target cingu_bfv -t cingu_bfv -f Dockerfile.bfv .
+# docker run -it --rm cingu_bfv:latest
+#######################################
+
+FROM cingu_common AS cingu_bfv
+
+# install dependencies
+RUN apt-get install --no-install-recommends -y \
+    libboost-graph-dev \
+    libflint-dev \
+    libpugixml-dev \
+    python3 \
+    python3-mpmath \
+    python3-networkx \
+    python3-numpy
+
+RUN cd /cingu/build \
+ && cmake -DUSE_BFV=ON .. \
+ && make
+
+# default command
+CMD ["bash"]
+
+WORKDIR /cingu/build/tests
+
