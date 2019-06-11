@@ -1,0 +1,22 @@
+#######################################
+# Cingulata common interface
+#
+# docker build --target cingu_tfhe -t cingu_tfhe -f Dockerfile.tfhe .
+# docker run -it --rm cingu_tfhe:latest
+#######################################
+
+FROM cingu_common AS cingu_tfhe
+
+RUN git clone https://github.com/tfhe/tfhe /tfhe \
+ && cd tfhe \
+ && make
+
+RUN cd /cingu/build \
+ && cmake -DTFHE_PATH=/tfhe .. \
+ && make tests_tfhe
+
+# default command
+CMD ["bash"]
+
+WORKDIR /cingu/build/tests
+

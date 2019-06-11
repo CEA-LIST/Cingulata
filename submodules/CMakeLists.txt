@@ -5,7 +5,7 @@ set(SUBMODULES_PATH "${PROJECT_SOURCE_DIR}/submodules")
 find_package(Git QUIET)
 if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
   # update googletest
-  if(ENABLE_UNITTEST)
+  if(INIT_GOOGLETEST_MODULE)
     message(STATUS "Submodule googletest update")
     execute_process(
       COMMAND ${GIT_EXECUTABLE} submodule update --init ${SUBMODULES_PATH}/googletest
@@ -16,10 +16,10 @@ if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
     endif()
 
     add_subdirectory(googletest EXCLUDE_FROM_ALL)
-  endif(ENABLE_UNITTEST)
+  endif(INIT_GOOGLETEST_MODULE)
 
   # update ABC
-  if(USE_ABC)
+  if(INIT_ABC_MODULE)
     message(STATUS "Submodule ABC update")
     execute_process(
       COMMAND ${GIT_EXECUTABLE} submodule update --init ${SUBMODULES_PATH}/abc
@@ -39,10 +39,10 @@ if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
     )
     add_custom_target(abc DEPENDS ${ABC_PATH}/abc)
 
-  endif(USE_ABC)
+  endif(INIT_ABC_MODULE)
 
   # update CinguParam
-  if(USE_CINGU_PARAM)
+  if(INIT_CINGU_PARAM_MODULE)
     message(STATUS "Submodule CinguParam update")
     execute_process(
       COMMAND ${GIT_EXECUTABLE} submodule update --init ${SUBMODULES_PATH}/CinguParam
@@ -53,5 +53,5 @@ if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
     endif()
 
     set(CINGU_PARAM_PATH ${SUBMODULES_PATH}/CinguParam CACHE INTERNAL "" FORCE)
-  endif(USE_CINGU_PARAM)
+  endif(INIT_CINGU_PARAM_MODULE)
 endif()

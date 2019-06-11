@@ -19,7 +19,7 @@ target_include_directories(tfhe-keygen PUBLIC ${Boost_INCLUDE_DIRS})
 target_link_libraries(tfhe-keygen ${TFHE_LIBRARIES})
 target_link_libraries(tfhe-keygen ${Boost_LIBRARIES})
 
-add_custom_target(tfhe ALL
+add_custom_target(tfhe
   DEPENDS
     tfhe_bit_exec
     tfhe-keygen

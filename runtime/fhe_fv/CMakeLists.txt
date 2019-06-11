@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.0)
 
 project(fhe_fv)
 
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-
 find_package(FLINT REQUIRED)
 # message(STATUS "FLINT include dir is: ${FLINT_INCLUDE_DIR}")
 # message(STATUS "FLINT library is: ${FLINT_LIBRARIES}")

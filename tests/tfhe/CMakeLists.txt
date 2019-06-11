@@ -14,4 +14,3 @@ add_custom_target(tests_tfhe ALL
   DEPENDS
     ${target_names}
 )
-
