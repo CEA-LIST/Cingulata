@@ -8,13 +8,18 @@
 
 FROM cingu_common AS cingu_bfv
 
+# compile abc by hand
+RUN cd /cingu \
+ && git submodule update --init submodules/abc \
+ && cd /cingu/submodules/abc \
+ && make ABC_USE_NO_READLINE=1
+
 # install dependencies
 RUN apt-get install --no-install-recommends -y \
     libboost-graph-dev \
     libflint-dev \
     libpugixml-dev \
     python3 \
-    python3-mpmath \
     python3-networkx \
     python3-numpy
 

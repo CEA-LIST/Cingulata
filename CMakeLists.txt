@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
 
-project(cingulata VERSION 0.3.0 LANGUAGES CXX)
+project(cingulata VERSION 1.5.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
