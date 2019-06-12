@@ -1,10 +1,10 @@
 # membership-partial
 
 ## Description
-The homomorphic circuit computes if an IPv4 belongs to a list containing *list_size* IPv4s adresses. The answer is 1 (= true) or 0 (= false).  ( 1 to 3 bytes  are crypted ) 
+The homomorphic circuit computes if an IPv4 belongs to a list containing *list_size* IPv4s adresses. The answer is 1 (= true) or 0 (= false).  ( 1 to 3 bytes  are crypted )
 
 ## Requirements
-* The list must not contain duplicates. 
+* The list must not contain duplicates.
 * The list must contain at least *list_size* elements. Only the first *list_size* elements are considered.
 
 ## Instantiation
@@ -16,16 +16,18 @@ The homomorphic circuit computes if an IPv4 belongs to a list containing *list_s
 
 * The list used is in the file *plaintext/ipv4.dat*
 * The user has to give an IPv4.
-* IPV4 adress is coded on 4 bytes , therefore the following  procedures are used , 
-* completed IPV4 address crypted correspond to the membership test  and is not present in this test.  
-* 4.sh : only the 4th byte is crypted ,the other are not
-* 34.sh : the  3rd and 4th byte is crypted, the other are not
-* 234.sh : the  2nd 3rd 4th  byte is crypted, the first one is not  
+* IPV4 adress is coded on 4 bytes , therefore the following  procedures are used ,
+* completed IPV4 address encrypted correspond to the membership test and is not present in this test.
+* 4.sh : only the 4th bytes are encrypted ,the others are not
+* 34.sh : the 3rd and 4th bytes are encrypted, the others are not
+* 234.sh : the 2nd 3rd 4th  bytes are encrypted, the first one is not
+* 1234.sh : the 1st 2nd 3rd 4th bytes are encrypted
 
 ```sh
 $ bash 4.sh 192.168.10.0
 $ bash 34.sh 192.168.10.0
 $ bash 234.sh 192.168.10.0
+$ bash 1234.sh 192.168.10.0
 ```
 
 

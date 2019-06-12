@@ -20,6 +20,7 @@
 #    knowledge of the CeCILL-C license and that you accept its terms.
 #
 
+
 CIRCUIT=@CIRCUIT@
 APPS_DIR=@APPS_DIR@
 $APPS_DIR/generate_keys
@@ -53,6 +54,7 @@ do
     IP[i]=$(cat plaintext/ipv4.dat | head -$i | tail -1)
 done
 
+
 # Generate keys
 echo "FHE key generation"
 $APPS_DIR/generate_keys
@@ -60,26 +62,22 @@ $APPS_DIR/generate_keys
 echo "Input encryption"
 NR_THREADS=$(nproc)
 
-# target IP
-$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS --clear `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i: --idx-places 0   $(ipv4byte $1 0) $(ipv4byte $1 1) $(ipv4byte $1 2)`
-$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i: --idx-places 0 --start-idx 24    $(ipv4byte $1 3)`
+# target IP 
+$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS  `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i: --idx-places 0   $(ipv4byte $1 0)  $(ipv4byte $1 1) $(ipv4byte $1 2)  $(ipv4byte $1 3)`
 
-##--msb-first --prefix input/i:b_"$i"_ --idx-places 0 --start-idx $((34+32*($i-1))) $(ipv4byte ${IP[$i]} 0) $(ipv4byte ${IP[$i]} 1) $(ipv4byte ${IP[$i]} 2)`
-#--prefix input/i:b_"$i"_ --idx-places 0 --start-idx $((58+32*($i-1)))  $(ipv4byte ${IP[$i]} 3)
 # We encrypt IP per IP then byte per byte
 for (( i=1; i<=$LIST_SIZE; i++ ))
 do
-    k=$(($i-1))
-    $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS --clear `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i:b_"$k"_0_ --idx-places 0 --start-idx 0 $(ipv4byte ${IP[$i]} 0) `
-    $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS --clear `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i:b_"$k"_1_ --idx-places 0 --start-idx 0   $(ipv4byte ${IP[$i]} 1) `
-    $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS --clear `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i:b_"$k"_2_ --idx-places 0 --start-idx 0  $(ipv4byte ${IP[$i]} 2)`
-  
-    $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i:b_"$k"_3_ --idx-places 0 --start-idx 0 $(ipv4byte ${IP[$i]} 3)`
 
+    k=$(($i-1))
+    $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS  `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i:b_"$k"_0_ --idx-places 0 --start-idx 0 $(ipv4byte ${IP[$i]} 0) `
+    $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS  `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i:b_"$k"_1_ --idx-places 0 --start-idx 0   $(ipv4byte ${IP[$i]} 1) `
+    $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS  `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i:b_"$k"_2_ --idx-places 0 --start-idx 0  $(ipv4byte ${IP[$i]} 2)`
+    $APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i:b_"$k"_3_ --idx-places 0 --start-idx 0 $(ipv4byte ${IP[$i]} 3)`
 done
 
 echo "Homomorphic execution..."
-time $APPS_DIR/dyn_omp $CIRCUIT --threads $NR_THREADS # -v 
+time $APPS_DIR/dyn_omp $CIRCUIT  --threads $NR_THREADS # -v 
  
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`
