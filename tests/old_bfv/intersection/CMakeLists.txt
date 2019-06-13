@@ -12,7 +12,7 @@ set(SECOND_LIST_SIZE 5)
 set(BLIF_NAME ${TEST_NAME}.blif)
 set(BLOP_NAME ${TEST_NAME}-opt.blif)
 
-add_compile_options(-Wall -std=c++11 -Dfirst_list_size=${FIRST_LIST_SIZE} -Dsecond_list_size=${SECOND_LIST_SIZE} -Dblif_name="${BLIF_NAME}")
+add_compile_options(-Dfirst_list_size=${FIRST_LIST_SIZE} -Dsecond_list_size=${SECOND_LIST_SIZE} -Dblif_name="${BLIF_NAME}")
 
 set(GEN_NAME ${TEST_NAME}-gen)
 
