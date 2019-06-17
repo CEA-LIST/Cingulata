@@ -38,6 +38,7 @@ public:
   MOCK_METHOD1(write, void (const string& p_name));
   MOCK_METHOD0(encrypt, void ());
   MOCK_METHOD0(decrypt, void ());
+  MOCK_CONST_METHOD0(get_val, bit_plain_t ());
 };
 
 
@@ -54,7 +55,6 @@ public:
 
   const MockVecElem& operator [] (const int idx) const { return *m_vec[idx]; }
   MockVecElem& operator [] (const int idx) { return *m_vec[idx]; }
-
 };
 
 template<>
@@ -76,6 +76,7 @@ TEST_CALL_EACH_BIT0(read_each_bit_call, read)
 TEST_CALL_EACH_BIT0(write_each_bit_call, write)
 TEST_CALL_EACH_BIT0(encrypt_each_bit_call, encrypt)
 TEST_CALL_EACH_BIT0(decrypt_each_bit_call, decrypt)
+TEST_CALL_EACH_BIT0(get_bits_val_each_bit_call, get_val)
 
 #define TEST_CALL_EACH_BIT1(TST_NAME, NAME) \
 TEST(IoNameVec, TST_NAME) {                 \

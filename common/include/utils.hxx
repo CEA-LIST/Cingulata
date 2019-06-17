@@ -81,5 +81,16 @@ std::vector<bit_plain_t> encode_plain_int(const int_t p_val,
   return result;
 }
 
+template <typename int_t = uint64_t,
+          typename = typename std::enable_if<std::is_integral<int_t>::value,
+                                             int_t>::type>
+int_t decode_plain_int(const std::vector<bit_plain_t>& p_bit_vec) {
+  int_t val = 0;
+  const size_t n = std::min(p_bit_vec.size(), sizeof(uint64_t)*8);
+  for (size_t i = 0; i < n; ++i)
+    val |= p_bit_vec[i] << i;
+  return val;
+}
+
 } // namespace cingulata
 #endif

@@ -169,6 +169,33 @@ namespace cingulata
     }
 
     /**
+     * @brief      Gets bits values encoded into an uint64_t.
+     *
+     * @return     integer value
+     */
+    uint64_t get_val() const {
+      return decode_plain_int<uint64_t>(get_bits_val(sizeof(uint64_t)*8));
+    }
+
+    /**
+     * @brief      Gets bits values
+     * @note       This method supposes that method @c CiBit::get_val return bit
+     *             value (i.e. all bits are plain)
+     *
+     * @param[in]  p_bit_cnt  The number of bits to return. If value -1 (default
+     *                        value) is given all bits are returned.
+     *
+     * @return     vector with bit values
+     */
+    std::vector<bit_plain_t> get_bits_val(const size_t p_bit_cnt = -1) const {
+      const T& ref = *static_cast<const T*>(this);
+      std::vector<bit_plain_t> bv(ref.size());
+      for (int i = 0; i < ref.size(); ++i)
+        bv[i] = ref[i].get_val();
+      return bv;
+    }
+
+    /**
      * @}
      */
 

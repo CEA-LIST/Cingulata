@@ -39,5 +39,3 @@ time ./tfhe-hello-exec
 
 echo "Output decryption"
 ./tfhe-hello-decrypt
-
-rm -f a_* b_* c_*
