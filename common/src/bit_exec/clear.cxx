@@ -20,6 +20,9 @@
 
 #include <bit_exec/clear.hxx>
 
+#include <iostream>
+#include <fstream>
+
 using namespace std;
 using namespace cingulata;
 
@@ -39,9 +42,30 @@ bit_plain_t BitExecClear::decrypt(const ObjHandle &in) {
   return *(in.get<bit_plain_t>());
 }
 
-ObjHandle BitExecClear::read(const std::string &name) { return ObjHandle(); }
+ObjHandle BitExecClear::read(const std::string &name) {
+  ifstream file(name);
+  if (not file.is_open()) {
+    fprintf(stderr, "BitExecClear::read -- Cannot open file '%s'\n", name.c_str());
+    abort();
+  }
 
-void BitExecClear::write(const ObjHandle &in, const std::string &name) {}
+  ObjHandleT<bit_plain_t> out = mm.new_handle();
+  file >> *out;
+  file.close();
+
+  return out;
+}
+
+void BitExecClear::write(const ObjHandle &in, const std::string &name) {
+  ofstream file(name);
+  if (not file.is_open()) {
+    fprintf(stderr, "BitExecClear::write -- Cannot open file '%s'\n", name.c_str());
+    abort();
+  }
+
+  file << *in.get<bit_plain_t>();
+  file.close();
+}
 
 ObjHandle BitExecClear::op_and(const ObjHandle &in1, const ObjHandle &in2) {
   ObjHandleT<bit_plain_t> out = mm.new_handle();

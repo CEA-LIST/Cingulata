@@ -327,7 +327,7 @@ tuple<
 {
   { "get_val",  [](CiBit& a) { a.get_val();         },  },
   { "set_val",  [](CiBit& a) { a.set_val(rand()%2); },  },
-  { "read",     [](CiBit& a) { a.read();            },  },
+  { "read",     [](CiBit& a) { a.write(); a.read(); },  },
   { "write",    [](CiBit& a) { a.write();           },  },
   { "encrypt",  [](CiBit& a) { a.encrypt();         },  },
   { "decrypt",  [](CiBit& a) { a.decrypt();         },  },
@@ -359,6 +359,7 @@ TEST(CiBit, name_change_single) {
     string b_name = "B";
     CiBit a(rand()%2, a_name);
 
+    CiBit().write(b_name);
     a.read(b_name);
 
     ASSERT_EQ(a.get_name(), b_name) << "set_val";
