@@ -21,7 +21,7 @@
 #ifndef BIT_TRACKER
 #define BIT_TRACKER
 
-#include <bit_exec/interface.hxx>
+#include <bit_exec/interface_fhe.hxx>
 #include <bit_exec/obj_man/allocator.hxx>
 #include <bit_exec/obj_man/basic.hxx>
 
@@ -42,7 +42,7 @@ namespace BTI = BitTrackerInternal;
  *  bit operations. This class constructs a boolean circuit corresponding
  *  to every called interface operation.
  */
-class BitTracker : public IBitExec {
+class BitTracker : public IBitExecFHE {
 public:
   ~BitTracker() override;
 

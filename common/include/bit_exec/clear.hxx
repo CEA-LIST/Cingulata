@@ -21,7 +21,7 @@
 #ifndef BIT_EXEC_PLAIN
 #define BIT_EXEC_PLAIN
 
-#include <bit_exec/interface.hxx>
+#include <bit_exec/interface_she.hxx>
 #include <bit_exec/obj_man/allocator.hxx>
 #include <bit_exec/obj_man/basic.hxx>
 
@@ -33,7 +33,7 @@ namespace cingulata {
  *             bits (each bit in @c bit_plain_t type) in parallel, aka SIMD or
  *             bit-sliced execution.
  */
-class BitExecClear : public IBitExec {
+class BitExecClear : public IBitExecSHE {
 public:
   /**
    * @brief      Constructs an object handle containing value @c pt_val
