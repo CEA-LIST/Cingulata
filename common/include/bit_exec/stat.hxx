@@ -21,47 +21,18 @@
 #ifndef BIT_EXEC_STAT
 #define BIT_EXEC_STAT
 
-#include <bit_exec/interface.hxx>
-#include <bit_exec/interface_fhe.hxx>
-#include <bit_exec/interface_she.hxx>
-#include <utils.hxx>
+#include <cstdio>
 
 namespace cingulata {
 
-namespace {
-template <typename bit_exec_t, typename bit_exec_interface_t> class Stat_impl;
-}
-
 /**
- * @brief      Bit executor statistics
+ * @brief      FHE bit executor operation counter
  * @details    This class counts the number of times each abstract method of @c
- *             bit_exec_t is called. The actual implementation depends on the
- *             parent class of template parameter. Thus for classes inheriting
- *             from IBitExecSHE only XOR and AND gates will be counted.
- *
- * @tparam     bit_exec_t  Bit executor implementation to log
- * @tparam     <unnamed>   verify if given @c bit_exec_t class inherits from @c
- *                         IBitExec
+ *             bit_exec_t is called.
  */
-template <typename bit_exec_t, typename = typename std::enable_if_t<
-                                   std::is_base_of_v<IBitExec, bit_exec_t>>>
-class Stat : public Stat_impl<bit_exec_t, typename bit_exec_t::interface_type> {
+class StatFHE {
 public:
-  template <typename... Args>
-  Stat(Args... args)
-      : Stat_impl<bit_exec_t, typename bit_exec_t::interface_type>(
-            std::forward<Args>(args)...) {}
-};
-
-namespace {
-
-template <typename bit_exec_t>
-class Stat_impl<bit_exec_t, IBitExecFHE> : public bit_exec_t {
-public:
-  template <typename... Args>
-  Stat_impl(Args... args) : bit_exec_t(std::forward<Args>(args)...) {
-    reset();
-  }
+  StatFHE() { reset(); }
 
   void print() {
     printf("Number of calls:\n");
@@ -84,7 +55,7 @@ public:
     printf("%-8s: %6d\n", "op_mux", m_cnt_op_mux);
   }
 
-  void reset() override {
+  void reset() {
     m_cnt_encode = 0;
     m_cnt_encrypt = 0;
     m_cnt_decrypt = 0;
@@ -104,85 +75,37 @@ public:
     m_cnt_op_mux = 0;
   }
 
-  ObjHandle encode(const bit_plain_t pt_val = 0) override {
-    m_cnt_encode++;
-    return bit_exec_t::encode(pt_val);
-  }
+  void encode() { m_cnt_encode++; }
 
-  ObjHandle encrypt(const bit_plain_t pt_val = 0) override {
-    m_cnt_encrypt++;
-    return bit_exec_t::encrypt(pt_val);
-  }
+  void encrypt() { m_cnt_encrypt++; }
 
-  bit_plain_t decrypt(const ObjHandle &in) override {
-    m_cnt_decrypt++;
-    return bit_exec_t::decrypt(in);
-  }
+  void decrypt() { m_cnt_decrypt++; }
 
-  ObjHandle read(const std::string &name) override {
-    m_cnt_read++;
-    return bit_exec_t::read(name);
-  }
+  void read() { m_cnt_read++; }
 
-  void write(const ObjHandle &in, const std::string &name) override {
-    m_cnt_write++;
-    bit_exec_t::write(in, name);
-  }
+  void write() { m_cnt_write++; }
 
-  ObjHandle op_not(const ObjHandle &in) override {
-    m_cnt_op_not++;
-    return bit_exec_t::op_not(in);
-  }
+  void op_not() { m_cnt_op_not++; }
 
-  ObjHandle op_and(const ObjHandle &in1, const ObjHandle &in2) override {
-    m_cnt_op_and++;
-    return bit_exec_t::op_and(in1, in2);
-  }
+  void op_and() { m_cnt_op_and++; }
 
-  ObjHandle op_xor(const ObjHandle &in1, const ObjHandle &in2) override {
-    m_cnt_op_xor++;
-    return bit_exec_t::op_xor(in1, in2);
-  }
+  void op_xor() { m_cnt_op_xor++; }
 
-  ObjHandle op_nand(const ObjHandle &in1, const ObjHandle &in2) override {
-    m_cnt_op_nand++;
-    return bit_exec_t::op_nand(in1, in2);
-  }
+  void op_nand() { m_cnt_op_nand++; }
 
-  ObjHandle op_andyn(const ObjHandle &in1, const ObjHandle &in2) override {
-    m_cnt_op_andyn++;
-    return bit_exec_t::op_andyn(in1, in2);
-  }
+  void op_andyn() { m_cnt_op_andyn++; }
 
-  ObjHandle op_andny(const ObjHandle &in1, const ObjHandle &in2) override {
-    m_cnt_op_andny++;
-    return bit_exec_t::op_andny(in1, in2);
-  }
+  void op_andny() { m_cnt_op_andny++; }
 
-  ObjHandle op_or(const ObjHandle &in1, const ObjHandle &in2) override {
-    m_cnt_op_or++;
-    return bit_exec_t::op_or(in1, in2);
-  }
+  void op_or() { m_cnt_op_or++; }
 
-  ObjHandle op_nor(const ObjHandle &in1, const ObjHandle &in2) override {
-    m_cnt_op_nor++;
-    return bit_exec_t::op_nor(in1, in2);
-  }
+  void op_nor() { m_cnt_op_nor++; }
 
-  ObjHandle op_oryn(const ObjHandle &in1, const ObjHandle &in2) override {
-    m_cnt_op_oryn++;
-    return bit_exec_t::op_oryn(in1, in2);
-  }
+  void op_oryn() { m_cnt_op_oryn++; }
 
-  ObjHandle op_orny(const ObjHandle &in1, const ObjHandle &in2) override {
-    m_cnt_op_orny++;
-    return bit_exec_t::op_orny(in1, in2);
-  }
+  void op_orny() { m_cnt_op_orny++; }
 
-  ObjHandle op_xnor(const ObjHandle &in1, const ObjHandle &in2) override {
-    m_cnt_op_xnor++;
-    return bit_exec_t::op_xnor(in1, in2);
-  }
+  void op_xnor() { m_cnt_op_xnor++; }
 
 protected:
   unsigned m_cnt_encode;
@@ -204,13 +127,14 @@ protected:
   unsigned m_cnt_op_mux;
 };
 
-template <typename bit_exec_t>
-class Stat_impl<bit_exec_t, IBitExecSHE> : public bit_exec_t {
+/**
+ * @brief      SHE bit executor operation counter
+ * @details    This class counts the number of times each abstract method of @c
+ *             bit_exec_t is called. Only XOR and AND gates are counted.
+ */
+class StatSHE {
 public:
-  template <typename... Args>
-  Stat_impl(Args... args) : bit_exec_t(std::forward<Args>(args)...) {
-    reset();
-  }
+  StatSHE() { reset(); }
 
   void print() {
     printf("Number of calls:\n");
@@ -223,7 +147,7 @@ public:
     printf("%-8s: %6d\n", "op_xor", m_cnt_op_xor);
   }
 
-  void reset() override {
+  void reset() {
     m_cnt_encode = 0;
     m_cnt_encrypt = 0;
     m_cnt_decrypt = 0;
@@ -233,39 +157,19 @@ public:
     m_cnt_op_xor = 0;
   }
 
-  ObjHandle encode(const bit_plain_t pt_val = 0) override {
-    m_cnt_encode++;
-    return bit_exec_t::encode(pt_val);
-  }
+  void encode() { m_cnt_encode++; }
 
-  ObjHandle encrypt(const bit_plain_t pt_val = 0) override {
-    m_cnt_encrypt++;
-    return bit_exec_t::encrypt(pt_val);
-  }
+  void encrypt() { m_cnt_encrypt++; }
 
-  bit_plain_t decrypt(const ObjHandle &in) override {
-    m_cnt_decrypt++;
-    return bit_exec_t::decrypt(in);
-  }
+  void decrypt() { m_cnt_decrypt++; }
 
-  ObjHandle read(const std::string &name) override {
-    m_cnt_read++;
-    return bit_exec_t::read(name);
-  }
+  void read() { m_cnt_read++; }
 
-  void write(const ObjHandle &in, const std::string &name) override {
-    m_cnt_write++;
-    bit_exec_t::write(in, name);
-  }
+  void write() { m_cnt_write++; }
 
-  ObjHandle op_and(const ObjHandle &in1, const ObjHandle &in2) override {
-    m_cnt_op_and++;
-    return bit_exec_t::op_and(in1, in2);
-  }
-  ObjHandle op_xor(const ObjHandle &in1, const ObjHandle &in2) override {
-    m_cnt_op_xor++;
-    return bit_exec_t::op_xor(in1, in2);
-  }
+  void op_and() { m_cnt_op_and++; }
+
+  void op_xor() { m_cnt_op_xor++; }
 
 protected:
   unsigned m_cnt_encode;
@@ -276,7 +180,6 @@ protected:
   unsigned m_cnt_op_and;
   unsigned m_cnt_op_xor;
 };
-} // namespace
 
 } // namespace cingulata
 
