@@ -37,6 +37,8 @@ namespace cingulata {
  */
 class IBitExecFHE : public IBitExec {
 public:
+  typedef IBitExecFHE interface_type;
+
   /* clang-format off */
 
   IBitExecFHE()          = default;

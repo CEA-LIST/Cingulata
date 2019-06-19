@@ -18,13 +18,12 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-#include <iostream>
-
 /* local includes */
-#include <tfhe_bit_exec.hxx>
+#include <bit_exec/stat.hxx>
 #include <ci_context.hxx>
 #include <ci_int.hxx>
 #include <int_op_gen/size.hxx>
+#include <tfhe_bit_exec.hxx>
 
 /* namespaces */
 using namespace std;
@@ -33,7 +32,9 @@ using namespace cingulata;
 int main() {
   /* Set context to bit tracker and multiplicative depth minimized integer
    * operations */
-  CiContext::set_config(make_shared<TfheBitExec>("tfhe.pk", TfheBitExec::Public), make_shared<IntOpGenSize>());
+  CiContext::set_config(
+      make_shared<Stat<TfheBitExec>>("tfhe.pk", TfheBitExec::Public),
+      make_shared<IntOpGenSize>());
 
   CiInt a{CiInt::u8};     // create from unsigned 8-bit template
   CiInt b{0, 8, false};   // manually specify value, size and signedness
@@ -46,4 +47,6 @@ int main() {
   // c = a * a * b - a;
 
   c.write("c");
+
+  CiContext::get_bit_exec_t<Stat<TfheBitExec>>()->print();
 }

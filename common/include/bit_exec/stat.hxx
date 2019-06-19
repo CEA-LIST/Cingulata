@@ -26,65 +26,82 @@
 #include <bit_exec/interface_she.hxx>
 #include <utils.hxx>
 
-#include <memory>
-#include <stdint.h>
-#include <string>
-
 namespace cingulata {
+
+namespace {
+template <typename bit_exec_t, typename bit_exec_interface_t> class Stat_impl;
+}
+
 /**
- * @brief      Abstract interface to bit execution modules
- * @details    This interface is adapted for HE schemes with boolean plaintext
- *             space, bit tracking modules, etc. The inputs and outputs of
- *             interface operations are generic object handles. Each operation
- *             creates a new object handle.
+ * @brief      Bit executor statistics
+ * @details    This class counts the number of times each abstract method of @c
+ *             bit_exec_t is called. The actual implementation depends on the
+ *             parent class of template parameter. Thus for classes inheriting
+ *             from IBitExecSHE only XOR and AND gates will be counted.
+ *
+ * @tparam     bit_exec_t  Bit executor implementation to log
+ * @tparam     <unnamed>   verify if given @c bit_exec_t class inherits from @c
+ *                         IBitExec
  */
-template <typename bit_exec_t,
-  typename = typename std::enable_if_t<std::is_base_of_v<IBitExecFHE, bit_exec_t>>>
-class Stat : public bit_exec_t {
+template <typename bit_exec_t, typename = typename std::enable_if_t<
+                                   std::is_base_of_v<IBitExec, bit_exec_t>>>
+class Stat : public Stat_impl<bit_exec_t, typename bit_exec_t::interface_type> {
 public:
-  template<typename... Args>
-  Stat(Args... args) : bit_exec_t(std::forward<Args>(args)...) {
+  template <typename... Args>
+  Stat(Args... args)
+      : Stat_impl<bit_exec_t, typename bit_exec_t::interface_type>(
+            std::forward<Args>(args)...) {}
+};
+
+namespace {
+
+template <typename bit_exec_t>
+class Stat_impl<bit_exec_t, IBitExecFHE> : public bit_exec_t {
+public:
+  template <typename... Args>
+  Stat_impl(Args... args) : bit_exec_t(std::forward<Args>(args)...) {
     reset();
   }
 
   void print() {
-    printf("#%10s: %6d\n", "encode", m_cnt_encode);
-    printf("#%10s: %6d\n", "encrypt", m_cnt_encrypt);
-    printf("#%10s: %6d\n", "decrypt", m_cnt_decrypt);
-    printf("#%10s: %6d\n", "read", m_cnt_read);
-    printf("#%10s: %6d\n", "write", m_cnt_write);
-    printf("#%10s: %6d\n", "op_not", m_cnt_op_not);
-    printf("#%10s: %6d\n", "op_and", m_cnt_op_and);
-    printf("#%10s: %6d\n", "op_xor", m_cnt_op_xor);
-    printf("#%10s: %6d\n", "op_nand", m_cnt_op_nand);
-    printf("#%10s: %6d\n", "op_andyn", m_cnt_op_andyn);
-    printf("#%10s: %6d\n", "op_andny", m_cnt_op_andny);
-    printf("#%10s: %6d\n", "op_or", m_cnt_op_or);
-    printf("#%10s: %6d\n", "op_nor", m_cnt_op_nor);
-    printf("#%10s: %6d\n", "op_oryn", m_cnt_op_oryn);
-    printf("#%10s: %6d\n", "op_orny", m_cnt_op_orny);
-    printf("#%10s: %6d\n", "op_xnor", m_cnt_op_xnor);
-    printf("#%10s: %6d\n", "op_mux", m_cnt_op_mux);
+    printf("Number of calls:\n");
+    printf("%-8s: %6d\n", "encode", m_cnt_encode);
+    printf("%-8s: %6d\n", "encrypt", m_cnt_encrypt);
+    printf("%-8s: %6d\n", "decrypt", m_cnt_decrypt);
+    printf("%-8s: %6d\n", "read", m_cnt_read);
+    printf("%-8s: %6d\n", "write", m_cnt_write);
+    printf("%-8s: %6d\n", "op_not", m_cnt_op_not);
+    printf("%-8s: %6d\n", "op_and", m_cnt_op_and);
+    printf("%-8s: %6d\n", "op_xor", m_cnt_op_xor);
+    printf("%-8s: %6d\n", "op_nand", m_cnt_op_nand);
+    printf("%-8s: %6d\n", "op_andyn", m_cnt_op_andyn);
+    printf("%-8s: %6d\n", "op_andny", m_cnt_op_andny);
+    printf("%-8s: %6d\n", "op_or", m_cnt_op_or);
+    printf("%-8s: %6d\n", "op_nor", m_cnt_op_nor);
+    printf("%-8s: %6d\n", "op_oryn", m_cnt_op_oryn);
+    printf("%-8s: %6d\n", "op_orny", m_cnt_op_orny);
+    printf("%-8s: %6d\n", "op_xnor", m_cnt_op_xnor);
+    printf("%-8s: %6d\n", "op_mux", m_cnt_op_mux);
   }
 
   void reset() override {
-    m_cnt_encode   = 0;
-    m_cnt_encrypt  = 0;
-    m_cnt_decrypt  = 0;
-    m_cnt_read     = 0;
-    m_cnt_write    = 0;
-    m_cnt_op_not   = 0;
-    m_cnt_op_and   = 0;
-    m_cnt_op_xor   = 0;
-    m_cnt_op_nand  = 0;
+    m_cnt_encode = 0;
+    m_cnt_encrypt = 0;
+    m_cnt_decrypt = 0;
+    m_cnt_read = 0;
+    m_cnt_write = 0;
+    m_cnt_op_not = 0;
+    m_cnt_op_and = 0;
+    m_cnt_op_xor = 0;
+    m_cnt_op_nand = 0;
     m_cnt_op_andyn = 0;
     m_cnt_op_andny = 0;
-    m_cnt_op_or    = 0;
-    m_cnt_op_nor   = 0;
-    m_cnt_op_oryn  = 0;
-    m_cnt_op_orny  = 0;
-    m_cnt_op_xnor  = 0;
-    m_cnt_op_mux   = 0;
+    m_cnt_op_or = 0;
+    m_cnt_op_nor = 0;
+    m_cnt_op_oryn = 0;
+    m_cnt_op_orny = 0;
+    m_cnt_op_xnor = 0;
+    m_cnt_op_mux = 0;
   }
 
   ObjHandle encode(const bit_plain_t pt_val = 0) override {
@@ -186,6 +203,80 @@ protected:
   unsigned m_cnt_op_xnor;
   unsigned m_cnt_op_mux;
 };
+
+template <typename bit_exec_t>
+class Stat_impl<bit_exec_t, IBitExecSHE> : public bit_exec_t {
+public:
+  template <typename... Args>
+  Stat_impl(Args... args) : bit_exec_t(std::forward<Args>(args)...) {
+    reset();
+  }
+
+  void print() {
+    printf("Number of calls:\n");
+    printf("%-8s: %6d\n", "encode", m_cnt_encode);
+    printf("%-8s: %6d\n", "encrypt", m_cnt_encrypt);
+    printf("%-8s: %6d\n", "decrypt", m_cnt_decrypt);
+    printf("%-8s: %6d\n", "read", m_cnt_read);
+    printf("%-8s: %6d\n", "write", m_cnt_write);
+    printf("%-8s: %6d\n", "op_and", m_cnt_op_and);
+    printf("%-8s: %6d\n", "op_xor", m_cnt_op_xor);
+  }
+
+  void reset() override {
+    m_cnt_encode = 0;
+    m_cnt_encrypt = 0;
+    m_cnt_decrypt = 0;
+    m_cnt_read = 0;
+    m_cnt_write = 0;
+    m_cnt_op_and = 0;
+    m_cnt_op_xor = 0;
+  }
+
+  ObjHandle encode(const bit_plain_t pt_val = 0) override {
+    m_cnt_encode++;
+    return bit_exec_t::encode(pt_val);
+  }
+
+  ObjHandle encrypt(const bit_plain_t pt_val = 0) override {
+    m_cnt_encrypt++;
+    return bit_exec_t::encrypt(pt_val);
+  }
+
+  bit_plain_t decrypt(const ObjHandle &in) override {
+    m_cnt_decrypt++;
+    return bit_exec_t::decrypt(in);
+  }
+
+  ObjHandle read(const std::string &name) override {
+    m_cnt_read++;
+    return bit_exec_t::read(name);
+  }
+
+  void write(const ObjHandle &in, const std::string &name) override {
+    m_cnt_write++;
+    bit_exec_t::write(in, name);
+  }
+
+  ObjHandle op_and(const ObjHandle &in1, const ObjHandle &in2) override {
+    m_cnt_op_and++;
+    return bit_exec_t::op_and(in1, in2);
+  }
+  ObjHandle op_xor(const ObjHandle &in1, const ObjHandle &in2) override {
+    m_cnt_op_xor++;
+    return bit_exec_t::op_xor(in1, in2);
+  }
+
+protected:
+  unsigned m_cnt_encode;
+  unsigned m_cnt_encrypt;
+  unsigned m_cnt_decrypt;
+  unsigned m_cnt_read;
+  unsigned m_cnt_write;
+  unsigned m_cnt_op_and;
+  unsigned m_cnt_op_xor;
+};
+} // namespace
 
 } // namespace cingulata
 
