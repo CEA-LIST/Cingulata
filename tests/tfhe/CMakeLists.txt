@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.9)
 
 set(test_names
       hello
-      banking
 )
 
 set(target_names "")
