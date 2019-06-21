@@ -203,21 +203,21 @@ ObjHandle BitTracker::OP_NAME(const ObjHandle& lhs, const ObjHandle& rhs) { \
   return add_gate(BTI::GateType::GATE_TYPE, {lhs, rhs}); \
 }
 
-DEFINE_1_INP_OPER(op_not, NOT);
+// DEFINE_1_INP_OPER(op_not, NOT);
 DEFINE_2_INP_OPER(op_and, AND);
 DEFINE_2_INP_OPER(op_xor, XOR);
-DEFINE_2_INP_OPER(op_nand, NAND);
-DEFINE_2_INP_OPER(op_andyn, ANDYN);
-DEFINE_2_INP_OPER(op_andny, ANDNY);
-DEFINE_2_INP_OPER(op_or, OR);
-DEFINE_2_INP_OPER(op_nor, NOR);
-DEFINE_2_INP_OPER(op_oryn, ORYN);
-DEFINE_2_INP_OPER(op_orny, ORNY);
-DEFINE_2_INP_OPER(op_xnor, XNOR);
+// DEFINE_2_INP_OPER(op_nand, NAND);
+// DEFINE_2_INP_OPER(op_andyn, ANDYN);
+// DEFINE_2_INP_OPER(op_andny, ANDNY);
+// DEFINE_2_INP_OPER(op_or, OR);
+// DEFINE_2_INP_OPER(op_nor, NOR);
+// DEFINE_2_INP_OPER(op_oryn, ORYN);
+// DEFINE_2_INP_OPER(op_orny, ORNY);
+// DEFINE_2_INP_OPER(op_xnor, XNOR);
 
-ObjHandle BitTracker::op_mux(const ObjHandle& cond, const ObjHandle& in1, const ObjHandle& in2) {
-  return add_gate(BTI::GateType::MUX, {cond, in1, in2});
-}
+// ObjHandle BitTracker::op_mux(const ObjHandle& cond, const ObjHandle& in1, const ObjHandle& in2) {
+//   return add_gate(BTI::GateType::MUX, {cond, in1, in2});
+// }
 
 void BitTracker::export_blif(ostream& stream, const string& model_name) {
   stream << "# Circuit created by Cingulata" << endl;

@@ -21,7 +21,7 @@
 #ifndef BIT_TRACKER
 #define BIT_TRACKER
 
-#include <bit_exec/interface_fhe.hxx>
+#include <bit_exec/interface_she.hxx>
 #include <bit_exec/obj_man/allocator.hxx>
 #include <bit_exec/obj_man/basic.hxx>
 
@@ -42,7 +42,7 @@ namespace BTI = BitTrackerInternal;
  *  bit operations. This class constructs a boolean circuit corresponding
  *  to every called interface operation.
  */
-class BitTracker : public IBitExecFHE {
+class BitTracker : public IBitExecSHE {
 public:
   ~BitTracker() override;
 
@@ -59,21 +59,21 @@ public:
   ObjHandle   read        (const std::string& name)                       override;
   void        write       (const ObjHandle& in1, const std::string& name) override;
 
-  ObjHandle   op_not      (const ObjHandle& in1)                          override;
+  // ObjHandle   op_not      (const ObjHandle& in1)                          override;
   ObjHandle   op_and      (const ObjHandle& in1, const ObjHandle& in2)    override;
   ObjHandle   op_xor      (const ObjHandle& in1, const ObjHandle& in2)    override;
 
-  ObjHandle   op_nand     (const ObjHandle& in1, const ObjHandle& in2)    override;
-  ObjHandle   op_andyn    (const ObjHandle& in1, const ObjHandle& in2)    override;
-  ObjHandle   op_andny    (const ObjHandle& in1, const ObjHandle& in2)    override;
-  ObjHandle   op_or       (const ObjHandle& in1, const ObjHandle& in2)    override;
-  ObjHandle   op_nor      (const ObjHandle& in1, const ObjHandle& in2)    override;
-  ObjHandle   op_oryn     (const ObjHandle& in1, const ObjHandle& in2)    override;
-  ObjHandle   op_orny     (const ObjHandle& in1, const ObjHandle& in2)    override;
-  ObjHandle   op_xnor     (const ObjHandle& in1, const ObjHandle& in2)    override;
+  // ObjHandle   op_nand     (const ObjHandle& in1, const ObjHandle& in2)    override;
+  // ObjHandle   op_andyn    (const ObjHandle& in1, const ObjHandle& in2)    override;
+  // ObjHandle   op_andny    (const ObjHandle& in1, const ObjHandle& in2)    override;
+  // ObjHandle   op_or       (const ObjHandle& in1, const ObjHandle& in2)    override;
+  // ObjHandle   op_nor      (const ObjHandle& in1, const ObjHandle& in2)    override;
+  // ObjHandle   op_oryn     (const ObjHandle& in1, const ObjHandle& in2)    override;
+  // ObjHandle   op_orny     (const ObjHandle& in1, const ObjHandle& in2)    override;
+  // ObjHandle   op_xnor     (const ObjHandle& in1, const ObjHandle& in2)    override;
 
-  ObjHandle   op_mux      (const ObjHandle& cond,
-                            const ObjHandle& in1, const ObjHandle& in2)   override;
+  // ObjHandle   op_mux      (const ObjHandle& cond,
+  //                           const ObjHandle& in1, const ObjHandle& in2)   override;
 
   /* clang-format on */
 

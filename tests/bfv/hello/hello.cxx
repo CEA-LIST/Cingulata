@@ -21,6 +21,9 @@
 #include <cstdint>
 
 /* local includes */
+#include <bit_exec/decorator/attach.hxx>
+#include <bit_exec/decorator/depth.hxx>
+#include <bit_exec/decorator/stat.hxx>
 #include <bit_exec/tracker.hxx>
 #include <ci_context.hxx>
 #include <ci_int.hxx>
@@ -33,22 +36,28 @@ using namespace cingulata;
 int main() {
   /* Set context to bit tracker and multiplicative depth minimized integer
    * operations */
-  CiContext::set_config(make_shared<BitTracker>(), make_shared<IntOpGenDepth>());
+  CiContext::set_config(
+      make_shared<
+          decorator::Attach<BitTracker, decorator::Depth, decorator::Stat>>(),
+      make_shared<IntOpGenDepth>());
 
   CiInt a{CiInt::u8};      // create from unsigned 8-bit template
   CiInt b{CiInt::u8v(42)}; // use helper function to create an unsigned 8-bit
   CiInt c{-1, 16, false};  // or manually specify value, size and signedness
 
-  a.read("a");            // read variable a and set name
+  a.read("a"); // read variable a and set name
 
-  b.set_name("b");        // set name and ...
-  cin >> b;               //  read variable b
+  b.set_name("b"); // set name and ...
+  cin >> b;        //  read variable b
 
   c = a + b;
 
-  cout << c.set_name("c");// set name and write variable
+  cout << c.set_name("c"); // set name and write variable
   // c.write("c");           //  or do it at once
 
   /* Export to file the "tracked" circuit */
   CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name, "hello");
+
+  CiContext::get_bit_exec_t<decorator::Depth<BitTracker>>()->print();
+  CiContext::get_bit_exec_t<decorator::Stat<BitTracker>>()->print();
 }
