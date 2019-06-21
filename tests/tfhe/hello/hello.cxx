@@ -19,7 +19,8 @@
 */
 
 /* local includes */
-#include <bit_exec/stat_deco.hxx>
+#include <bit_exec/decorator/attach.hxx>
+#include <bit_exec/decorator/stat.hxx>
 #include <ci_context.hxx>
 #include <ci_int.hxx>
 #include <int_op_gen/size.hxx>
@@ -33,7 +34,7 @@ int main() {
   /* Set context to bit tracker and multiplicative depth minimized integer
    * operations */
   CiContext::set_config(
-      make_shared<StatDeco<TfheBitExec>>("tfhe.pk", TfheBitExec::Public),
+      make_shared<decorator::Attach<TfheBitExec, decorator::Stat>>("tfhe.pk", TfheBitExec::Public),
       make_shared<IntOpGenSize>());
 
   CiInt a{CiInt::u8};     // create from unsigned 8-bit template
@@ -48,5 +49,5 @@ int main() {
 
   c.write("c");
 
-  CiContext::get_bit_exec_t<StatDeco<TfheBitExec>>()->print();
+  CiContext::get_bit_exec_t<decorator::Stat<TfheBitExec>>()->print();
 }

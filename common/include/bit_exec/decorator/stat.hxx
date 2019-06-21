@@ -18,21 +18,43 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-#ifndef BIT_EXEC_STAT
-#define BIT_EXEC_STAT
+#ifndef BIT_EXEC_DECORATOR_STAT
+#define BIT_EXEC_DECORATOR_STAT
+
+#include <bit_exec/decorator/interface.hxx>
 
 #include <cstdio>
 
 namespace cingulata {
 
+class IBitExecFHE;
+class IBitExecSHE;
+
+namespace decorator {
+
+namespace {
+template <typename bit_exec_interface_t> class Stat_impl;
+};
+
 /**
- * @brief      FHE bit executor operation counter
+ * @brief      Bit executor statistics decorator
  * @details    This class counts the number of times each abstract method of @c
- *             bit_exec_t is called.
+ *             bit_exec_t is called. The actual implementation depends on the
+ *             parent class of template parameter. Thus for classes inheriting
+ *             from IBitExecSHE only XOR and AND gates will be counted.
+ *
+ * @tparam     bit_exec_t  Bit executor implementation to log
+ * @tparam     <unnamed>   verify if given @c bit_exec_t class inherits from @c
+ *                         IBitExec
  */
-class StatFHE {
+template <typename bit_exec_t>
+class Stat : public Stat_impl<typename bit_exec_t::interface_type> {};
+
+namespace {
+
+template <> class Stat_impl<IBitExecFHE> : public IDecorator {
 public:
-  StatFHE() { reset(); }
+  Stat_impl() { post_reset(); }
 
   void print() {
     printf("Number of calls:\n");
@@ -55,7 +77,7 @@ public:
     printf("%-8s: %6d\n", "op_mux", m_cnt_op_mux);
   }
 
-  void reset() {
+  void post_reset() override {
     m_cnt_encode = 0;
     m_cnt_encrypt = 0;
     m_cnt_decrypt = 0;
@@ -75,37 +97,37 @@ public:
     m_cnt_op_mux = 0;
   }
 
-  void encode() { m_cnt_encode++; }
+  void post_encode() override { m_cnt_encode++; }
 
-  void encrypt() { m_cnt_encrypt++; }
+  void post_encrypt() override { m_cnt_encrypt++; }
 
-  void decrypt() { m_cnt_decrypt++; }
+  void post_decrypt() override { m_cnt_decrypt++; }
 
-  void read() { m_cnt_read++; }
+  void post_read() override { m_cnt_read++; }
 
-  void write() { m_cnt_write++; }
+  void post_write() override { m_cnt_write++; }
 
-  void op_not() { m_cnt_op_not++; }
+  void post_op_not() override { m_cnt_op_not++; }
 
-  void op_and() { m_cnt_op_and++; }
+  void post_op_and() override { m_cnt_op_and++; }
 
-  void op_xor() { m_cnt_op_xor++; }
+  void post_op_xor() override { m_cnt_op_xor++; }
 
-  void op_nand() { m_cnt_op_nand++; }
+  void post_op_nand() override { m_cnt_op_nand++; }
 
-  void op_andyn() { m_cnt_op_andyn++; }
+  void post_op_andyn() override { m_cnt_op_andyn++; }
 
-  void op_andny() { m_cnt_op_andny++; }
+  void post_op_andny() override { m_cnt_op_andny++; }
 
-  void op_or() { m_cnt_op_or++; }
+  void post_op_or() override { m_cnt_op_or++; }
 
-  void op_nor() { m_cnt_op_nor++; }
+  void post_op_nor() override { m_cnt_op_nor++; }
 
-  void op_oryn() { m_cnt_op_oryn++; }
+  void post_op_oryn() override { m_cnt_op_oryn++; }
 
-  void op_orny() { m_cnt_op_orny++; }
+  void post_op_orny() override { m_cnt_op_orny++; }
 
-  void op_xnor() { m_cnt_op_xnor++; }
+  void post_op_xnor() override { m_cnt_op_xnor++; }
 
 protected:
   unsigned m_cnt_encode;
@@ -127,14 +149,9 @@ protected:
   unsigned m_cnt_op_mux;
 };
 
-/**
- * @brief      SHE bit executor operation counter
- * @details    This class counts the number of times each abstract method of @c
- *             bit_exec_t is called. Only XOR and AND gates are counted.
- */
-class StatSHE {
+template <> class Stat_impl<IBitExecSHE> : public IDecorator {
 public:
-  StatSHE() { reset(); }
+  Stat_impl() { post_reset(); }
 
   void print() {
     printf("Number of calls:\n");
@@ -147,7 +164,7 @@ public:
     printf("%-8s: %6d\n", "op_xor", m_cnt_op_xor);
   }
 
-  void reset() {
+  void post_reset() override {
     m_cnt_encode = 0;
     m_cnt_encrypt = 0;
     m_cnt_decrypt = 0;
@@ -157,19 +174,19 @@ public:
     m_cnt_op_xor = 0;
   }
 
-  void encode() { m_cnt_encode++; }
+  void post_encode() override { m_cnt_encode++; }
 
-  void encrypt() { m_cnt_encrypt++; }
+  void post_encrypt() override { m_cnt_encrypt++; }
 
-  void decrypt() { m_cnt_decrypt++; }
+  void post_decrypt() override { m_cnt_decrypt++; }
 
-  void read() { m_cnt_read++; }
+  void post_read() override { m_cnt_read++; }
 
-  void write() { m_cnt_write++; }
+  void post_write() override { m_cnt_write++; }
 
-  void op_and() { m_cnt_op_and++; }
+  void post_op_and() override { m_cnt_op_and++; }
 
-  void op_xor() { m_cnt_op_xor++; }
+  void post_op_xor() override { m_cnt_op_xor++; }
 
 protected:
   unsigned m_cnt_encode;
@@ -180,7 +197,9 @@ protected:
   unsigned m_cnt_op_and;
   unsigned m_cnt_op_xor;
 };
+} // namespace
 
+} // namespace decorator
 } // namespace cingulata
 
 #endif
