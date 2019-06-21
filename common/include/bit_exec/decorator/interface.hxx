@@ -21,6 +21,11 @@
 #ifndef BIT_EXEC_DECORATOR_INTERFACE
 #define BIT_EXEC_DECORATOR_INTERFACE
 
+#include <bit_exec/obj_handle.hxx>
+#include <utils.hxx>
+
+#include <string>
+
 namespace cingulata {
 namespace decorator {
 
@@ -29,48 +34,57 @@ namespace decorator {
  */
 class IDecorator {
 public:
-  virtual void pre_init() {}
-  virtual void post_init() {}
+  /* clang-format off */
 
-  virtual void pre_reset() {}
-  virtual void post_reset() {}
+  virtual void pre_init       () {}
+  virtual void pre_reset      () {}
 
-  virtual void pre_encode() {}
-  virtual void post_encode() {}
-  virtual void pre_encrypt() {}
-  virtual void post_encrypt() {}
-  virtual void pre_decrypt() {}
-  virtual void post_decrypt() {}
-  virtual void pre_read() {}
-  virtual void post_read() {}
-  virtual void pre_write() {}
-  virtual void post_write() {}
+  virtual void pre_encode     (const bit_plain_t pt_val) {}
+  virtual void pre_encrypt    (const bit_plain_t pt_val) {}
+  virtual void pre_decrypt    (const ObjHandle& in) {}
+  virtual void pre_read       (const std::string& name) {}
+  virtual void pre_write      (const ObjHandle& in, const std::string& name) {}
 
-  virtual void pre_op_not() {}
-  virtual void post_op_not() {}
-  virtual void pre_op_and() {}
-  virtual void post_op_and() {}
-  virtual void pre_op_xor() {}
-  virtual void post_op_xor() {}
-  virtual void pre_op_nand() {}
-  virtual void post_op_nand() {}
-  virtual void pre_op_andyn() {}
-  virtual void post_op_andyn() {}
-  virtual void pre_op_andny() {}
-  virtual void post_op_andny() {}
-  virtual void pre_op_or() {}
-  virtual void post_op_or() {}
-  virtual void pre_op_nor() {}
-  virtual void post_op_nor() {}
-  virtual void pre_op_oryn() {}
-  virtual void post_op_oryn() {}
-  virtual void pre_op_orny() {}
-  virtual void post_op_orny() {}
-  virtual void pre_op_xnor() {}
-  virtual void post_op_xnor() {}
+  virtual void pre_op_not     (const ObjHandle& in) {}
+  virtual void pre_op_and     (const ObjHandle& in1, const ObjHandle& in2) {}
+  virtual void pre_op_xor     (const ObjHandle& in1, const ObjHandle& in2) {}
+  virtual void pre_op_nand    (const ObjHandle& in1, const ObjHandle& in2) {}
+  virtual void pre_op_andyn   (const ObjHandle& in1, const ObjHandle& in2) {}
+  virtual void pre_op_andny   (const ObjHandle& in1, const ObjHandle& in2) {}
+  virtual void pre_op_or      (const ObjHandle& in1, const ObjHandle& in2) {}
+  virtual void pre_op_nor     (const ObjHandle& in1, const ObjHandle& in2) {}
+  virtual void pre_op_oryn    (const ObjHandle& in1, const ObjHandle& in2) {}
+  virtual void pre_op_orny    (const ObjHandle& in1, const ObjHandle& in2) {}
+  virtual void pre_op_xnor    (const ObjHandle& in1, const ObjHandle& in2) {}
 
-  virtual void pre_op_mux() {}
-  virtual void post_op_mux() {}
+  virtual void pre_op_mux     (const ObjHandle& cond,
+                                const ObjHandle& in1, const ObjHandle& in2) {}
+
+  virtual void post_init      () {}
+  virtual void post_reset     () {}
+
+  virtual void post_encode    (const ObjHandle& res_hdl, const bit_plain_t pt_val) {}
+  virtual void post_encrypt   (const ObjHandle& res_hdl, const bit_plain_t pt_val) {}
+  virtual void post_decrypt   (const bit_plain_t, const ObjHandle& in) {}
+  virtual void post_read      (const ObjHandle& res_hdl, const std::string& name) {}
+  virtual void post_write     (const ObjHandle& in, const std::string& name) {}
+
+  virtual void post_op_not    (const ObjHandle& res_hdl, const ObjHandle& in) {}
+  virtual void post_op_and    (const ObjHandle& res_hdl, const ObjHandle& in1, const ObjHandle& in2) {}
+  virtual void post_op_xor    (const ObjHandle& res_hdl, const ObjHandle& in1, const ObjHandle& in2) {}
+  virtual void post_op_nand   (const ObjHandle& res_hdl, const ObjHandle& in1, const ObjHandle& in2) {}
+  virtual void post_op_andyn  (const ObjHandle& res_hdl, const ObjHandle& in1, const ObjHandle& in2) {}
+  virtual void post_op_andny  (const ObjHandle& res_hdl, const ObjHandle& in1, const ObjHandle& in2) {}
+  virtual void post_op_or     (const ObjHandle& res_hdl, const ObjHandle& in1, const ObjHandle& in2) {}
+  virtual void post_op_nor    (const ObjHandle& res_hdl, const ObjHandle& in1, const ObjHandle& in2) {}
+  virtual void post_op_oryn   (const ObjHandle& res_hdl, const ObjHandle& in1, const ObjHandle& in2) {}
+  virtual void post_op_orny   (const ObjHandle& res_hdl, const ObjHandle& in1, const ObjHandle& in2) {}
+  virtual void post_op_xnor   (const ObjHandle& res_hdl, const ObjHandle& in1, const ObjHandle& in2) {}
+
+  virtual void post_op_mux    (const ObjHandle& res_hdl, const ObjHandle& cond,
+                                const ObjHandle& in1, const ObjHandle& in2) {}
+
+  /* clang-format on */
 };
 
 } // namespace decorator

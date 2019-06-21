@@ -97,37 +97,84 @@ public:
     m_cnt_op_mux = 0;
   }
 
-  void post_encode() override { m_cnt_encode++; }
+  void post_encode(const ObjHandle &, const bit_plain_t) override {
+    m_cnt_encode++;
+  }
 
-  void post_encrypt() override { m_cnt_encrypt++; }
+  void post_encrypt(const ObjHandle &, const bit_plain_t) override {
+    m_cnt_encrypt++;
+  }
 
-  void post_decrypt() override { m_cnt_decrypt++; }
+  void post_decrypt(const bit_plain_t, const ObjHandle &) override {
+    m_cnt_decrypt++;
+  }
 
-  void post_read() override { m_cnt_read++; }
+  void post_read(const ObjHandle &, const std::string &) override {
+    m_cnt_read++;
+  }
 
-  void post_write() override { m_cnt_write++; }
+  void post_write(const ObjHandle &, const std::string &) override {
+    m_cnt_write++;
+  }
 
-  void post_op_not() override { m_cnt_op_not++; }
+  void post_op_not(const ObjHandle &, const ObjHandle &) override {
+    m_cnt_op_not++;
+  }
 
-  void post_op_and() override { m_cnt_op_and++; }
+  void post_op_and(const ObjHandle &, const ObjHandle &,
+                   const ObjHandle &) override {
+    m_cnt_op_and++;
+  }
 
-  void post_op_xor() override { m_cnt_op_xor++; }
+  void post_op_xor(const ObjHandle &, const ObjHandle &,
+                   const ObjHandle &) override {
+    m_cnt_op_xor++;
+  }
 
-  void post_op_nand() override { m_cnt_op_nand++; }
+  void post_op_nand(const ObjHandle &, const ObjHandle &,
+                    const ObjHandle &) override {
+    m_cnt_op_nand++;
+  }
 
-  void post_op_andyn() override { m_cnt_op_andyn++; }
+  void post_op_andyn(const ObjHandle &, const ObjHandle &,
+                     const ObjHandle &) override {
+    m_cnt_op_andyn++;
+  }
 
-  void post_op_andny() override { m_cnt_op_andny++; }
+  void post_op_andny(const ObjHandle &, const ObjHandle &,
+                     const ObjHandle &) override {
+    m_cnt_op_andny++;
+  }
 
-  void post_op_or() override { m_cnt_op_or++; }
+  void post_op_or(const ObjHandle &, const ObjHandle &,
+                  const ObjHandle &) override {
+    m_cnt_op_or++;
+  }
 
-  void post_op_nor() override { m_cnt_op_nor++; }
+  void post_op_nor(const ObjHandle &, const ObjHandle &,
+                   const ObjHandle &) override {
+    m_cnt_op_nor++;
+  }
 
-  void post_op_oryn() override { m_cnt_op_oryn++; }
+  void post_op_oryn(const ObjHandle &, const ObjHandle &,
+                    const ObjHandle &) override {
+    m_cnt_op_oryn++;
+  }
 
-  void post_op_orny() override { m_cnt_op_orny++; }
+  void post_op_orny(const ObjHandle &, const ObjHandle &,
+                    const ObjHandle &) override {
+    m_cnt_op_orny++;
+  }
 
-  void post_op_xnor() override { m_cnt_op_xnor++; }
+  void post_op_xnor(const ObjHandle &, const ObjHandle &,
+                    const ObjHandle &) override {
+    m_cnt_op_xnor++;
+  }
+
+  void post_op_mux(const ObjHandle &, const ObjHandle &cond, const ObjHandle &,
+                   const ObjHandle &) override {
+    m_cnt_op_mux++;
+  }
 
 protected:
   unsigned m_cnt_encode;
@@ -174,19 +221,35 @@ public:
     m_cnt_op_xor = 0;
   }
 
-  void post_encode() override { m_cnt_encode++; }
+  void post_encode(const ObjHandle &, const bit_plain_t) override {
+    m_cnt_encode++;
+  }
 
-  void post_encrypt() override { m_cnt_encrypt++; }
+  void post_encrypt(const ObjHandle &, const bit_plain_t) override {
+    m_cnt_encrypt++;
+  }
 
-  void post_decrypt() override { m_cnt_decrypt++; }
+  void post_decrypt(const bit_plain_t, const ObjHandle &) override {
+    m_cnt_decrypt++;
+  }
 
-  void post_read() override { m_cnt_read++; }
+  void post_read(const ObjHandle &, const std::string &) override {
+    m_cnt_read++;
+  }
 
-  void post_write() override { m_cnt_write++; }
+  void post_write(const ObjHandle &, const std::string &) override {
+    m_cnt_write++;
+  }
 
-  void post_op_and() override { m_cnt_op_and++; }
+  void post_op_and(const ObjHandle &, const ObjHandle &,
+                   const ObjHandle &) override {
+    m_cnt_op_and++;
+  }
 
-  void post_op_xor() override { m_cnt_op_xor++; }
+  void post_op_xor(const ObjHandle &, const ObjHandle &,
+                   const ObjHandle &) override {
+    m_cnt_op_xor++;
+  }
 
 protected:
   unsigned m_cnt_encode;
