@@ -34,7 +34,7 @@ int main() {
   /* Set context to bit tracker and multiplicative depth minimized integer
    * operations */
   CiContext::set_config(
-      make_shared<decorator::Attach<TfheBitExec, decorator::Stat>>("tfhe.pk", TfheBitExec::Public),
+      make_shared<decorator::Attach<TfheBitExec, decorator::Stat<IBitExecFHE>>>("tfhe.pk", TfheBitExec::Public),
       make_shared<IntOpGenSize>());
 
   CiInt a{CiInt::u8};     // create from unsigned 8-bit template
@@ -49,5 +49,5 @@ int main() {
 
   c.write("c");
 
-  CiContext::get_bit_exec_t<decorator::Stat<TfheBitExec>>()->print();
+  CiContext::get_bit_exec_t<decorator::Stat<IBitExecFHE>>()->print();
 }

@@ -37,8 +37,8 @@ int main() {
   /* Set context to bit tracker and multiplicative depth minimized integer
    * operations */
   CiContext::set_config(
-      make_shared<
-          decorator::Attach<BitTracker, decorator::Depth, decorator::Stat>>(),
+      make_shared<decorator::Attach<BitTracker, decorator::Depth<IBitExecSHE>,
+                                    decorator::Stat<IBitExecSHE>>>(),
       make_shared<IntOpGenDepth>());
 
   CiInt a{CiInt::u8};      // create from unsigned 8-bit template
@@ -58,6 +58,6 @@ int main() {
   /* Export to file the "tracked" circuit */
   CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name, "hello");
 
-  CiContext::get_bit_exec_t<decorator::Depth<BitTracker>>()->print();
-  CiContext::get_bit_exec_t<decorator::Stat<BitTracker>>()->print();
+  CiContext::get_bit_exec_t<decorator::Depth<IBitExecSHE>>()->print();
+  CiContext::get_bit_exec_t<decorator::Stat<IBitExecSHE>>()->print();
 }

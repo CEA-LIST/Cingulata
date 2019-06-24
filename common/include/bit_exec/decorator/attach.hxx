@@ -48,27 +48,27 @@ template <typename bit_exec_t, typename deco_impl_t> class Attach_inner;
  * @tparam     deco_impl_t  First decorator
  * @tparam     Types        Other decorators
  */
-template <typename bit_exec_t, template <typename> class deco_impl_t,
-          template <typename> class... Types>
+template <typename bit_exec_t, typename deco_impl_t,
+          typename... Types>
 class Attach : public Attach_inner<Attach<bit_exec_t, Types...>,
-                                   deco_impl_t<bit_exec_t>> {
+                                   deco_impl_t> {
 public:
   template <typename... Args>
   Attach(Args... args)
-      : Attach_inner<Attach<bit_exec_t, Types...>, deco_impl_t<bit_exec_t>>(
+      : Attach_inner<Attach<bit_exec_t, Types...>, deco_impl_t>(
             std::forward<Args>(args)...) {}
 };
 
 /**
  * @brief      Specialization of #Attach class to one decorator
  */
-template <typename bit_exec_t, template <typename> class deco_impl_t>
+template <typename bit_exec_t, typename deco_impl_t>
 class Attach<bit_exec_t, deco_impl_t>
-    : public Attach_inner<bit_exec_t, deco_impl_t<bit_exec_t>> {
+    : public Attach_inner<bit_exec_t, deco_impl_t> {
 public:
   template <typename... Args>
   Attach(Args... args)
-      : Attach_inner<bit_exec_t, deco_impl_t<bit_exec_t>>(
+      : Attach_inner<bit_exec_t, deco_impl_t>(
             std::forward<Args>(args)...) {}
 };
 

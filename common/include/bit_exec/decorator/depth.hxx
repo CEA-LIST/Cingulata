@@ -28,7 +28,6 @@
 
 namespace cingulata {
 
-class IBitExecFHE;
 class IBitExecSHE;
 
 namespace decorator {
