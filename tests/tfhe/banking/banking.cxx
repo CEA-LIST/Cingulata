@@ -21,6 +21,8 @@
 #include <iostream>
 
 /* local includes */
+#include <bit_exec/decorator/attach.hxx>
+#include <bit_exec/decorator/stat.hxx>
 #include <ci_context.hxx>
 #include <ci_fncs.hxx>
 #include <ci_int.hxx>
@@ -32,9 +34,11 @@ using namespace std;
 using namespace cingulata;
 
 int main() {
-  /* Set context to TFHE bit tracker and size minimized integer operations */
+  /* Set context to tfhe bit executor and size minimized integer
+   * operations */
   CiContext::set_config(
-      make_shared<TfheBitExec>("tfhe.pk", TfheBitExec::Public),
+      make_shared<decorator::Attach<TfheBitExec, decorator::Stat>>(
+          "tfhe.pk", TfheBitExec::Public),
       make_shared<IntOpGenSize>());
 
   CiInt t1{CiInt::s32}, t2{CiInt::s32}, m{CiInt::s32};
@@ -51,4 +55,6 @@ int main() {
 
   t1.write("t1");
   t2.write("t2");
+
+  CiContext::get_bit_exec_t<decorator::Stat<TfheBitExec>>()->print();
 }

@@ -57,24 +57,45 @@ public:
   Stat_impl() { post_reset(); }
 
   void print() {
-    printf("Number of calls:\n");
-    printf("%-8s: %6d\n", "encode", m_cnt_encode);
-    printf("%-8s: %6d\n", "encrypt", m_cnt_encrypt);
-    printf("%-8s: %6d\n", "decrypt", m_cnt_decrypt);
-    printf("%-8s: %6d\n", "read", m_cnt_read);
-    printf("%-8s: %6d\n", "write", m_cnt_write);
-    printf("%-8s: %6d\n", "op_not", m_cnt_op_not);
-    printf("%-8s: %6d\n", "op_and", m_cnt_op_and);
-    printf("%-8s: %6d\n", "op_xor", m_cnt_op_xor);
-    printf("%-8s: %6d\n", "op_nand", m_cnt_op_nand);
-    printf("%-8s: %6d\n", "op_andyn", m_cnt_op_andyn);
-    printf("%-8s: %6d\n", "op_andny", m_cnt_op_andny);
-    printf("%-8s: %6d\n", "op_or", m_cnt_op_or);
-    printf("%-8s: %6d\n", "op_nor", m_cnt_op_nor);
-    printf("%-8s: %6d\n", "op_oryn", m_cnt_op_oryn);
-    printf("%-8s: %6d\n", "op_orny", m_cnt_op_orny);
-    printf("%-8s: %6d\n", "op_xnor", m_cnt_op_xnor);
-    printf("%-8s: %6d\n", "op_mux", m_cnt_op_mux);
+    printf("Number of executions:\n");
+    printf(" %-8s: %6d\n", "encode", m_cnt_encode);
+    printf(" %-8s: %6d\n", "encrypt", m_cnt_encrypt);
+    printf(" %-8s: %6d\n", "decrypt", m_cnt_decrypt);
+    printf(" %-8s: %6d\n", "read", m_cnt_read);
+    printf(" %-8s: %6d\n", "write", m_cnt_write);
+    printf(" %-16s\n", "------------------");
+
+    printf(" %-8s: %6d\n", "not", m_cnt_op_not);
+    printf(" %-16s\n", "------------------");
+
+    printf(" %-8s: %6d\n", "and", m_cnt_op_and);
+    printf(" %-8s: %6d\n", "xor", m_cnt_op_xor);
+    printf(" %-8s: %6d\n", "nand", m_cnt_op_nand);
+    printf(" %-8s: %6d\n", "andyn", m_cnt_op_andyn);
+    printf(" %-8s: %6d\n", "andny", m_cnt_op_andny);
+    printf(" %-8s: %6d\n", "or", m_cnt_op_or);
+    printf(" %-8s: %6d\n", "nor", m_cnt_op_nor);
+    printf(" %-8s: %6d\n", "oryn", m_cnt_op_oryn);
+    printf(" %-8s: %6d\n", "orny", m_cnt_op_orny);
+    printf(" %-8s: %6d\n", "xnor", m_cnt_op_xnor);
+    unsigned total = m_cnt_op_and + m_cnt_op_xor + m_cnt_op_nand +
+                     m_cnt_op_andyn + m_cnt_op_andny + m_cnt_op_or +
+                     m_cnt_op_nor + m_cnt_op_oryn + m_cnt_op_orny +
+                     m_cnt_op_xnor;
+    printf(" %-8s\n", "and");
+    printf(" %-8s\n", " + xor");
+    printf(" %-8s\n", " + nand");
+    printf(" %-8s\n", " + andyn");
+    printf(" %-8s\n", " + andny");
+    printf(" %-8s\n", " + or");
+    printf(" %-8s\n", " + nor");
+    printf(" %-8s\n", " + oryn");
+    printf(" %-8s\n", " + orny");
+    printf(" %-8s= %6d\n", " + xnor", total);
+    printf(" %-16s\n", "------------------");
+
+    printf(" %-8s: %6d\n", "mux", m_cnt_op_mux);
+    printf(" %-16s\n", "------------------");
   }
 
   void post_reset() override {
@@ -201,14 +222,17 @@ public:
   Stat_impl() { post_reset(); }
 
   void print() {
-    printf("Number of calls:\n");
-    printf("%-8s: %6d\n", "encode", m_cnt_encode);
-    printf("%-8s: %6d\n", "encrypt", m_cnt_encrypt);
-    printf("%-8s: %6d\n", "decrypt", m_cnt_decrypt);
-    printf("%-8s: %6d\n", "read", m_cnt_read);
-    printf("%-8s: %6d\n", "write", m_cnt_write);
-    printf("%-8s: %6d\n", "op_and", m_cnt_op_and);
-    printf("%-8s: %6d\n", "op_xor", m_cnt_op_xor);
+    printf("Number of executions:\n");
+    printf(" %-8s: %6d\n", "encode", m_cnt_encode);
+    printf(" %-8s: %6d\n", "encrypt", m_cnt_encrypt);
+    printf(" %-8s: %6d\n", "decrypt", m_cnt_decrypt);
+    printf(" %-8s: %6d\n", "read", m_cnt_read);
+    printf(" %-8s: %6d\n", "write", m_cnt_write);
+    printf(" %-16s\n", "------------------");
+
+    printf(" %-8s: %6d\n", "and", m_cnt_op_and);
+    printf(" %-8s: %6d\n", "xor", m_cnt_op_xor);
+    printf(" %-16s\n", "------------------");
   }
 
   void post_reset() override {

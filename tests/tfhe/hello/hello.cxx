@@ -31,15 +31,17 @@ using namespace std;
 using namespace cingulata;
 
 int main() {
-  /* Set context to bit tracker and multiplicative depth minimized integer
+  /* Set context to tfhe bit executor and size minimized integer
    * operations */
   CiContext::set_config(
-      make_shared<decorator::Attach<TfheBitExec, decorator::Stat<IBitExecFHE>>>("tfhe.pk", TfheBitExec::Public),
+      make_shared<decorator::Attach<TfheBitExec, decorator::Stat<IBitExecFHE>>>(
+          "tfhe.pk", TfheBitExec::Public),
       make_shared<IntOpGenSize>());
 
-  CiInt a{CiInt::u8};     // create from unsigned 8-bit template
-  CiInt b{0, 8, false};   // manually specify value, size and signedness
-  CiInt c{(uint16_t)-1};  // automatically determine size and signedness from value
+  CiInt a{CiInt::u8};   // create from unsigned 8-bit template
+  CiInt b{0, 8, false}; // manually specify value, size and signedness
+  CiInt c{
+      (uint16_t)-1}; // automatically determine size and signedness from value
 
   a.read("a");
   b.read("b");

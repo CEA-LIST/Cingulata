@@ -243,6 +243,22 @@ DEFINE_EXT_OPER2(operator <=, op_orny);
 DEFINE_EXT_OPER2(operator > , op_andyn);
 DEFINE_EXT_OPER2(operator >=, op_oryn);
 
+CiBit cingulata::op_mux(const CiBit &c, const CiBit &a, const CiBit &b) {
+  CiBit res;
+
+  if (c.is_plain()) {
+    res = (c.get_val() == 0) ? a : b;
+  } else {
+    if (a.is_plain() or b.is_plain()) {
+      res = (c & (a ^ b)) ^ a;
+    } else {
+      res.obj_hdl = CiContext::get_bit_exec()->op_mux(c.obj_hdl, a.obj_hdl, b.obj_hdl);
+    }
+  }
+
+  return res;
+}
+
 istream& cingulata::operator>>(istream& inp, CiBit& val) {
   val.read();
   return inp;
