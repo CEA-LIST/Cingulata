@@ -37,7 +37,7 @@ int main() {
   /* Set context to tfhe bit executor and size minimized integer
    * operations */
   CiContext::set_config(
-      make_shared<decorator::Attach<TfheBitExec, decorator::Stat>>(
+      make_shared<decorator::Attach<TfheBitExec, decorator::Stat<TfheBitExec>>>(
           "tfhe.pk", TfheBitExec::Public),
       make_shared<IntOpGenSize>());
 
