@@ -60,5 +60,5 @@ ObjHandle IBitExecSHE::op_xnor(const ObjHandle& in1, const ObjHandle& in2) {
 }
 
 ObjHandle IBitExecSHE::op_mux(const ObjHandle& c, const ObjHandle& in1, const ObjHandle& in2) {
-  return op_xor(op_and(c, op_xor(in1, in2)), in2);
+  return op_xor(op_and(c, op_xor(in1, in2)), in1);
 }
