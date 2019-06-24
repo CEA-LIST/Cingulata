@@ -1,6 +1,6 @@
 /*
     (C) Copyright 2019 CEA LIST. All Rights Reserved.
-    Contributor(s): Cingulata team
+    Contributor(s): Cingulata team (formerly Armadillo team)
 
     This software is governed by the CeCILL-C license under French law and
     abiding by the rules of distribution of free software.  You can  use,
@@ -18,37 +18,30 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
+#include <iostream>
 
-template <typename AllocT>
-Pool<AllocT>::Pool(const AllocT &alloc) : m_alloc(alloc) {}
-
-template <typename AllocT> Pool<AllocT>::~Pool() {
-  clear();
-}
-
-template <typename AllocT> void Pool<AllocT>::clear() {
-  while (not m_alloc_obj.empty()) {
-    void *ptr = m_alloc_obj.back();
-    m_alloc_obj.pop_back();
-    m_alloc.del_obj(ptr);
-  }
-}
+/* local includes */
+#include <tfhe_bit_exec.hxx>
+#include <ci_context.hxx>
+#include <ci_int.hxx>
 
 
+/* namespaces */
+using namespace std;
+using namespace cingulata;
 
-template <typename AllocT>
-template <typename... Args>
-ObjHandle Pool<AllocT>::new_handle(Args... args) {
-  void *ptr = nullptr;
-  if (m_alloc_obj.empty()) {
-    ptr = m_alloc.new_obj(std::forward<Args>(args)...);
-  } else {
-    ptr = m_alloc_obj.back();
-    m_alloc_obj.pop_back();
-  }
-  return ObjHandle(ptr, [this](void *ptr) { store_obj(ptr); });
-}
+int main() {
+  /* Only tfhe bit executor is needed for encryption/decryption and IO operations  */
+  CiContext::set_bit_exec(make_shared<TfheBitExec>("tfhe.sk", TfheBitExec::Secret));
 
-template <typename AllocT> void Pool<AllocT>::store_obj(void *ptr) {
-  m_alloc_obj.push_back(ptr);
+  CiInt t1{CiInt::u32};
+  CiInt t2{CiInt::u32};
+
+  t1.read("t1").decrypt();
+  t2.read("t2").decrypt();
+
+  int32_t t1_val = (int32_t)t1.get_val();
+  int32_t t2_val = (int32_t)t2.get_val();
+
+  cout << t1_val << " " << t2_val << endl;
 }

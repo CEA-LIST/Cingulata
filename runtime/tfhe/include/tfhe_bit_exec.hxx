@@ -23,7 +23,7 @@
 
 #define USE_OBJ_POOL
 
-#include <bit_exec/interface.hxx>
+#include <bit_exec/interface_fhe.hxx>
 #include <bit_exec/obj_man/allocator.hxx>
 
 #ifdef USE_OBJ_POOL
@@ -37,7 +37,7 @@ namespace cingulata {
 /**
  * @brief      Bit executor implemenation for TFHE library.
  */
-class TfheBitExec : public IBitExec {
+class TfheBitExec : public IBitExecFHE {
 public:
   enum KeyType { Secret, Public };
 

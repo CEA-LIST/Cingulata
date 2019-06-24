@@ -21,8 +21,8 @@
 #ifndef UTILS
 #define UTILS
 
-#include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <vector>
 
 namespace cingulata {

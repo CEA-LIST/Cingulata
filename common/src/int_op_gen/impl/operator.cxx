@@ -79,7 +79,14 @@ CiBitVector MuxOper::operator()(const CiBitVector& cond, const vector<CiBitVecto
 
   assert((1U<<cond.size()) == inps.size());
 
-  return oper(cond, inps);
+  if (cond.size() == 1) {
+    const CiBit& c = cond[0];
+    for (int i = 0; i < max_size; ++i)
+      inps[0][i] = op_mux(c, inps[0][i], inps[1][i]);
+    return inps[0];
+  } else {
+    return oper(cond, inps);
+  }
 }
 
 vector<CiBitVector> SortOper::operator()(const vector<CiBitVector> &v_cbv,

@@ -181,7 +181,8 @@ TFHE_EXEC_OPER(op_xnor, bootsXNOR);
 ObjHandle TfheBitExec::op_mux(const ObjHandle &cond, const ObjHandle &in1,
                               const ObjHandle &in2) {
   ObjHandleT<LweSample> hdl = mm->new_handle();
-  bootsMUX(hdl.get(), cond.get<LweSample>(), in1.get<LweSample>(),
-           in2.get<LweSample>(), context->pk());
+  /* mux gate in tfhe is cond ? <first input> : <second input> */
+  bootsMUX(hdl.get(), cond.get<LweSample>(), in2.get<LweSample>(),
+           in1.get<LweSample>(), context->pk());
   return hdl;
 }

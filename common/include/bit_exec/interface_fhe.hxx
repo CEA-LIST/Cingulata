@@ -18,37 +18,35 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
+#ifndef BIT_EXEC_INTERFACE_FHE
+#define BIT_EXEC_INTERFACE_FHE
 
-template <typename AllocT>
-Pool<AllocT>::Pool(const AllocT &alloc) : m_alloc(alloc) {}
+#include <bit_exec/interface.hxx>
 
-template <typename AllocT> Pool<AllocT>::~Pool() {
-  clear();
-}
+#include <memory>
+#include <stdint.h>
+#include <string>
 
-template <typename AllocT> void Pool<AllocT>::clear() {
-  while (not m_alloc_obj.empty()) {
-    void *ptr = m_alloc_obj.back();
-    m_alloc_obj.pop_back();
-    m_alloc.del_obj(ptr);
-  }
-}
+namespace cingulata {
 
+/**
+ * @brief      Abstract interface to fully HE schemes with boolean plaintext
+ *             space.
+ * @note       This interface is adapted for fast bootstrapping HE schemes (ie
+ *             TFHE).
+ */
+class IBitExecFHE : public IBitExec {
+public:
+  typedef IBitExecFHE interface_type;
 
+  /* clang-format off */
 
-template <typename AllocT>
-template <typename... Args>
-ObjHandle Pool<AllocT>::new_handle(Args... args) {
-  void *ptr = nullptr;
-  if (m_alloc_obj.empty()) {
-    ptr = m_alloc.new_obj(std::forward<Args>(args)...);
-  } else {
-    ptr = m_alloc_obj.back();
-    m_alloc_obj.pop_back();
-  }
-  return ObjHandle(ptr, [this](void *ptr) { store_obj(ptr); });
-}
+  IBitExecFHE()          = default;
+  virtual ~IBitExecFHE() = default;
 
-template <typename AllocT> void Pool<AllocT>::store_obj(void *ptr) {
-  m_alloc_obj.push_back(ptr);
-}
+  /* clang-format on */
+};
+
+} // namespace cingulata
+
+#endif

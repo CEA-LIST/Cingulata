@@ -30,14 +30,11 @@
 
 namespace cingulata {
 /**
- * @brief Abstract interface to bit execution modules
- * @details This interface is adapted for HE schemes with boolean plaintext
- *  space, bit tracking modules, etc.
- * The inputs and outputs of interface operations are generic object handles.
- * Each operation creates a new object handle. Handles point to object
- *  created by methods \c new_obj and \c del_obj. These methods can be
- *  overloaded in a child class, otherwise the default implementation creates
- *  empty handles.
+ * @brief      Abstract interface to bit execution modules
+ * @details    This interface is adapted for HE schemes with boolean plaintext
+ *             space, bit tracking modules, etc. The inputs and outputs of
+ *             interface operations are generic object handles. Each operation
+ *             creates a new object handle.
  */
 class IBitExec {
 public:
@@ -68,24 +65,22 @@ public:
   virtual ObjHandle   read        (const std::string& name)                       = 0;
   virtual void        write       (const ObjHandle& in1, const std::string& name) = 0;
 
-  virtual ObjHandle   op_not      (const ObjHandle& in1);
 
-  /* Only AND and XOR gates are mandatory */
+  virtual ObjHandle   op_not      (const ObjHandle& in1)                          = 0;
   virtual ObjHandle   op_and      (const ObjHandle& in1, const ObjHandle& in2)    = 0;
   virtual ObjHandle   op_xor      (const ObjHandle& in1, const ObjHandle& in2)    = 0;
-
-  virtual ObjHandle   op_nand     (const ObjHandle& in1, const ObjHandle& in2);
-  virtual ObjHandle   op_andyn    (const ObjHandle& in1, const ObjHandle& in2);
-  virtual ObjHandle   op_andny    (const ObjHandle& in1, const ObjHandle& in2);
-  virtual ObjHandle   op_or       (const ObjHandle& in1, const ObjHandle& in2);
-  virtual ObjHandle   op_nor      (const ObjHandle& in1, const ObjHandle& in2);
-  virtual ObjHandle   op_oryn     (const ObjHandle& in1, const ObjHandle& in2);
-  virtual ObjHandle   op_orny     (const ObjHandle& in1, const ObjHandle& in2);
-  virtual ObjHandle   op_xnor     (const ObjHandle& in1, const ObjHandle& in2);
+  virtual ObjHandle   op_nand     (const ObjHandle& in1, const ObjHandle& in2)    = 0;
+  virtual ObjHandle   op_andyn    (const ObjHandle& in1, const ObjHandle& in2)    = 0;
+  virtual ObjHandle   op_andny    (const ObjHandle& in1, const ObjHandle& in2)    = 0;
+  virtual ObjHandle   op_or       (const ObjHandle& in1, const ObjHandle& in2)    = 0;
+  virtual ObjHandle   op_nor      (const ObjHandle& in1, const ObjHandle& in2)    = 0;
+  virtual ObjHandle   op_oryn     (const ObjHandle& in1, const ObjHandle& in2)    = 0;
+  virtual ObjHandle   op_orny     (const ObjHandle& in1, const ObjHandle& in2)    = 0;
+  virtual ObjHandle   op_xnor     (const ObjHandle& in1, const ObjHandle& in2)    = 0;
 
   /** Ternary operator cond?in1:in2, i.e. oblivious select */
   virtual ObjHandle   op_mux      (const ObjHandle& cond,
-                                    const ObjHandle& in1, const ObjHandle& in2);
+                                    const ObjHandle& in1, const ObjHandle& in2)   = 0;
 
   /* clang-format on */
 };

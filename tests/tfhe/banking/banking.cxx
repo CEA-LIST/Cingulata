@@ -18,10 +18,13 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
+#include <iostream>
+
 /* local includes */
 #include <bit_exec/decorator/attach.hxx>
 #include <bit_exec/decorator/stat.hxx>
 #include <ci_context.hxx>
+#include <ci_fncs.hxx>
 #include <ci_int.hxx>
 #include <int_op_gen/size.hxx>
 #include <tfhe_bit_exec.hxx>
@@ -34,22 +37,24 @@ int main() {
   /* Set context to tfhe bit executor and size minimized integer
    * operations */
   CiContext::set_config(
-      make_shared<decorator::Attach<TfheBitExec, decorator::Stat<IBitExecFHE>>>(
+      make_shared<decorator::Attach<TfheBitExec, decorator::Stat<TfheBitExec>>>(
           "tfhe.pk", TfheBitExec::Public),
       make_shared<IntOpGenSize>());
 
-  CiInt a{CiInt::u8};   // create from unsigned 8-bit template
-  CiInt b{0, 8, false}; // manually specify value, size and signedness
-  CiInt c{
-      (uint16_t)-1}; // automatically determine size and signedness from value
+  CiInt t1{CiInt::s32}, t2{CiInt::s32}, m{CiInt::s32};
+  t1.read("t1");
+  t2.read("t2");
+  m.read("m");
 
-  a.read("a");
-  b.read("b");
+  CiInt t1_new = t1.resize(33) - m; // additional 1 bit for the overflow
+  CiInt t2_new = t2 + m;
+  CiBit cn = t1_new.msb();
 
-  c = a + b;
-  // c = a * a * b - a;
+  t1 = select(cn, t1, t1_new.resize(32));
+  t2 = select(cn, t2, t2_new);
 
-  c.write("c");
+  t1.write("t1");
+  t2.write("t2");
 
-  CiContext::get_bit_exec_t<decorator::Stat<IBitExecFHE>>()->print();
+  CiContext::get_bit_exec_t<decorator::Stat<TfheBitExec>>()->print();
 }

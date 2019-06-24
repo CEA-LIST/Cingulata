@@ -19,6 +19,7 @@
 */
 
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include <bit_exec/interface.hxx>
 #include <ci_bit.hxx>
@@ -57,7 +58,7 @@ tuple<
 };
 
 
-class CiBitOper : public ::testing::TestWithParam<tuple<bool,bool>> {
+class CiBitBinaryOper : public ::testing::TestWithParam<tuple<bool,bool>> {
 public:
   bool encrypt_1st;
   bool encrypt_2nd;
@@ -67,7 +68,8 @@ public:
   }
 };
 
-TEST_P(CiBitOper, two_input_single) {
+/* Member binary CiBit operators */
+TEST_P(CiBitBinaryOper, two_input_single) {
   for (int idx = 0; ; ++idx)
   {
     auto& op_name = get<0>(obj_operators[idx]);
@@ -111,8 +113,8 @@ TEST_P(CiBitOper, two_input_single) {
   }
 }
 
-
-TEST_P(CiBitOper, two_input_pt_single) {
+/* Member binary CiBit operators with one plaintext input */
+TEST_P(CiBitBinaryOper, two_input_pt_single) {
   for (int idx = 0; ; ++idx)
   {
     auto& op_name = get<0>(obj_operators[idx]);
@@ -121,6 +123,7 @@ TEST_P(CiBitOper, two_input_pt_single) {
 
     if (op_name.empty()) break;
 
+    vector<int> op_tt_computed;
     for (int v = 0; v < op_tt.size(); ++v) {
       int a_val_inp = 1 & (v >> 1);
       string a_name("A");
@@ -133,11 +136,7 @@ TEST_P(CiBitOper, two_input_pt_single) {
 
       op_func(a, b_val_out);
 
-      int a_val_out = a.decrypt();
-
-      // operator result is good
-      ASSERT_EQ(op_tt[v], a_val_out)
-        << " operator '" << op_name << "'" << " (" << a_val_inp << "," << b_val_inp << ")";
+      op_tt_computed.push_back(a.decrypt());
 
       // value of b does not change
       ASSERT_EQ(b_val_inp, b_val_out) << " operator '" << op_name << "'";
@@ -145,6 +144,7 @@ TEST_P(CiBitOper, two_input_pt_single) {
       // name do not change
       ASSERT_EQ(a.get_name(), a_name) << " operator '" << op_name << "'";;
     }
+    ASSERT_THAT(op_tt_computed, ::testing::ElementsAreArray(op_tt));
   }
 }
 
@@ -190,7 +190,8 @@ tuple<
   { "", nullptr, {}}
 };
 
-TEST_P(CiBitOper, two_input_ext_single) {
+/* Non-member binary CiBit operators */
+TEST_P(CiBitBinaryOper, two_input_ext_single) {
   for (int idx = 0; ; ++idx)
   {
     auto& op_name = get<0>(operators[idx]);
@@ -199,6 +200,7 @@ TEST_P(CiBitOper, two_input_ext_single) {
 
     if (op_name.empty()) break;
 
+    vector<int> op_tt_computed;
     for (int v = 0; v < op_tt.size(); ++v) {
       int a_val_inp = 1 & (v >> 1);
       string a_name("A");
@@ -216,11 +218,7 @@ TEST_P(CiBitOper, two_input_ext_single) {
 
       int a_val_out = encrypt_1st ? a.decrypt() : a.get_val();
       int b_val_out = encrypt_2nd ? b.decrypt() : b.get_val();
-      int c_val_out = c.decrypt();
-
-      // operator result is good
-      ASSERT_EQ(op_tt[v], c_val_out)
-        << " operator '" << op_name << "'" << " (" << a_val_inp << "," << b_val_inp << ")";
+      op_tt_computed.push_back(c.decrypt());
 
       // value of b does not change
       ASSERT_EQ(a_val_inp, a_val_out) << " operator '" << op_name << "'";
@@ -235,11 +233,12 @@ TEST_P(CiBitOper, two_input_ext_single) {
       ASSERT_EQ(b.get_name(), b_name) << " operator '" << op_name << "'";;
       ASSERT_TRUE(c.get_name().empty()) << " operator '" << op_name << "'";;
     }
+    ASSERT_THAT(op_tt_computed, ::testing::ElementsAreArray(op_tt));
   }
 }
 
 INSTANTIATE_TEST_CASE_P(,
-                        CiBitOper,
+                        CiBitBinaryOper,
                         ::testing::Combine(::testing::Bool(), ::testing::Bool()));
 
 
@@ -375,3 +374,91 @@ TEST(CiBit, name_change_single) {
     ASSERT_EQ(a.get_name(), b_name) << "set_val";
   }
 }
+
+
+
+class CiBitTernaryOper : public ::testing::TestWithParam<tuple<bool,bool,bool>> {
+public:
+  bool encrypt_1st;
+  bool encrypt_2nd;
+  bool encrypt_3rd;
+
+  virtual void SetUp() {
+    tie(encrypt_1st, encrypt_2nd, encrypt_3rd) = GetParam();
+  }
+};
+
+
+tuple<
+  string,
+  std::function<CiBit (const CiBit&, const CiBit&, const CiBit&)>,
+  vector<int>
+> ternary_operators[] =
+{
+  { "op_mux   ",  [](const CiBit& a, const CiBit& b, const CiBit& c) { return op_mux(a,b,c); },  {0,0,1,1,0,1,0,1} },
+
+  { "", nullptr, {}}
+};
+
+/* Non-member ternary CiBit operators */
+TEST_P(CiBitTernaryOper, three_input) {
+  for (int idx = 0; ; ++idx)
+  {
+    auto& op_name = get<0>(ternary_operators[idx]);
+    auto& op_func = get<1>(ternary_operators[idx]);
+    auto& op_tt = get<2>(ternary_operators[idx]);
+
+    if (op_name.empty()) break;
+
+    vector<int> op_tt_computed;
+    for (int v = 0; v < op_tt.size(); ++v) {
+      int a_val_inp = 1 & (v >> 2);
+      string a_name("A");
+      CiBit a(a_val_inp);
+      if (encrypt_1st) a.encrypt();
+      a.set_name(a_name);
+
+      int b_val_inp = 1 & (v >> 1);
+      string b_name("B");
+      CiBit b(b_val_inp);
+      if (encrypt_2nd) b.encrypt();
+      b.set_name(b_name);
+
+      int c_val_inp = 1 & (v >> 0);
+      string c_name("B");
+      CiBit c(c_val_inp);
+      if (encrypt_3rd) c.encrypt();
+      c.set_name(c_name);
+
+      CiBit d = op_func(a, b, c);
+
+      int a_val_out = encrypt_1st ? a.decrypt() : a.get_val();
+      int b_val_out = encrypt_2nd ? b.decrypt() : b.get_val();
+      int c_val_out = encrypt_3rd ? c.decrypt() : c.get_val();
+      op_tt_computed.push_back(d.decrypt());
+
+      // input values do not change
+      ASSERT_EQ(a_val_inp, a_val_out) << " operator '" << op_name << "'";
+      ASSERT_EQ(b_val_inp, b_val_out) << " operator '" << op_name << "'";
+      ASSERT_EQ(c_val_inp, c_val_out) << " operator '" << op_name << "'";
+
+      // stays plain afterwards
+      ASSERT_TRUE(encrypt_1st or a.is_plain()) << " operator '" << op_name << "'";
+      ASSERT_TRUE(encrypt_2nd or b.is_plain()) << " operator '" << op_name << "'";
+      ASSERT_TRUE(encrypt_3rd or c.is_plain()) << " operator '" << op_name << "'";
+
+      // name do not change
+      ASSERT_EQ(a.get_name(), a_name) << " operator '" << op_name << "'";;
+      ASSERT_EQ(b.get_name(), b_name) << " operator '" << op_name << "'";;
+      ASSERT_EQ(c.get_name(), c_name) << " operator '" << op_name << "'";;
+      ASSERT_TRUE(d.get_name().empty()) << " operator '" << op_name << "'";;
+    }
+
+    ASSERT_THAT(op_tt_computed, ::testing::ElementsAreArray(op_tt));
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(,
+                        CiBitTernaryOper,
+                        ::testing::Combine(::testing::Bool(), ::testing::Bool(), ::testing::Bool()));
+

@@ -269,6 +269,8 @@ namespace cingulata
     bit_plain_t pt_val;
     ObjHandle obj_hdl;
     std::string name;
+
+    friend CiBit op_mux(const CiBit &, const CiBit &, const CiBit &);
   };
 
   /**
@@ -301,6 +303,7 @@ namespace cingulata
   CiBit op_oryn     (CiBit, const CiBit&);
   CiBit op_xor      (CiBit, const CiBit&);
   CiBit op_xnor     (CiBit, const CiBit&);
+  CiBit op_mux      (const CiBit&, const CiBit&, const CiBit&);
   /**
    * @}
    */
