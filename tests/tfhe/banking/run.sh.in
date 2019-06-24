@@ -23,20 +23,29 @@
 
 APPS_DIR=@APPS_DIR@
 
-# rm -f a_* b_* c_*
-
 # Generate keys
 echo "TFHE key generation"
 $APPS_DIR/tfhe-keygen
 
-# Encrypt input "a" and "b"
-echo "Input encryption"
-./tfhe-banking-encrypt 5 1 13
+function test() {
+  amnt=$1
+  acc1=$2
+  acc2=$3
 
-echo "Homomorphic execution..."
-time ./tfhe-banking-exec
+  echo "Transfer $amnt from $acc1 to $acc2"
+  echo " - Input encryption"
+  ./tfhe-banking-encrypt $amnt $acc1 $acc2
 
-echo "Output decryption"
-./tfhe-banking-decrypt
+  echo " - Homomorphic execution..."
+  time ./tfhe-banking-exec
 
-# rm -f a_* b_* c_*
+  echo " - Output decryption"
+  ./tfhe-banking-decrypt
+
+  rm -f m_* t1_* t2_*
+}
+
+test 5 10 13
+test 5 1 13
+test -5 10 13
+test -5 10 1
