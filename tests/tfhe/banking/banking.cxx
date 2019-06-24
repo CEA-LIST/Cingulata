@@ -46,11 +46,13 @@ int main() {
   t2.read("t2");
   m.read("m");
 
-  CiInt t1_new = t1.resize(33) - m; // additional 1 bit for the overflow
+  CiInt t1_new = t1 - m;
   CiInt t2_new = t2 + m;
-  CiBit cn = t1_new.msb();
 
-  t1 = select(cn, t1, t1_new.resize(32));
+  /* if one of sign bits is set then overflow occured  */
+  CiBit cn = t1_new.sign() || t2_new.sign();
+
+  t1 = select(cn, t1, t1_new);
   t2 = select(cn, t2, t2_new);
 
   t1.write("t1");
