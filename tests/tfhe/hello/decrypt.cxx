@@ -38,9 +38,7 @@ int main() {
 
   c.read("c").decrypt();
 
-  uint16_t c_val = 0;
-  for (int i = 0; i < c.size(); ++i)
-    c_val |= c[i].get_val() << i;
+  uint16_t c_val = c.get_val();
 
   cout << c_val << endl;
 }

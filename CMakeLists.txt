@@ -1,36 +1,60 @@
 cmake_minimum_required(VERSION 3.9)
 
-project(cingulata VERSION 0.3.0 LANGUAGES CXX)
+project(cingulata VERSION 1.5.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
-option(ENABLE_UNITTEST "Enable unit tests using googletest" ON)
-option(BUILD_DOC "Build documentation" ON)
-option(BUILD_ONLY_COMMON "Build only common interface (when only unittests are needed)" OFF)
-set(USE_ABC ON CACHE BOOL INTERNAL)
+# compilation options
+option(BUILD_DOC "Build documentation" OFF)
+option(USE_BFV "Use B/FV implementation" OFF)
 set(TFHE_PATH "" CACHE PATH "TFHE library path")
+option(ENABLE_UNITTEST "Enable common interface unit tests using googletest" OFF)
 
+# do not initialize any of submodules
+set(INIT_ABC_MODULE OFF)
+set(INIT_CINGU_PARAM_MODULE OFF)
+set(INIT_GOOGLETEST_MODULE OFF)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+set(BUILD_ONLY_COMMON ON)
 
-set(TFHE_EXEC OFF)
+if (USE_BFV)
+  set(INIT_ABC_MODULE ON)
+  set(INIT_CINGU_PARAM_MODULE ON)
+  set(BUILD_ONLY_COMMON OFF)
+endif (USE_BFV)
+
+set(USE_TFHE OFF)
 if (NOT ("${TFHE_PATH}" STREQUAL ""))
   find_package(TFHE REQUIRED)
-  set(TFHE_EXEC ON)
+  set(USE_TFHE ON)
+  set(BUILD_ONLY_COMMON OFF)
 endif()
+
+if(ENABLE_UNITTEST)
+  set(INIT_GOOGLETEST_MODULE ON)
+endif(ENABLE_UNITTEST)
 
 set(COMMON_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/common/include)
 
 add_subdirectory(submodules)
 add_subdirectory(common)
 
-message("ENABLE_UNITTEST    " ${ENABLE_UNITTEST})
-message("BUILD_DOC          " ${BUILD_DOC})
-message("BUILD_ONLY_COMMON  " ${BUILD_ONLY_COMMON})
-message("USE_ABC            " ${USE_ABC})
-message("TFHE_EXEC          " ${TFHE_EXEC})
+message("BUILD_DOC                  " ${BUILD_DOC})
+message("BUILD_ONLY_COMMON          " ${BUILD_ONLY_COMMON})
+message("USE_BFV                    " ${USE_BFV})
+message("USE_TFHE                   " ${USE_TFHE})
+message("TFHE_PATH                  " ${TFHE_PATH})
+message("ENABLE_UNITTEST            " ${ENABLE_UNITTEST})
+
+message("INIT_ABC_MODULE            " ${INIT_ABC_MODULE})
+message("INIT_CINGU_PARAM_MODULE    " ${INIT_CINGU_PARAM_MODULE})
+message("INIT_GOOGLETEST_MODULE     " ${INIT_GOOGLETEST_MODULE})
 
 if(NOT ${BUILD_ONLY_COMMON})
-  add_subdirectory(optim)
+  if(USE_BFV)
+    add_subdirectory(optim)
+  endif(USE_BFV)
+
   add_subdirectory(runtime)
 
   include_directories(circuit/include) # support old circuit interface

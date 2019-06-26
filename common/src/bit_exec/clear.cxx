@@ -1,4 +1,27 @@
+/*
+    (C) Copyright 2019 CEA LIST. All Rights Reserved.
+    Contributor(s): Cingulata team
+
+    This software is governed by the CeCILL-C license under French law and
+    abiding by the rules of distribution of free software.  You can  use,
+    modify and/ or redistribute the software under the terms of the CeCILL-C
+    license as circulated by CEA, CNRS and INRIA at the following URL
+    "http://www.cecill.info".
+
+    As a counterpart to the access to the source code and  rights to copy,
+    modify and redistribute granted by the license, users are provided only
+    with a limited warranty  and the software's author,  the holder of the
+    economic rights,  and the successive licensors  have only  limited
+    liability.
+
+    The fact that you are presently reading this means that you have had
+    knowledge of the CeCILL-C license and that you accept its terms.
+*/
+
 #include <bit_exec/clear.hxx>
+
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 using namespace cingulata;
@@ -19,9 +42,30 @@ bit_plain_t BitExecClear::decrypt(const ObjHandle &in) {
   return *(in.get<bit_plain_t>());
 }
 
-ObjHandle BitExecClear::read(const std::string &name) { return ObjHandle(); }
+ObjHandle BitExecClear::read(const std::string &name) {
+  ifstream file(name);
+  if (not file.is_open()) {
+    fprintf(stderr, "BitExecClear::read -- Cannot open file '%s'\n", name.c_str());
+    abort();
+  }
 
-void BitExecClear::write(const ObjHandle &in, const std::string &name) {}
+  ObjHandleT<bit_plain_t> out = mm.new_handle();
+  file >> *out;
+  file.close();
+
+  return out;
+}
+
+void BitExecClear::write(const ObjHandle &in, const std::string &name) {
+  ofstream file(name);
+  if (not file.is_open()) {
+    fprintf(stderr, "BitExecClear::write -- Cannot open file '%s'\n", name.c_str());
+    abort();
+  }
+
+  file << *in.get<bit_plain_t>();
+  file.close();
+}
 
 ObjHandle BitExecClear::op_and(const ObjHandle &in1, const ObjHandle &in2) {
   ObjHandleT<bit_plain_t> out = mm.new_handle();

@@ -1,3 +1,23 @@
+/*
+    (C) Copyright 2019 CEA LIST. All Rights Reserved.
+    Contributor(s): Cingulata team
+
+    This software is governed by the CeCILL-C license under French law and
+    abiding by the rules of distribution of free software.  You can  use,
+    modify and/ or redistribute the software under the terms of the CeCILL-C
+    license as circulated by CEA, CNRS and INRIA at the following URL
+    "http://www.cecill.info".
+
+    As a counterpart to the access to the source code and  rights to copy,
+    modify and redistribute granted by the license, users are provided only
+    with a limited warranty  and the software's author,  the holder of the
+    economic rights,  and the successive licensors  have only  limited
+    liability.
+
+    The fact that you are presently reading this means that you have had
+    knowledge of the CeCILL-C license and that you accept its terms.
+*/
+
 #include "ci_bit.hxx"
 #include "ci_context.hxx"
 
@@ -222,6 +242,22 @@ DEFINE_EXT_OPER2(operator < , op_andny);
 DEFINE_EXT_OPER2(operator <=, op_orny);
 DEFINE_EXT_OPER2(operator > , op_andyn);
 DEFINE_EXT_OPER2(operator >=, op_oryn);
+
+CiBit cingulata::op_mux(const CiBit &c, const CiBit &a, const CiBit &b) {
+  CiBit res;
+
+  if (c.is_plain()) {
+    res = (c.get_val() == 0) ? a : b;
+  } else {
+    if (a.is_plain() or b.is_plain()) {
+      res = (c & (a ^ b)) ^ a;
+    } else {
+      res.obj_hdl = CiContext::get_bit_exec()->op_mux(c.obj_hdl, a.obj_hdl, b.obj_hdl);
+    }
+  }
+
+  return res;
+}
 
 istream& cingulata::operator>>(istream& inp, CiBit& val) {
   val.read();

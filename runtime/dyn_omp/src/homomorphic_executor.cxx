@@ -63,7 +63,7 @@ void HomomorphicExecutor::printGateInfo(const GateProperties& gate,
       break;
     case GateType::UNDEF:
       throw runtime_error("Should never arrive here, UNDEF gate type " + gate.id);
-      break;      
+      break;
   }
 
   if (gate.isOutput) {
@@ -91,7 +91,7 @@ void HomomorphicExecutor::Read(CipherText*& ct, const string& fn) {
 
 void HomomorphicExecutor::Write(CipherText*& ct, const string& fn) {
   steady_clock::time_point start = steady_clock::now();
-  
+
   ct->write(fn, not stringOutput);
 
   updateMeasures(start, "WRITE");
@@ -134,7 +134,7 @@ void HomomorphicExecutor::ExecuteAND(
   steady_clock::time_point start = steady_clock::now();
 
   CipherText::multiply(*ct_res, *ct_n2, *keys->EvalKey);
- 
+
   updateMeasures(start, "AND");
 }
 
@@ -155,7 +155,7 @@ void HomomorphicExecutor::ExecuteOR(
 }
 
 HomomorphicExecutor::HomomorphicExecutor(const Circuit& circuit_p,
-          const string& evalKeyFile, const string& publicKeyFile, 
+          const string& evalKeyFile, const string& publicKeyFile,
           const bool verbose_p, const bool stringOutput_p):
     circuit(circuit_p), verbose(verbose_p), stringOutput(stringOutput_p)
 {
@@ -165,7 +165,7 @@ HomomorphicExecutor::HomomorphicExecutor(const Circuit& circuit_p,
   keys = new KeysShare();
   keys->readEvalKey(evalKeyFile);
   keys->readPublicKey(publicKeyFile);
-  
+
   /* Initialize execution metrics data structures */
   const string operNames[] = {"READ", "WRITE", "XOR", "AND", "OR", "NOT", "COPY"};
   for (const string &operName : operNames) {
@@ -191,7 +191,7 @@ HomomorphicExecutor::~HomomorphicExecutor() {
       delete it.second;
     }
   }
-  
+
   delete ct_const_0;
   delete ct_const_1;
   delete keys;
@@ -211,7 +211,7 @@ void HomomorphicExecutor::ExecuteGate(const Circuit::vertex_descriptor idx) {
   /* Get gate properties and predecessors */
   GateProperties gate = circuit[idx];
   Circuit::vertex_descriptor pred1, pred2;
-  
+
   if (in_degree(idx, circuit) >= 1) {
     pred1 = *inv_adjacent_vertices(idx, circuit).first;
     assert(cipherTxts[pred1] != nullptr);
@@ -219,7 +219,7 @@ void HomomorphicExecutor::ExecuteGate(const Circuit::vertex_descriptor idx) {
   if (in_degree(idx, circuit) >= 2) {
     pred2 = *(inv_adjacent_vertices(idx, circuit).first + 1);
     assert(cipherTxts[pred2] != nullptr);
-  } 
+  }
 
   if (verbose) {
     printGateInfo(gate, pred1, pred2);
@@ -260,7 +260,7 @@ void HomomorphicExecutor::ExecuteGate(const Circuit::vertex_descriptor idx) {
 
   allocatedCnt++;
   maxAllocatedCnt = max((int)allocatedCnt, maxAllocatedCnt);
-  
+
   /* If gate is output write its value */
   if (gate.isOutput) {
     Write(cipherTxts[idx], outsDir + gate.id + ".ct");
@@ -268,6 +268,7 @@ void HomomorphicExecutor::ExecuteGate(const Circuit::vertex_descriptor idx) {
 }
 
 void HomomorphicExecutor::printExecTime() {
+  cout << "CPU time: " << endl;
   cout << "READ time " << execTime["READ"] << " seconds, #execs " << execCnt["READ"] << endl;
   cout << "COPY time " << execTime["COPY"] << " seconds, #execs " << execCnt["COPY"] << endl;
   cout << "XOR gates execution time " << execTime["XOR"] << " seconds, #execs " << execCnt["XOR"] << endl;

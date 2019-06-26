@@ -1,3 +1,23 @@
+/*
+    (C) Copyright 2019 CEA LIST. All Rights Reserved.
+    Contributor(s): Cingulata team
+
+    This software is governed by the CeCILL-C license under French law and
+    abiding by the rules of distribution of free software.  You can  use,
+    modify and/ or redistribute the software under the terms of the CeCILL-C
+    license as circulated by CEA, CNRS and INRIA at the following URL
+    "http://www.cecill.info".
+
+    As a counterpart to the access to the source code and  rights to copy,
+    modify and redistribute granted by the license, users are provided only
+    with a limited warranty  and the software's author,  the holder of the
+    economic rights,  and the successive licensors  have only  limited
+    liability.
+
+    The fact that you are presently reading this means that you have had
+    knowledge of the CeCILL-C license and that you accept its terms.
+*/
+
 #ifndef IO_NAME_VEC
 #define IO_NAME_VEC
 
@@ -146,6 +166,33 @@ namespace cingulata
       for (unsigned i = 0; i < ref.size(); ++i) {
         ref[i].decrypt();
       }
+    }
+
+    /**
+     * @brief      Gets bits values encoded into an uint64_t.
+     *
+     * @return     integer value
+     */
+    uint64_t get_val() const {
+      return decode_plain_int<uint64_t>(get_bits_val(sizeof(uint64_t)*8));
+    }
+
+    /**
+     * @brief      Gets bits values
+     * @note       This method supposes that method @c CiBit::get_val return bit
+     *             value (i.e. all bits are plain)
+     *
+     * @param[in]  p_bit_cnt  The number of bits to return. If value -1 (default
+     *                        value) is given all bits are returned.
+     *
+     * @return     vector with bit values
+     */
+    std::vector<bit_plain_t> get_bits_val(const size_t p_bit_cnt = -1) const {
+      const T& ref = *static_cast<const T*>(this);
+      std::vector<bit_plain_t> bv(ref.size());
+      for (int i = 0; i < ref.size(); ++i)
+        bv[i] = ref[i].get_val();
+      return bv;
     }
 
     /**
