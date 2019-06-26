@@ -72,6 +72,19 @@ unsigned CiBitVector::size() const {
   return m_vec.size();
 }
 
+CiBit CiBitVector::multvect() const {
+  /* log depth tree */
+  CiBitVector tmp(m_vec);
+  int size=m_vec.size();
+  for (int k = 1; k < size; k *= 2) {
+    for (int i = 0; i < size - k; i += 2*k) {
+      tmp[i] &= tmp[i+k];
+    }
+  }
+
+  return tmp[0];
+}
+
 CiBitVector& CiBitVector::resize(const unsigned p_bit_cnt, const CiBit& p_bit) {
   m_vec.resize(p_bit_cnt, p_bit);
   return *this;

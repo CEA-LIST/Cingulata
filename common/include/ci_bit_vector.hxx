@@ -97,6 +97,13 @@ namespace cingulata
     unsigned size() const;
 
     /**
+    * @brief       Multiply the components of the vectors with log-depth
+    *
+    * @return      result of the multiplication
+    */
+    CiBit multvect() const;
+
+    /**
      * @brief      Resizes current object to @c p_bit_cnt bits
      * @details    If new bit-size is smaller then end bits are deleted.
      *             Otherwise, bit vector is extended with copies of @c p_bit.
@@ -160,6 +167,7 @@ namespace cingulata
      * @return     reference to selected bit
      */
     CiBit& at(const int p_idx);
+
 
     /**
      * @brief      Get bit at index @c p_idx or @c p_bit if out of range

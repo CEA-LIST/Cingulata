@@ -31,13 +31,7 @@ CiBit EqualDepth::oper(const CiBitVector& lhs, const CiBitVector& rhs) const {
     tmp[i] = lhs[i] == rhs[i];
 
   /* log depth tree */
-  for (int k = 1; k < size; k *= 2) {
-    for (int i = 0; i < size - k; i += 2*k) {
-      tmp[i] &= tmp[i+k];
-    }
-  }
-
-  return tmp[0];
+  return tmp.multvect();
 }
 
 CiBit EqualSize::oper(const CiBitVector& lhs, const CiBitVector& rhs) const {
