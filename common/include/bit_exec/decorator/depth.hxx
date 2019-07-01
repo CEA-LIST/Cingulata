@@ -66,6 +66,9 @@ public:
     printf("Overall depth       : %6d\n", m_depth_max);
   }
 
+  unsigned mult_depth() { return m_mult_depth_max; }
+  unsigned depth() { return m_depth_max; }
+
   void post_reset() override {
     m_depth.clear();
     m_mult_depth_max = 0;
