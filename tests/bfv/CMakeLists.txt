@@ -12,6 +12,7 @@ set(test_names
       multiplicity
       membership-partial
       wiretap
+      flip
 )
 
 set(target_names "")
