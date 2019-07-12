@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.9)
 set(test_names
       hello
       banking
+      transaction
 )
 
 set(target_names "")
