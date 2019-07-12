@@ -493,6 +493,30 @@ namespace cingulata
   /**
    * @}
    */
+
+  /**
+   * @brief      Gets the bit-size the output of a 2 input operator.
+   * @details    This function computes the bit-size of the integer obtained as a
+   *             result of application of an 2-input integer operator.
+   *
+   * @param[in]  lhs   The left hand side
+   * @param[in]  rhs   The right hand side
+   *
+   * @return     Result bit-size
+   */
+  unsigned result_size(const CiInt& lhs, const CiInt& rhs);
+
+  /**
+   * @brief      Gets the sign the output of a 2 input operator.
+   * @details    This function computes the signedness of the integer obtained as
+   *             a result of application of an 2-input integer operator.
+   *
+   * @param[in]  lhs   The left hand side
+   * @param[in]  rhs   The right hand side
+   *
+   * @return     Result sign
+   */
+  bool result_is_signed(const CiInt& lhs, const CiInt& rhs);
 }
 
 #endif
