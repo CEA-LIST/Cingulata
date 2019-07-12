@@ -284,7 +284,7 @@ public:
     ASSERT_EQ_BV_INT(a_bv, a_int);                                             \
     ASSERT_EQ_BV_INT(b_bv, b_int);                                             \
     /* output is valid */                                                      \
-    ASSERT_EQ(r_ct.decrypt(), r_pt);                                           \
+    ASSERT_EQ(r_ct.decrypt().get_val(), r_pt);                                 \
   }
 
 TEST_P(Comparator, random_inps) {

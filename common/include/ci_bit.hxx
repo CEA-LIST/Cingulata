@@ -183,7 +183,7 @@ namespace cingulata
      *
      * @return     plain-text value
      */
-    bit_plain_t decrypt();
+    CiBit& decrypt();
 
     /**
      * @brief      Is bit plain?
