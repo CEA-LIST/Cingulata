@@ -19,6 +19,10 @@ if (USE_BFV)
   if(NOT DEFINED MIN_SECU)
     set(MIN_SECU 128)
   endif()
+  if(NOT DEFINED POLITIC) 
+        set(POLITIC Cingulata_BFV)
+  endif()
+
 
   #############################################
   # common interface tests

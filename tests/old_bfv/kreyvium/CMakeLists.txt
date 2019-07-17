@@ -29,7 +29,7 @@ set(XML_PARAMS fhe_params.xml)
 set(MUL_DEPTH_SCRIPT ${OPTIM_DIR}/graph_info.py)
 
 add_custom_command(OUTPUT ${XML_PARAMS}
-        COMMAND bash ${SCRIPT_DIR}/selectParams.sh ${TEST_NAME} `python3 ${MUL_DEPTH_SCRIPT} ${BLOP_NAME} --mult_depth_max` ${MODEL} ${MIN_SECU}
+        COMMAND bash ${SCRIPT_DIR}/selectParams.sh ${TEST_NAME} `python3 ${MUL_DEPTH_SCRIPT} ${BLOP_NAME} --mult_depth_max` ${MODEL} ${MIN_SECU}  ${POLITIC}
         DEPENDS ${BLOP_NAME})
 
 add_custom_target(${TEST_NAME} ALL
