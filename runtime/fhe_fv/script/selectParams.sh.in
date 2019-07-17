@@ -30,6 +30,7 @@ TEST_NAME=$1
 MUL_DEPTH=$2
 MODEL=$3
 MIN_SECU=$4
+POLITIC=$5
 MODE="static"
 # interactive mode indicates the user is ready to interact via yad to make a second choice if no parameter set is found with given constraints.
 # static mode indicates the user prefers no interaction during compilation phase.
@@ -42,6 +43,13 @@ function print() # syntax: print VAR1 ... VARN
         done
 
 }
+#Color text
+DEFAULT_ZEN='\e[m'
+CYAN_WARNING='\e[0;36m'
+RED_ERROR='\e[0;31m'
+
+
+
 
 #directories
 RUN_DIR=$(pwd)
@@ -49,6 +57,21 @@ cd ../../ || exit
 BUILD_DIR=$(pwd)
 cd .. || exit
 CINGU_PARAM_DIR=@CINGU_PARAM_DIR@
+# To check if private key distribution is binary as needed in Cingulata
+#source ../../../CinguParam/generateParam/defaultPolitic.sh
+
+source ${CINGU_PARAM_DIR}/generateParam/defaultPolitic.sh
+default_politic ${POLITIC} # To define PRIVATE_KEY_DISTRIB and SECURITY_REDUCTION
+lower_bound=$(eval echo $PRIVATE_KEY_DISTRIB | cut -d, -f1)
+upper_bound=$(eval echo $PRIVATE_KEY_DISTRIB | cut -d, -f2)
+if [ ${lower_bound}  -ne 0 ] || [ ${upper_bound}  -ne 1 ]
+then 
+        echo -e "${RED_ERROR}POLITIC=${POLITIC} uses PRIVATE_KEY_DISTRIB=${PRIVATE_KEY_DISTRIB}."
+        echo "Please choose a politic with a binary distribution."
+        echo "Politics are defined in CinguParam/generateParam/defaultParam.sh."
+        echo -e "Politic is chosen in tests/CMakeLists.txt.${DEFAULT_ZEN}"
+        exit 2 # Incompatible private key distribution
+fi
 
 #Color text
 DEFAULT_ZEN='\e[m'
@@ -70,8 +93,11 @@ XML_PARAMS=fhe_params.xml
 HEAD_ID=$(git ls-remote https://bitbucket.org/malb/lwe-estimator.git HEAD | awk '{print $1}' | cut -c-7 ) # to determine lwe-estimator HEAD commit ID
 COMMIT_ID="$(awk '{w=$1} END{print w}' "${PARAM_DIR}"/commit.log)" # to determine last commit ID in database
 
+PLAINTEXT_MODULUS=2 # Cingulata operates on binary ciphertexts.
+DB_DIR="${PARAM_DIR}/${HEAD_ID}/${POLITIC}"
 
-DESIRED_PARAMS="${PARAM_DIR}/${HEAD_ID}/${MUL_DEPTH}_${MODEL}_${MIN_SECU}"
+DESIRED_PARAMS="${DB_DIR}/${MUL_DEPTH}_${MODEL}_${MIN_SECU}_${PLAINTEXT_MODULUS}"
+
 
 
 
@@ -87,9 +113,9 @@ static_choice()
   do
         depth=$(echo "${file}" | awk -F'[_]' '{print $1}')  # print multiplicative depth
         model=$(echo "${file}" | sed 's/[0-9]//g' | sed 's/^_//' | sed 's/_$//') # print bkz reduction cost model
-        secu=$(echo "${file}" | awk -F'[_]' '{print $NF}') # print approximated security
-
-        if [ $((depth)) -eq $((MUL_DEPTH))  ] && [ "${secu}" -ge $((MIN_SECU)) ] && [ "${secu}" -le $((MIN_SECU+64)) ]  && [ "${model}" = "${MODEL}" ]
+        secu=$(echo "${file}" | awk -F'[_]' '{print $((NF-1))}') # print approximated security
+        pt_modulus=$(echo "${file}" | awk -F'[_]' '{print $NF}') # print plaintext modulus        
+        if [ $((depth)) -eq $((MUL_DEPTH))  ] && [ "${secu}" -ge $((MIN_SECU)) ] && [ "${secu}" -le $((MIN_SECU+64)) ]  && [ "${model}" = "${MODEL}" ] && [ $((pt_modulus)) -eq $((PLAINTEXT_MODULUS))  ] 
         then
                 sublist+=( "${file}" )
         fi
@@ -115,14 +141,14 @@ else
         print MODE
         if [ $MODE = "static" ]
         then
-                if [ -d "${PARAM_DIR}/${HEAD_ID}" ]
+                if [ -d "${DB_DIR}" ]
                 then
-                        echo -e "${CYAN_WARNING}No parameter set found for test ${TEST_NAME} with given triplet (multiplicative_depth=${MUL_DEPTH},reduction_cost_model=${MODEL},desired_security_level=${MIN_SECU}).${DEFAULT_ZEN}"
+                        echo -e "${CYAN_WARNING}No parameter set found for test ${TEST_NAME} with (multiplicative_depth=${MUL_DEPTH},reduction_cost_model=${MODEL},desired_security_level=${MIN_SECU},politic=${POLITIC}).${DEFAULT_ZEN}"
                         echo "Compute alternative choice..."
-                        static_choice "${HEAD_ID}"
+                        static_choice "${HEAD_ID}/${POLITIC}"
                 else
                         echo -e "${CYAN_WARNING}The parameters with lwe-estimator commit ${HEAD_ID} are not in the database.${DEFAULT_ZEN}"
-                        static_choice "${COMMIT_ID}"
+                        static_choice "${COMMIT_ID}/${POLITIC}"
                 fi
                 if [ -n "${STATIC_CHOICE}" ]
                 then
@@ -132,15 +158,15 @@ else
         fi
         if [ $MODE = "interactive" ]
         then
-                if [ -d "${PARAM_DIR}/${HEAD_ID}" ]
+                if [ -d "${DB_DIR}/" ]
                 then
                         if [ -z "${PREVIOUS_MODE}" ]
                         then
-                                echo -e "${CYAN_WARNING}No parameter set found for test ${TEST_NAME} with given triplet (multiplicative_depth=${MUL_DEPTH},reduction_cost_model=${MODEL},desired_security_level=${MIN_SECU}).${DEFAULT_ZEN}"
+                                echo -e "${CYAN_WARNING}No parameter set found for test ${TEST_NAME} with given triplet (multiplicative_depth=${MUL_DEPTH},reduction_cost_model=${MODEL},desired_security_level=${MIN_SECU},politic=${POLITIC}).${DEFAULT_ZEN}"
                         fi
                         read -p "Press <ENTER> to select a parameter set." -r
-                        cd "${PARAM_DIR}/${HEAD_ID}/" || exit
-                        INTERACTIVE_CHOICE=$(yad --text "Multiplicative depth of circuit ${TEST_NAME} is ${MUL_DEPTH}." --file-selection --title "Filename syntax: multiplicative-depth_BKZ-reduction-cost-model_desired-security-level." --file-filter="${MUL_DEPTH}_* $((MUL_DEPTH+1))_* $((MUL_DEPTH+2))_*")
+                        cd "${DB_DIR}"  || exit
+                        INTERACTIVE_CHOICE=$(yad --text "Multiplicative depth of circuit ${TEST_NAME} is ${MUL_DEPTH}." --file-selection --title "Filename syntax: multiplicative-depth_BKZ-reduction-cost-model_desired-security-level-pt_modulus." --file-filter="${MUL_DEPTH}_*_${PLAINTEXT_MODULUS} $((MUL_DEPTH+1))_*_${PLAINTEXT_MODULUS} $((MUL_DEPTH+2))_*_${PLAINTEXT_MODULUS}")
                         print INTERACTIVE_CHOICE
                         if [ -f "${INTERACTIVE_CHOICE}" ] && [ ! -z "${INTERACTIVE_CHOICE}" ]
                         then
@@ -160,8 +186,8 @@ else
                         do
                             case ${REPLY} in
                                 "Select a parameter set in the database (last commit=${COMMIT_ID})")
-                                    cd "${PARAM_DIR}/${COMMIT_ID}/" || exit
-                                    INTERACTIVE_CHOICE=$(yad --text "Multiplicative depth of circuit ${TEST_NAME} is ${MUL_DEPTH}." --file-selection --title "Filename syntax: multiplicative-depth_BKZ-reduction-cost-model_desired-security-level." --file-filter="${MUL_DEPTH}_* $((MUL_DEPTH+1))_* $((MUL_DEPTH+2))_*" )
+                                    cd "${PARAM_DIR}/${COMMIT_ID}/${POLITIC}" || exit
+                                    INTERACTIVE_CHOICE=$(yad --text "Multiplicative depth of circuit ${TEST_NAME} is ${MUL_DEPTH}." --file-selection --title "Filename syntax: multiplicative-depth_BKZ-reduction-cost-model_desired-security-level-pt_modulus." --file-filter="${MUL_DEPTH}_*_${PLAINTEXT_MODULUS} $((MUL_DEPTH+1))_*_${PLAINTEXT_MODULUS} $((MUL_DEPTH+2))_*_${PLAINTEXT_MODULUS}" )
                                     print INTERACTIVE_CHOICE COMMIT_ID
                                     if [ -f "${INTERACTIVE_CHOICE}" ] && [ ! -z "${INTERACTIVE_CHOICE}" ]
                                     then
@@ -174,9 +200,9 @@ else
                                     ;;
                                 "Update the database (dependency: sagemath)")
                                     cd "${CINGU_PARAM_DIR}/generateParam"  \
-                                    && parallel  --header : --results ${PARAM_DIR}/${HEAD_ID} bash updateParam.sh {1} {2} {3} {4} ${HEAD_ID} ::: mult_depth $(seq 20) ::: min_secu 80 128 192 ::: model "bkz_enum" "bkz_sieve" "core_sieve" "q_core_sieve" ::: gen_method "wordsizeinc" "bitsizeinc" \
-                                    && bash renameParam.sh ${PARAM_DIR}/${HEAD_ID} 80 128 192  \
-                                    && echo "${HEAD_ID}" "$(date)" >> "${PARAM_DIR}/commit.log"
+                                    && parallel  --header : --results ${DB_DIR} bash updateParam.sh {1} {2} {3} {4} ${HEAD_ID} ::: mult_depth $(seq 20) ::: min_secu 80 128 192 ::: model "bkz_enum" "bkz_sieve" "core_sieve" "q_core_sieve" ::: gen_method "wordsizeinc" "bitsizeinc" \
+                                    && bash renameParam.sh ${DB_DIR} 80 128 192  \
+                                    && echo "${HEAD_ID}/${POLITIC}" "$(date)" >> "${PARAM_DIR}/commit.log"
                                     break
                                     ;;
                                 "Quit")
