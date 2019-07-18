@@ -127,6 +127,7 @@ else
     echo -e "${CYAN_WARNING}No parameter found with static mode. Automatically switch to interactive mode.${DEFAULT_ZEN}"
     MODE=interactive
     PREVIOUS_MODE=static
+    print MODE
 fi
 
 
