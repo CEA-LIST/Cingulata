@@ -57,11 +57,10 @@ cd ../../ || exit
 BUILD_DIR=$(pwd)
 cd .. || exit
 CINGU_PARAM_DIR=@CINGU_PARAM_DIR@
-# To check if private key distribution is binary as needed in Cingulata
-#source ../../../CinguParam/generateParam/defaultPolitic.sh
-
 source ${CINGU_PARAM_DIR}/generateParam/defaultPolitic.sh
 default_politic ${POLITIC} # To define PRIVATE_KEY_DISTRIB and SECURITY_REDUCTION
+
+# To check if private key distribution is binary as needed in Cingulata
 lower_bound=$(eval echo $PRIVATE_KEY_DISTRIB | cut -d, -f1)
 upper_bound=$(eval echo $PRIVATE_KEY_DISTRIB | cut -d, -f2)
 if [ ${lower_bound}  -ne 0 ] || [ ${upper_bound}  -ne 1 ]
@@ -178,10 +177,10 @@ else
                 else
                         if [ -z "${PREVIOUS_MODE}" ]
                         then
-                                echo -e "${CYAN_WARNING}The parameters with lwe-estimator commit ${HEAD_ID} are not in the database.${DEFAULT_ZEN}"
+                                echo -e "${CYAN_WARNING}The parameters with lwe-estimator commit ${HEAD_ID} are not in the database. See CinguParam wiki to update the database.${DEFAULT_ZEN}"
                         fi
                         PS3='Please enter your choice: '
-                        options=("Select a parameter set in the database (last commit=${COMMIT_ID})" "Update the database (dependency: sagemath)" "Quit")
+                        options=("Select a parameter set in the database (last commit=${COMMIT_ID})"  "Quit")
                         select REPLY in "${options[@]}"
                         do
                             case ${REPLY} in
@@ -196,13 +195,6 @@ else
                                         echo -e "${RED_ERROR}Invalid choice. You can generate suitable parameter sets using CinguParam module. ${DEFAULT_ZEN}" # It happens for L>20 since there is no corresponding paramset in the database.
                                         exit 0
                                     fi
-                                    break
-                                    ;;
-                                "Update the database (dependency: sagemath)")
-                                    cd "${CINGU_PARAM_DIR}/generateParam"  \
-                                    && parallel  --header : --results ${DB_DIR} bash updateParam.sh {1} {2} {3} {4} ${HEAD_ID} ::: mult_depth $(seq 20) ::: min_secu 80 128 192 ::: model "bkz_enum" "bkz_sieve" "core_sieve" "q_core_sieve" ::: gen_method "wordsizeinc" "bitsizeinc" \
-                                    && bash renameParam.sh ${DB_DIR} 80 128 192  \
-                                    && echo "${HEAD_ID}/${POLITIC}" "$(date)" >> "${PARAM_DIR}/commit.log"
                                     break
                                     ;;
                                 "Quit")

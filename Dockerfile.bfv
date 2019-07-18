@@ -2,16 +2,19 @@
 # Cingulata with in-house B/FV SHE implementation
 #
 # docker build -t cingulata:bfv -f Dockerfile.bfv --build-arg uid=$(id -u) .
-# docker run -it --rm -v $(pwd):/cingu cingulata:bfv
+# xhost +local:`docker inspect --format='{{ .Config.Hostname }}' $(docker ps -l -q)` 
+# docker run -it --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw"   --rm -v $(pwd):/cingu cingulata:bfv
 #######################################
 
 FROM ubuntu:18.04
 
 # install dependencies
+RUN ln -snf /usr/share/zoneinfo/$(curl https://ipapi.co/timezone) /etc/localtime
 RUN apt-get update -qq \
  && apt-get install --no-install-recommends -y \
     ca-certificates \
     cmake \
+    curl \
     g++ \
     git \
     libboost-graph-dev \
@@ -19,10 +22,15 @@ RUN apt-get update -qq \
     libflint-dev \
     libpugixml-dev \
     make \
+    mmv \
+    parallel \
     python3 \
     python3-networkx \
     python3-numpy \
-    xxd
+    sagemath \
+    tzdata \
+    xxd \ 
+    yad
 
 # add user
 ARG uid=1000
@@ -40,4 +48,3 @@ CMD mkdir -p /cingu/$build_dir \
  && make
 
 WORKDIR /cingu/
-
