@@ -47,7 +47,7 @@ function print() # syntax: print VAR1 ... VARN
 DEFAULT_ZEN='\e[m'
 CYAN_WARNING='\e[0;36m'
 RED_ERROR='\e[0;31m'
-
+GREEN_OK="\e[00;32m"
 
 
 
@@ -72,10 +72,6 @@ then
         exit 2 # Incompatible private key distribution
 fi
 
-#Color text
-DEFAULT_ZEN='\e[m'
-CYAN_WARNING='\e[0;36m'
-RED_ERROR='\e[0;31m'
 
 
 if [ ! "$(ls -A "${CINGU_PARAM_DIR}")" ] ; then
@@ -90,7 +86,7 @@ PARAM_DIR=${CINGU_PARAM_DIR}/storeParam
 
 XML_PARAMS=fhe_params.xml
 HEAD_ID=$(git ls-remote https://bitbucket.org/malb/lwe-estimator.git HEAD | awk '{print $1}' | cut -c-7 ) # to determine lwe-estimator HEAD commit ID
-COMMIT_ID="$(awk '{w=$1} END{print w}' "${PARAM_DIR}"/commit.log)" # to determine last commit ID in database
+COMMIT_ID="$(awk '{w=$1} END{print w}' "${PARAM_DIR}"/commit.log)" # to determine using LWE-Estimator commit commit ID in database
 
 PLAINTEXT_MODULUS=2 # Cingulata operates on binary ciphertexts.
 DB_DIR="${PARAM_DIR}/${HEAD_ID}/${POLITIC}"
@@ -111,13 +107,15 @@ static_choice()
   for file in *
   do
         depth=$(echo "${file}" | awk -F'[_]' '{print $1}')  # print multiplicative depth
-        model=$(echo "${file}" | sed 's/[0-9]//g' | sed 's/^_//' | sed 's/_$//') # print bkz reduction cost model
+        model=$(echo "${file}" | sed 's/[0-9]//g' | sed 's/^_//' | sed 's/_$// ' | sed 's/_$// ') # print bkz reduction cost model
         secu=$(echo "${file}" | awk -F'[_]' '{print $((NF-1))}') # print approximated security
         pt_modulus=$(echo "${file}" | awk -F'[_]' '{print $NF}') # print plaintext modulus        
-        if [ $((depth)) -eq $((MUL_DEPTH))  ] && [ "${secu}" -ge $((MIN_SECU)) ] && [ "${secu}" -le $((MIN_SECU+64)) ]  && [ "${model}" = "${MODEL}" ] && [ $((pt_modulus)) -eq $((PLAINTEXT_MODULUS))  ] 
+        if [ $((depth)) -eq $((MUL_DEPTH))  ] && [ "${secu}" -ge $((MIN_SECU)) ] && [ "${secu}" -le $((MIN_SECU+64)) ] && [ "${model}" == ${MODEL} ] && [ $((pt_modulus)) -eq $((PLAINTEXT_MODULUS))  ]  
         then
                 sublist+=( "${file}" )
         fi
+        
+        
   done
   echo DESIRED_PARAMS="$(echo "${DESIRED_PARAMS}"| rev | cut -d/ -f1 | rev)"
   if [ ${#sublist[@]} -ne 0 ]
@@ -136,6 +134,7 @@ fi
 print TEST_NAME
 if [ -f "${DESIRED_PARAMS}" ]
 then
+        echo -ne "${GREEN_OK}Parameter set found in CinguParam: ${DEFAULT_ZEN}"
         cp -v "${DESIRED_PARAMS}" "${RUN_DIR}/${XML_PARAMS}" 2>/dev/null
 else
         print MODE
@@ -147,12 +146,13 @@ else
                         echo "Compute alternative choice..."
                         static_choice "${HEAD_ID}/${POLITIC}"
                 else
-                        echo -e "${CYAN_WARNING}The parameters with lwe-estimator commit ${HEAD_ID} are not in the database.${DEFAULT_ZEN}"
+                        echo -e "${CYAN_WARNING}The parameters with lwe-estimator commit ${HEAD_ID} are not in CinguParam.${DEFAULT_ZEN}"
                         static_choice "${COMMIT_ID}/${POLITIC}"
                 fi
                 if [ -n "${STATIC_CHOICE}" ]
                 then
-                        echo "STATIC_CHOICE=${STATIC_CHOICE} (last commit=${COMMIT_ID})"
+                        echo "STATIC_CHOICE=${STATIC_CHOICE} (using LWE-Estimator commit commit=${COMMIT_ID})"
+                        echo -ne "${GREEN_OK}Parameter set found in CinguParam: ${DEFAULT_ZEN}"
                         cp -v "${STATIC_CHOICE}" "${RUN_DIR}/${XML_PARAMS}" 2>/dev/null
                 fi
         fi
@@ -170,30 +170,32 @@ else
                         print INTERACTIVE_CHOICE
                         if [ -f "${INTERACTIVE_CHOICE}" ] && [ ! -z "${INTERACTIVE_CHOICE}" ]
                         then
+                                echo -ne "${GREEN_OK}Parameter set found in CinguParam: ${DEFAULT_ZEN}"
                                 cp -v "${INTERACTIVE_CHOICE}" "${RUN_DIR}/${XML_PARAMS}" 2>/dev/null
                         else
-                                echo -e "${RED_ERROR}Invalid choice. You can generate suitable parameter sets using CinguParam module. ${DEFAULT_ZEN}" # It happens for L>20 since there is no corresponding paramset in the database.
+                                echo -e "${RED_ERROR}Invalid choice. You can generate suitable parameter sets using CinguParam module. ${DEFAULT_ZEN}" # It happens for L>20 since there is no corresponding paramset in CinguParam.
                                 exit 0
                         fi
                 else
                         if [ -z "${PREVIOUS_MODE}" ]
                         then
-                                echo -e "${CYAN_WARNING}The parameters with lwe-estimator commit ${HEAD_ID} are not in the database. See CinguParam wiki to update the database.${DEFAULT_ZEN}"
+                                echo -e "${CYAN_WARNING}The parameters with lwe-estimator commit ${HEAD_ID} are not in CinguParam. See CinguParam wiki to update the database.${DEFAULT_ZEN}"
                         fi
                         PS3='Please enter your choice: '
-                        options=("Select a parameter set in the database (last commit=${COMMIT_ID})"  "Quit")
+                        options=("Select a parameter set in CinguParam (using LWE-Estimator commit commit=${COMMIT_ID})"  "Quit")
                         select REPLY in "${options[@]}"
                         do
                             case ${REPLY} in
-                                "Select a parameter set in the database (last commit=${COMMIT_ID})")
+                                "Select a parameter set in CinguParam (using LWE-Estimator commit commit=${COMMIT_ID})")
                                     cd "${PARAM_DIR}/${COMMIT_ID}/${POLITIC}" || exit
                                     INTERACTIVE_CHOICE=$(yad --text "Multiplicative depth of circuit ${TEST_NAME} is ${MUL_DEPTH}." --file-selection --title "Filename syntax: multiplicative-depth_BKZ-reduction-cost-model_desired-security-level-pt_modulus." --file-filter="${MUL_DEPTH}_*_${PLAINTEXT_MODULUS} $((MUL_DEPTH+1))_*_${PLAINTEXT_MODULUS} $((MUL_DEPTH+2))_*_${PLAINTEXT_MODULUS}" )
                                     print INTERACTIVE_CHOICE COMMIT_ID
                                     if [ -f "${INTERACTIVE_CHOICE}" ] && [ ! -z "${INTERACTIVE_CHOICE}" ]
                                     then
+                                        echo -ne "${GREEN_OK}Parameter set found in CinguParam: ${DEFAULT_ZEN}"
                                         cp -v "${INTERACTIVE_CHOICE}" "${RUN_DIR}/${XML_PARAMS}" 2>/dev/null
                                     else
-                                        echo -e "${RED_ERROR}Invalid choice. You can generate suitable parameter sets using CinguParam module. ${DEFAULT_ZEN}" # It happens for L>20 since there is no corresponding paramset in the database.
+                                        echo -e "${RED_ERROR}Invalid choice. You can generate suitable parameter sets using CinguParam module. ${DEFAULT_ZEN}" # It happens for L>20 since there is no corresponding paramset in CinguParam.
                                         exit 0
                                     fi
                                     break
