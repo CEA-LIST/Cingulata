@@ -86,7 +86,7 @@ PARAM_DIR=${CINGU_PARAM_DIR}/storeParam
 
 XML_PARAMS=fhe_params.xml
 HEAD_ID=$(git ls-remote https://bitbucket.org/malb/lwe-estimator.git HEAD | awk '{print $1}' | cut -c-7 ) # to determine lwe-estimator HEAD commit ID
-COMMIT_ID="$(awk '{w=$1} END{print w}' "${PARAM_DIR}"/commit.log)" # to determine using LWE-Estimator commit commit ID in database
+COMMIT_ID="$(awk '{w=$1} END{print w}' "${PARAM_DIR}"/commit.log)" # to determine using LWE-Estimator commit ID in database
 
 PLAINTEXT_MODULUS=2 # Cingulata operates on binary ciphertexts.
 DB_DIR="${PARAM_DIR}/${HEAD_ID}/${POLITIC}"
@@ -151,7 +151,7 @@ else
                 fi
                 if [ -n "${STATIC_CHOICE}" ]
                 then
-                        echo "STATIC_CHOICE=${STATIC_CHOICE} (using LWE-Estimator commit commit=${COMMIT_ID})"
+                        echo "STATIC_CHOICE=${STATIC_CHOICE} (using LWE-Estimator commit=${COMMIT_ID})"
                         echo -ne "${GREEN_OK}Parameter set found in CinguParam: ${DEFAULT_ZEN}"
                         cp -v "${STATIC_CHOICE}" "${RUN_DIR}/${XML_PARAMS}" 2>/dev/null
                 fi
@@ -182,11 +182,11 @@ else
                                 echo -e "${CYAN_WARNING}The parameters with lwe-estimator commit ${HEAD_ID} are not in CinguParam. See CinguParam wiki to update the database.${DEFAULT_ZEN}"
                         fi
                         PS3='Please enter your choice: '
-                        options=("Select a parameter set in CinguParam (using LWE-Estimator commit commit=${COMMIT_ID})"  "Quit")
+                        options=("Select a parameter set in CinguParam (using LWE-Estimator commit=${COMMIT_ID})"  "Quit")
                         select REPLY in "${options[@]}"
                         do
                             case ${REPLY} in
-                                "Select a parameter set in CinguParam (using LWE-Estimator commit commit=${COMMIT_ID})")
+                                "Select a parameter set in CinguParam (using LWE-Estimator commit=${COMMIT_ID})")
                                     cd "${PARAM_DIR}/${COMMIT_ID}/${POLITIC}" || exit
                                     INTERACTIVE_CHOICE=$(yad --text "Multiplicative depth of circuit ${TEST_NAME} is ${MUL_DEPTH}." --file-selection --title "Filename syntax: multiplicative-depth_BKZ-reduction-cost-model_desired-security-level-pt_modulus." --file-filter="${MUL_DEPTH}_*_${PLAINTEXT_MODULUS} $((MUL_DEPTH+1))_*_${PLAINTEXT_MODULUS} $((MUL_DEPTH+2))_*_${PLAINTEXT_MODULUS}" )
                                     print INTERACTIVE_CHOICE COMMIT_ID
