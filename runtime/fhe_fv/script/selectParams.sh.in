@@ -134,7 +134,7 @@ fi
 print TEST_NAME
 if [ -f "${DESIRED_PARAMS}" ]
 then
-        echo -ne "${GREEN_OK}Parameter set found in CinguParam: ${DEFAULT_ZEN}"
+        echo -ne "${GREEN_OK}Parameter set automatically found in CinguParam: ${DEFAULT_ZEN}"
         cp -v "${DESIRED_PARAMS}" "${RUN_DIR}/${XML_PARAMS}" 2>/dev/null
 else
         print MODE
@@ -152,7 +152,7 @@ else
                 if [ -n "${STATIC_CHOICE}" ]
                 then
                         echo "STATIC_CHOICE=${STATIC_CHOICE} (using LWE-Estimator commit=${COMMIT_ID})"
-                        echo -ne "${GREEN_OK}Parameter set found in CinguParam: ${DEFAULT_ZEN}"
+                        echo -ne "${GREEN_OK}Parameter set automatically found in CinguParam: ${DEFAULT_ZEN}"
                         cp -v "${STATIC_CHOICE}" "${RUN_DIR}/${XML_PARAMS}" 2>/dev/null
                 fi
         fi
