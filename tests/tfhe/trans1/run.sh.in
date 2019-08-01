@@ -34,18 +34,16 @@ function test() {
 
   echo "Transfer $amnt from $acc1 to $acc2"
   echo " - Input encryption"
-  ./tfhe-banking-encrypt $amnt $acc1 $acc2
+  ./tfhe-trans1-encrypt $amnt $acc1 $acc2
 
   echo " - Homomorphic execution..."
-  time ./tfhe-banking-exec
+  time ./tfhe-trans1-exec
 
   echo " - Output decryption"
-  ./tfhe-banking-decrypt
+  ./tfhe-trans1-decrypt
 
   rm -f m_* t1_* t2_*
 }
 
 test 5 10 13
 test 5 1 13
-test -5 10 13
-test -5 10 1

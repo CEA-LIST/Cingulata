@@ -34,14 +34,14 @@ int main() {
   /* Only tfhe bit executor is needed for encryption/decryption and IO operations  */
   CiContext::set_bit_exec(make_shared<TfheBitExec>("tfhe.sk", TfheBitExec::Secret));
 
-  CiInt t1{CiInt::u32};
-  CiInt t2{CiInt::u32};
+  CiInt mc{CiInt::u32};
+  CiInt ms{CiInt::u32};
 
-  t1.read("t1").decrypt();
-  t2.read("t2").decrypt();
+  mc.read("mc").decrypt();
+  ms.read("ms").decrypt();
 
-  int32_t t1_val = (int32_t)t1.get_val();
-  int32_t t2_val = (int32_t)t2.get_val();
+  int32_t mc_val = (int32_t)mc.get_val();
+  int32_t ms_val = (int32_t)ms.get_val();
 
-  cout << t1_val << " " << t2_val << endl;
+  cout << mc_val << " " << ms_val << endl;
 }

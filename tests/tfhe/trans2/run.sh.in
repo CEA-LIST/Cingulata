@@ -27,7 +27,7 @@ APPS_DIR=@APPS_DIR@
 echo "TFHE key generation"
 $APPS_DIR/tfhe-keygen
 
-./tfhe-transaction-encrypt -10 100 0
-./tfhe-transaction-decrypt
-time ./tfhe-transaction-exec
-./tfhe-transaction-decrypt
+./tfhe-trans2-encrypt -10 100 0
+./tfhe-trans2-decrypt
+time ./tfhe-trans2-exec
+./tfhe-trans2-decrypt
