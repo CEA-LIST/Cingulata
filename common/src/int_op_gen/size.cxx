@@ -29,6 +29,11 @@ CiBitVector IntOpGenSize::add(const CiBitVector &lhs,
   return m_add(lhs, rhs);
 }
 
+CiBitVector IntOpGenSize::sub(const CiBitVector &lhs,
+                              const CiBitVector &rhs) const {
+  return m_add(lhs, ~rhs, CiBit::one);
+}
+
 CiBitVector IntOpGenSize::neg(const CiBitVector &lhs) const {
   return m_neg(lhs);
 }
