@@ -56,8 +56,8 @@ int main() {
   CiInt nd1 = select(m0_neg && m1_neg, nd0 - d, 0);
   CiBit nd1_neg = nd1.sign();
 
-  CiBit m1_under_min = m1p < CiInt::s32v(-500);
-  CiBit nd1_under_min = nd1 < CiInt::s32v(-7);
+  CiBit m1_under_min = m1p < -500;
+  CiBit nd1_under_min = nd1 < -7;
 
   /* when balance and negative days counter is positive (i.e. negative days
    * counter equals to zero) => transaction ok */

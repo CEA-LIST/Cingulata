@@ -53,10 +53,6 @@ const CiInt CiInt::s16  (CiInt::s16v(0));
 const CiInt CiInt::s32  (CiInt::s32v(0));
 const CiInt CiInt::s64  (CiInt::s64v(0));
 
-CiInt::CiInt(const int64_t p_val, const unsigned p_bit_cnt,
-             const bool p_is_signed)
-    : m_bits(encode_plain_int(p_val, p_bit_cnt)), m_is_signed(p_is_signed) {}
-
 CiInt::CiInt(const CiBit& p_bit, const unsigned p_bit_cnt, const bool p_is_signed)
 :
   m_bits(p_bit_cnt, p_bit),

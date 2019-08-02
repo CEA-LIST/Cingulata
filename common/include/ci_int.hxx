@@ -99,12 +99,21 @@ namespace cingulata
      *                          minimal bit-size needed to encode @c p_val is
      *                          used
      * @param      p_is_signed  signedness of new object, if none given the @c
-     *                          default_is_signed value is used
+     *                          p_val signedness is used
+     *
+     * @tparam     T            an integral type
+     * @tparam     <unnamed>    ensure only primitive integral types are
+     *                          accepted
      */
+    template
+    <
+        typename T,
+        typename = typename std::enable_if<std::is_integral<T>::value, T>::type
+    >
     CiInt(
-      const int64_t p_val,
+      const T p_val,
       const unsigned p_bit_cnt = (unsigned)-1,
-      const bool p_is_signed = default_is_signed
+      const bool p_is_signed = std::is_signed<T>::value
     );
 
     /**
@@ -517,6 +526,8 @@ namespace cingulata
    * @return     Result sign
    */
   bool result_is_signed(const CiInt& lhs, const CiInt& rhs);
+
+  #include "ci_int-impl.hxx"
 }
 
 #endif
