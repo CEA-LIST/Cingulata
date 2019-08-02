@@ -166,7 +166,7 @@ else
                         fi
                         read -p "Press <ENTER> to select a parameter set." -r
                         cd "${DB_DIR}"  || exit
-                        INTERACTIVE_CHOICE=$(yad --text "Multiplicative depth of circuit ${TEST_NAME} is ${MUL_DEPTH}." --file-selection --title "Filename syntax: multiplicative-depth_BKZ-reduction-cost-model_desired-security-level-pt_modulus." --file-filter="${MUL_DEPTH}_*_${PLAINTEXT_MODULUS} $((MUL_DEPTH+1))_*_${PLAINTEXT_MODULUS} $((MUL_DEPTH+2))_*_${PLAINTEXT_MODULUS}")
+                        INTERACTIVE_CHOICE=$(yad --text "Multiplicative depth of circuit ${TEST_NAME} is ${MUL_DEPTH}." --file-selection --title "Filename syntax: multiplicative-depth_BKZ-reduction-cost-model_desired-security-level-pt_modulus." --file-filter="${MUL_DEPTH}_*_${PLAINTEXT_MODULUS} $((MUL_DEPTH+1))_*_${PLAINTEXT_MODULUS} $((MUL_DEPTH+2))_*_${PLAINTEXT_MODULUS}" 2>/dev/null)
                         print INTERACTIVE_CHOICE
                         if [ -f "${INTERACTIVE_CHOICE}" ] && [ ! -z "${INTERACTIVE_CHOICE}" ]
                         then
@@ -188,7 +188,7 @@ else
                             case ${REPLY} in
                                 "Select a parameter set in CinguParam (using LWE-Estimator commit=${COMMIT_ID})")
                                     cd "${PARAM_DIR}/${COMMIT_ID}/${POLITIC}" || exit
-                                    INTERACTIVE_CHOICE=$(yad --text "Multiplicative depth of circuit ${TEST_NAME} is ${MUL_DEPTH}." --file-selection --title "Filename syntax: multiplicative-depth_BKZ-reduction-cost-model_desired-security-level-pt_modulus." --file-filter="${MUL_DEPTH}_*_${PLAINTEXT_MODULUS} $((MUL_DEPTH+1))_*_${PLAINTEXT_MODULUS} $((MUL_DEPTH+2))_*_${PLAINTEXT_MODULUS}" )
+                                    INTERACTIVE_CHOICE=$(yad --text "Multiplicative depth of circuit ${TEST_NAME} is ${MUL_DEPTH}." --file-selection --title "Filename syntax: multiplicative-depth_BKZ-reduction-cost-model_desired-security-level-pt_modulus." --file-filter="${MUL_DEPTH}_*_${PLAINTEXT_MODULUS} $((MUL_DEPTH+1))_*_${PLAINTEXT_MODULUS} $((MUL_DEPTH+2))_*_${PLAINTEXT_MODULUS}" 2>/dev/null)
                                     print INTERACTIVE_CHOICE COMMIT_ID
                                     if [ -f "${INTERACTIVE_CHOICE}" ] && [ ! -z "${INTERACTIVE_CHOICE}" ]
                                     then

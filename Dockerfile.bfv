@@ -22,12 +22,9 @@ RUN apt-get update -qq \
     libflint-dev \
     libpugixml-dev \
     make \
-    mmv \
-    parallel \
     python3 \
     python3-networkx \
     python3-numpy \
-    sagemath \
     tzdata \
     xxd \ 
     yad
