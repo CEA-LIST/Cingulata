@@ -143,9 +143,112 @@ string get_oper_name(const testing::TestParamInfo<T>& oper) {
 
 /*-------------------------------------------------------------------------*/
 /**
+ * Adder operator tests
+ */
+/*-------------------------------------------------------------------------*/
+
+using AdderParam =
+tuple<
+  string,
+  function<AdderOper::signature>,
+  function<unsigned (const unsigned, const unsigned, const bool)>
+>;
+
+class Adder : public ::testing::TestWithParam<AdderParam> {
+public:
+  string name;
+  function<AdderOper::signature> op_ct;
+  function<unsigned (const unsigned, const unsigned, const bool)> op_pt;
+
+  virtual void SetUp() {
+    auto tmp = GetParam();
+    name = get<0>(tmp);
+    op_ct = get<1>(tmp);
+    op_pt = get<2>(tmp);
+  }
+};
+
+#define TEST_ADDER_OP(a_int, a_bv, b_int, b_bv, c_int, c_bv)                   \
+  {                                                                            \
+    auto r_int = op_pt(a_int, b_int, c_int);                                   \
+    auto r_bv = op_ct(a_bv, b_bv, c_bv);                                       \
+    /* inputs did not changed */                                               \
+    ASSERT_EQ_BV_INT(a_bv, a_int);                                             \
+    ASSERT_EQ_BV_INT(b_bv, b_int);                                             \
+    /* output is valid */                                                      \
+    ASSERT_EQ_BV_INT(r_bv, r_int);                                             \
+  }
+
+TEST_P(Adder, random_inps) {
+  const unsigned n = rand() % 32 + 1;
+
+  GEN_RAND_BV(a, n, rand());
+  GEN_RAND_BV(b, n, rand());
+  GEN_RAND_BV(c, 1, rand()%2)
+
+  TEST_ADDER_OP(a_int, a_bv, b_int, b_bv, (bool)c_int, c_bv.at(0));
+  TEST_ADDER_OP(b_int, b_bv, a_int, a_bv, (bool)c_int, c_bv.at(0));
+}
+
+TEST_P(Adder, zero_and_randomom_inp) {
+  const unsigned n = rand() % 32 + 1;
+
+  GEN_RAND_BV(a, n, rand());
+  GEN_RAND_BV(b, n, 0);
+  GEN_RAND_BV(c, 1, rand()%2)
+
+  TEST_ADDER_OP(a_int, a_bv, b_int, b_bv, (bool)c_int, c_bv.at(0));
+  TEST_ADDER_OP(b_int, b_bv, a_int, a_bv, (bool)c_int, c_bv.at(0));
+}
+
+TEST_P(Adder, 1bit_randomom_inps) {
+  const unsigned n = 1;
+
+  GEN_RAND_BV(a, n, rand());
+  GEN_RAND_BV(b, n, rand());
+  GEN_RAND_BV(c, 1, rand()%2)
+
+  TEST_ADDER_OP(a_int, a_bv, b_int, b_bv, (bool)c_int, c_bv.at(0));
+  TEST_ADDER_OP(b_int, b_bv, a_int, a_bv, (bool)c_int, c_bv.at(0));
+}
+
+AdderParam adder_params[] =
+{
+  {
+    "RippleCarryAdder",
+    [](const CiBitVector& a, const CiBitVector& b, const CiBit& carry_in) -> CiBitVector {
+      return RippleCarryAdder()(a,b,carry_in);
+    },
+    [](const unsigned a, const unsigned b, const bool c) -> unsigned {
+      return a + b + (c ? 1U : 0U);
+    }
+  },
+  {
+    "SklanskyAdder",
+    [](const CiBitVector& a, const CiBitVector& b, const CiBit& carry_in) -> CiBitVector {
+      return SklanskyAdder()(a,b,carry_in);
+    },
+    [](const unsigned a, const unsigned b, const bool c) -> unsigned {
+      return a + b + 0U; // TODO: add carry in to Sklansky adder
+      // return a + b + (c ? 1U : 0U);
+    }
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(
+  IntOpGen,
+  Adder,
+  ::testing::ValuesIn(adder_params),
+  get_oper_name<AdderParam>
+);
+
+
+/*-------------------------------------------------------------------------*/
+/**
  * Binary operator tests
  */
 /*-------------------------------------------------------------------------*/
+
 
 using BinaryParam =
 tuple<
@@ -211,24 +314,6 @@ TEST_P(Binary, 1bit_randomom_inps) {
 
 BinaryParam binary_params[] =
 {
-  {
-    "RippleCarryAdder",
-    [](const CiBitVector& a, const CiBitVector& b) -> CiBitVector {
-      return RippleCarryAdder()(a,b);
-    },
-    [](const unsigned a, const unsigned b) -> unsigned {
-      return a + b;
-    }
-  },
-  {
-    "SklanskyAdder",
-    [](const CiBitVector& a, const CiBitVector& b) -> CiBitVector {
-      return SklanskyAdder()(a,b);
-    },
-    [](const unsigned a, const unsigned b) -> unsigned {
-      return a + b;
-    }
-  },
   {
     "WallaceMultiplier",
     [](const CiBitVector& a, const CiBitVector& b) -> CiBitVector {
