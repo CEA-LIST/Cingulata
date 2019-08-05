@@ -147,6 +147,12 @@ vector<int> to_binary(T val, const unsigned size = -1) {
       ASSERT_EQ(x[i].decrypt().get_val(), b_val) << b_val << " " << n;         \
   }
 
+template<typename T>
+bool _is_signed(T _val) {
+  return std::is_signed<T>::value;
+}
+
+
 TEST(CiInt, constructor_from_ci_bit_single) {
   TEST_CONSTRUCTOR_CIBIT(0, 0);
   TEST_CONSTRUCTOR_CIBIT(1, 0);
@@ -189,7 +195,7 @@ TEST(CiInt, constructor_from_ci_bit_vector_rand) {
     unsigned x_size = (x_val < 0) ? (unsigned)ceil(log2(-x_val + 1)) + 1       \
                                   : (unsigned)ceil(log2(x_val + 1));           \
     ASSERT_EQ(x.size(), x_size);                                               \
-    ASSERT_EQ(x.is_signed(), CiInt::default_is_signed);                        \
+    ASSERT_EQ(x.is_signed(), _is_signed(_x_val));                              \
     ASSERT_THAT(to_binary(x_val, x_size),                                      \
                 ::testing::ElementsAreArray(decode_ext(x, x_size)));           \
   }
@@ -200,7 +206,7 @@ TEST(CiInt, constructor_from_ci_bit_vector_rand) {
     auto x_size = (_x_size);                                                   \
     CiInt x(x_val, x_size);                                                    \
     ASSERT_EQ(x.size(), x_size);                                               \
-    ASSERT_EQ(x.is_signed(), CiInt::default_is_signed);                        \
+    ASSERT_EQ(x.is_signed(), _is_signed(_x_val));                              \
     ASSERT_THAT(to_binary(x_val, x_size),                                      \
                 ::testing::ElementsAreArray(decode_ext(x, x_size)));           \
   }
@@ -266,74 +272,126 @@ TEST(CiInt, assign_from_ci_int) {
 TEST(CiInt, assign_from_value_single) {
   {
     const int val = 0;
-    const unsigned val_size = 0;
-    CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
+    CiInt y{0, 15, true};
+    y = val;
+    ASSERT_CI_PARAM(y, 15, true);
     ASSERT_EQ_CI_L(y, val);
   }
   {
     const int val = 1;
-    const unsigned val_size = 1;
-    CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
+    CiInt y{0, 15, true};
+    y = val;
+    ASSERT_CI_PARAM(y, 15, true);
     ASSERT_EQ_CI_L(y, val);
   }
   {
     const int val = -1;
-    const unsigned val_size = 2;
-    CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
+    CiInt y{0, 15, true};
+    y = val;
+    ASSERT_CI_PARAM(y, 15, true);
     ASSERT_EQ_CI_L(y, val);
   }
   {
     const unsigned val = 0;
-    const unsigned val_size = 0;
-    CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
+    CiInt y{0, 15, false};
+    y = val;
+    ASSERT_CI_PARAM(y, 15, false);
     ASSERT_EQ_CI_L(y, val);
   }
   {
     const unsigned val = 1;
-    const unsigned val_size = 1;
-    CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
+    CiInt y{0, 15, false};
+    y = val;
+    ASSERT_CI_PARAM(y, 15, false);
     ASSERT_EQ_CI_L(y, val);
   }
   {
     const unsigned val = -1;
-    const unsigned val_size = sizeof(unsigned)*8;
-    CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
+    CiInt y{0, 15, false};
+    y = val;
+    ASSERT_CI_PARAM(y, 15, false);
     ASSERT_EQ_CI_L(y, val);
-  }}
+  }
+
+  {
+    const int val = 0;
+    CiInt y{0, 15, false};
+    y = val;
+    ASSERT_CI_PARAM(y, 15, false);
+    ASSERT_EQ_CI_L(y, val);
+  }
+  {
+    const int val = 1;
+    CiInt y{0, 15, false};
+    y = val;
+    ASSERT_CI_PARAM(y, 15, false);
+    ASSERT_EQ_CI_L(y, val);
+  }
+  {
+    const int val = -1;
+    CiInt y{0, 15, false};
+    y = val;
+    ASSERT_CI_PARAM(y, 15, false);
+    ASSERT_EQ_CI_L(y, val);
+  }
+  {
+    const unsigned val = 0;
+    CiInt y{0, 15, true};
+    y = val;
+    ASSERT_CI_PARAM(y, 15, true);
+    ASSERT_EQ_CI_L(y, val);
+  }
+  {
+    const unsigned val = 1;
+    CiInt y{0, 15, true};
+    y = val;
+    ASSERT_CI_PARAM(y, 15, true);
+    ASSERT_EQ_CI_L(y, val);
+  }
+  {
+    const unsigned val = -1;
+    CiInt y{0, 15, true};
+    y = val;
+    ASSERT_CI_PARAM(y, 15, true);
+    ASSERT_EQ_CI_L(y, val);
+  }
+}
 
 TEST(CiInt, assign_from_value) {
   {
     const int val = rrand(0, 1<<5);
     const unsigned val_size = (unsigned)ceil(log2(val+1));
-    CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
+    const bool val_sign = rand() % 2;
+    CiInt y{0, val_size, val_sign};
+    y = val;
+    ASSERT_CI_PARAM(y, val_size, val_sign);
     ASSERT_EQ_CI_L(y, val);
   }
   {
     const int val = rrand(-(1<<5), -1);
     const unsigned val_size = (unsigned)ceil(log2(-val+1))+1;
-    CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
+    const bool val_sign = rand() % 2;
+    CiInt y{0, val_size, val_sign};
+    y = val;
+    ASSERT_CI_PARAM(y, val_size, val_sign);
     ASSERT_EQ_CI_L(y, val);
   }
   {
     const unsigned val = rrand(0, 1<<5);
     const unsigned val_size = (unsigned)ceil(log2(val+1));
-    CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
+    const bool val_sign = rand() % 2;
+    CiInt y{0, val_size, val_sign};
+    y = val;
+    ASSERT_CI_PARAM(y, val_size, val_sign);
     ASSERT_EQ_CI_L(y, val);
   }
   {
     const unsigned val = rrand(-(1<<5), -1);
     const unsigned val_size = 8*sizeof(unsigned);
-    CiInt y = val;
-    ASSERT_CI_PARAM(y, val_size, CiInt::default_is_signed);
+    const bool val_sign = rand() % 2;
+    CiInt y{0, val_size, val_sign};
+    y = val;
+    ASSERT_CI_PARAM(y, val_size, val_sign);
     ASSERT_EQ_CI_L(y, val);
   }
 }
