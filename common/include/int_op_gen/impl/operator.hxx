@@ -26,10 +26,8 @@
 
 #include <vector>
 
-namespace cingulata
-{
-namespace int_ops
-{
+namespace cingulata {
+namespace int_ops {
 
 /**
  * @brief      Unary operator base class
@@ -55,6 +53,22 @@ public:
 
 private:
   virtual CiBitVector oper(const CiBitVector &, const CiBitVector &) const = 0;
+};
+
+/**
+ * @brief      Binary operator base class
+ */
+class AdderOper {
+public:
+  using signature = CiBitVector(const CiBitVector &, const CiBitVector &,
+                                const CiBit &);
+
+  CiBitVector operator()(const CiBitVector &, const CiBitVector &,
+                         const CiBit & = CiBit::zero) const;
+
+private:
+  virtual CiBitVector oper(const CiBitVector &, const CiBitVector &,
+                           const CiBit &) const = 0;
 };
 
 /**
@@ -115,8 +129,7 @@ private:
 /**
  * @brief      Sort operator base class
  */
-class SortOper
-{
+class SortOper {
 public:
   using signature = std::vector<CiBitVector>(const std::vector<CiBitVector> &,
                                              const std::vector<CiBitVector> &,
@@ -165,6 +178,6 @@ private:
                                         const bool reverse) const = 0;
 };
 
-}
-}
+} // namespace int_ops
+} // namespace cingulata
 #endif

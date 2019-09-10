@@ -27,25 +27,7 @@ APPS_DIR=@APPS_DIR@
 echo "TFHE key generation"
 $APPS_DIR/tfhe-keygen
 
-function test() {
-  amnt=$1
-  acc1=$2
-  acc2=$3
-
-  echo "Transfer $amnt from $acc1 to $acc2"
-  echo " - Input encryption"
-  ./tfhe-banking-encrypt $amnt $acc1 $acc2
-
-  echo " - Homomorphic execution..."
-  time ./tfhe-banking-exec
-
-  echo " - Output decryption"
-  ./tfhe-banking-decrypt
-
-  rm -f m_* t1_* t2_*
-}
-
-test 5 10 13
-test 5 1 13
-test -5 10 13
-test -5 10 1
+./tfhe-trans2-encrypt -10 100 0
+./tfhe-trans2-decrypt
+time ./tfhe-trans2-exec
+./tfhe-trans2-decrypt

@@ -53,10 +53,6 @@ const CiInt CiInt::s16  (CiInt::s16v(0));
 const CiInt CiInt::s32  (CiInt::s32v(0));
 const CiInt CiInt::s64  (CiInt::s64v(0));
 
-CiInt::CiInt(const int64_t p_val, const unsigned p_bit_cnt,
-             const bool p_is_signed)
-    : m_bits(encode_plain_int(p_val, p_bit_cnt)), m_is_signed(p_is_signed) {}
-
 CiInt::CiInt(const CiBit& p_bit, const unsigned p_bit_cnt, const bool p_is_signed)
 :
   m_bits(p_bit_cnt, p_bit),
@@ -260,40 +256,37 @@ CiBit cingulata::operator||(const CiInt& lhs, const CiInt& rhs) {
   return static_cast<CiBit>(lhs) | static_cast<CiBit>(rhs);
 }
 
-namespace
-{
-  /**
-   * @brief      Gets the bit-size the output of a 2 input operator.
-   * @details    This function computes the bit-size of the integer obtained as a
-   *             result of application of an 2-input integer operator.
-   *
-   * @param[in]  lhs   The left hand side
-   * @param[in]  rhs   The right hand side
-   *
-   * @return     Result bit-size
-   */
-  unsigned result_size(const CiInt& lhs, const CiInt& rhs) {
-    return (lhs.size() > rhs.size()) ? lhs.size() : rhs.size();
-  }
+/**
+ * @brief      Gets the bit-size the output of a 2 input operator.
+ * @details    This function computes the bit-size of the integer obtained as a
+ *             result of application of an 2-input integer operator.
+ *
+ * @param[in]  lhs   The left hand side
+ * @param[in]  rhs   The right hand side
+ *
+ * @return     Result bit-size
+ */
+unsigned cingulata::result_size(const CiInt& lhs, const CiInt& rhs) {
+  return (lhs.size() > rhs.size()) ? lhs.size() : rhs.size();
+}
 
-  /**
-   * @brief      Gets the sign the output of a 2 input operator.
-   * @details    This function computes the signedness of the integer obtained as
-   *             a result of application of an 2-input integer operator.
-   *
-   * @param[in]  lhs   The left hand side
-   * @param[in]  rhs   The right hand side
-   *
-   * @return     Result sign
-   */
-  bool result_is_signed(const CiInt& lhs, const CiInt& rhs) {
-    if (lhs.size() == rhs.size()) {
-      return lhs.is_signed() and rhs.is_signed();
-    } else if (lhs.size() > rhs.size()) {
-      return lhs.is_signed();
-    } else {
-      return rhs.is_signed();
-    }
+/**
+ * @brief      Gets the sign the output of a 2 input operator.
+ * @details    This function computes the signedness of the integer obtained as
+ *             a result of application of an 2-input integer operator.
+ *
+ * @param[in]  lhs   The left hand side
+ * @param[in]  rhs   The right hand side
+ *
+ * @return     Result sign
+ */
+bool cingulata::result_is_signed(const CiInt& lhs, const CiInt& rhs) {
+  if (lhs.size() == rhs.size()) {
+    return lhs.is_signed() and rhs.is_signed();
+  } else if (lhs.size() > rhs.size()) {
+    return lhs.is_signed();
+  } else {
+    return rhs.is_signed();
   }
 }
 
@@ -385,26 +378,40 @@ CiInt cingulata::ror(CiInt lhs, const int pos) {
   return lhs.ror(pos);
 }
 
-/* Relational operators */
-#define DEFINE_RELATIONAL_OPERATOR(OP_NAME, OP_FUNC, SAME_OPERANDS_CODE) \
-CiBit cingulata::OP_NAME(const CiInt& lhs, const CiInt& rhs) { \
-  if (&lhs == &rhs) {  \
-    SAME_OPERANDS_CODE; \
-  } else { \
-    unsigned res_size = result_size(lhs, rhs); \
-    return CiContext::get_int_op_gen()->OP_FUNC( \
-      lhs.cast(res_size), \
-      rhs.cast(res_size)); \
-  } \
-}
+/* Equal/not-equal operators */
+#define DEFINE_RELATIONAL_OPERATOR_1(OP_NAME, OP_FUNC, SAME_OPERANDS_CODE)     \
+  CiBit cingulata::OP_NAME(const CiInt &lhs, const CiInt &rhs) {               \
+    if (&lhs == &rhs) {                                                        \
+      SAME_OPERANDS_CODE;                                                      \
+    } else {                                                                   \
+      unsigned res_size = result_size(lhs, rhs);                               \
+      return CiContext::get_int_op_gen()->OP_FUNC(lhs.cast(res_size),          \
+                                                  rhs.cast(res_size));         \
+    }                                                                          \
+  }
 
-DEFINE_RELATIONAL_OPERATOR(operator==, equal         , return CiBit::one);
-DEFINE_RELATIONAL_OPERATOR(operator!=, not_equal     , return CiBit::zero);
-DEFINE_RELATIONAL_OPERATOR(operator< , lower         , return CiBit::zero);
-DEFINE_RELATIONAL_OPERATOR(operator<=, lower_equal   , return CiBit::one);
-DEFINE_RELATIONAL_OPERATOR(operator> , greater       , return CiBit::zero);
-DEFINE_RELATIONAL_OPERATOR(operator>=, greater_equal , return CiBit::one);
+DEFINE_RELATIONAL_OPERATOR_1(operator==, equal         , return CiBit::one);
+DEFINE_RELATIONAL_OPERATOR_1(operator!=, not_equal     , return CiBit::zero);
 
+/* Comparators */
+#define DEFINE_RELATIONAL_OPERATOR_2(OP_NAME, OP_FUNC, SAME_OPERANDS_CODE)     \
+  CiBit cingulata::OP_NAME(const CiInt &lhs, const CiInt &rhs) {               \
+    if (&lhs == &rhs) {                                                        \
+      SAME_OPERANDS_CODE;                                                      \
+    } else {                                                                   \
+      unsigned res_size = result_size(lhs, rhs);                               \
+      CiBit result = CiContext::get_int_op_gen()->OP_FUNC(lhs.cast(res_size),  \
+                                                          rhs.cast(res_size)); \
+      if (lhs.is_signed() or rhs.is_signed())                                  \
+        result ^= lhs.sign() ^ rhs.sign();                                     \
+      return result;                                                           \
+    }                                                                          \
+  }
+
+DEFINE_RELATIONAL_OPERATOR_2(operator< , lower         , return CiBit::zero);
+DEFINE_RELATIONAL_OPERATOR_2(operator<=, lower_equal   , return CiBit::one);
+DEFINE_RELATIONAL_OPERATOR_2(operator> , greater       , return CiBit::zero);
+DEFINE_RELATIONAL_OPERATOR_2(operator>=, greater_equal , return CiBit::one);
 
 istream& cingulata::operator>>(istream& inp, CiInt& val) {
   val.read();

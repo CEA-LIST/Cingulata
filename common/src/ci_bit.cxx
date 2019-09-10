@@ -105,10 +105,10 @@ CiBit& CiBit::encrypt() {
   return *this;
 }
 
-bit_plain_t CiBit::decrypt() {
+CiBit& CiBit::decrypt() {
   if (not is_plain())
     set_val(CiContext::get_bit_exec()->decrypt(obj_hdl));
-  return get_val();
+  return *this;
 }
 
 bool CiBit::is_plain() const {

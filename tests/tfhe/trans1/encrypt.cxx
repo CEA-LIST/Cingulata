@@ -39,18 +39,18 @@ int main(int argc, char* argv[]) {
   /* Only tfhe bit executor is needed for encryption/decryption and IO operations  */
   CiContext::set_bit_exec(make_shared<TfheBitExec>("tfhe.sk", TfheBitExec::Secret));
 
-  int m_val = atoi(argv[1]);
+  int t_val = atoi(argv[1]);
 
-  CiInt m{CiInt::u32v(m_val)};
-  m.encrypt().write("m");
+  CiInt m{CiInt::u32v(t_val)};
+  m.encrypt().write("t");
 
   if (argc == 4) {
-    int t1_val = atoi(argv[2]);
-    CiInt t1{CiInt::u32v(t1_val)};
-    t1.encrypt().write("t1");
+    int mc_val = atoi(argv[2]);
+    CiInt mc{CiInt::u32v(mc_val)};
+    mc.encrypt().write("mc");
 
-    int t2_val = atoi(argv[3]);
-    CiInt t2{CiInt::u32v(t2_val)};
-    t2.encrypt().write("t2");
+    int ms_val = atoi(argv[3]);
+    CiInt ms{CiInt::u32v(ms_val)};
+    ms.encrypt().write("ms");
   }
 }
