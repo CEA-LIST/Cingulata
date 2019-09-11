@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(TEST_NAME flip)
+set(TEST_NAME bfv-flip)
 
 set(SRCS
     flip.cxx
