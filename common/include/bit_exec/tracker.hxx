@@ -21,6 +21,7 @@
 #ifndef BIT_TRACKER
 #define BIT_TRACKER
 
+#include <bit_exec/circuit/circuit.hxx>
 #include <bit_exec/interface_she.hxx>
 #include <bit_exec/obj_man/allocator.hxx>
 #include <bit_exec/obj_man/basic.hxx>
@@ -29,13 +30,8 @@
 #include <string>
 #include <vector>
 
+
 namespace cingulata {
-namespace BitTrackerInternal {
-class Node;
-enum class NodeType : uint8_t;
-enum class GateType : uint8_t;
-} // namespace BitTrackerInternal
-namespace BTI = BitTrackerInternal;
 
 /**
  * @brief Implemenation class for bit execution interface which tracks
@@ -44,8 +40,6 @@ namespace BTI = BitTrackerInternal;
  */
 class BitTracker : public IBitExecSHE {
 public:
-  ~BitTracker() override;
-
   /* clang-format off */
 
   /**
@@ -77,6 +71,10 @@ public:
 
   /* clang-format on */
 
+  Circuit &get_circuit() { return m_circuit; }
+
+  const Circuit &get_circuit() const { return m_circuit; }
+
   void export_blif(std::ostream &stream,
                    const std::string &model_name = "CIRCUIT");
 
@@ -84,18 +82,11 @@ public:
                    const std::string &model_name = "CIRCUIT");
 
 protected:
-  obj_man::Basic<obj_man::Allocator<BTI::Node>> mm;
+  obj_man::Basic<obj_man::Allocator<Circuit::node_id_t>> mm;
 
-  ObjHandle add_gate(BTI::GateType gate_type,
-                     const std::initializer_list<ObjHandleT<BTI::Node>> inps_p);
-  ObjHandle add_input(const std::string &name = "");
-  void make_output(const ObjHandleT<BTI::Node> &hdl,
-                   const std::string &name = "");
-
-  std::vector<ObjHandleT<BTI::Node>> inputs;
-  std::vector<ObjHandleT<BTI::Node>> gates;
-  std::vector<ObjHandleT<BTI::Node>> outputs;
+  Circuit m_circuit;
 };
+
 } // namespace cingulata
 
 #endif

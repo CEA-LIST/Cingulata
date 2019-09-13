@@ -23,6 +23,8 @@ set(SRCS
     int_op_gen/impl/multi_inp_adder.cxx
     int_op_gen/size.cxx
     bit_exec/clear.cxx
+    bit_exec/circuit/blif_io.cxx
+    bit_exec/circuit/circuit.cxx
     )
 
 add_library(common ${SRCS})

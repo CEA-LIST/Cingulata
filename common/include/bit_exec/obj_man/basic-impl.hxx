@@ -26,6 +26,6 @@ Basic<AllocT>::Basic(const AllocT &alloc)
 template <typename AllocT>
 template <typename... Args>
 ObjHandle Basic<AllocT>::new_handle(Args... args) {
-  return ObjHandle(m_alloc.new_obj(std::forward<args>...),
+  return ObjHandle(m_alloc.new_obj(args...),
                    [this](void *ptr) { m_alloc.del_obj(ptr); });
 }
