@@ -22,6 +22,7 @@
 #define IO_NAME_VEC
 
 #include <string>
+#include <cassert>
 
 namespace cingulata
 {
@@ -55,43 +56,6 @@ namespace cingulata
 
   public:
     /**
-     * @name Name management functions
-     * @{
-     */
-
-    /**
-     * @brief      Set name of @c T elements
-     *
-     * @param[in]  p_name  string name to use
-     *
-     * @return     reference to current object
-     */
-    T& set_name(const std::string& p_name) {
-      T& ref = *static_cast<T*>(this);
-      for (unsigned i = 0; i < ref.size(); ++i) {
-        ref[i].set_name(get_name(p_name, i));
-      }
-      return ref;
-    }
-
-    /**
-     * @brief      Clear elements name
-     *
-     * @return     reference to current object
-     */
-    T& clr_name() {
-      T& ref = *static_cast<T*>(this);
-      for (unsigned i = 0; i < ref.size(); ++i) {
-        ref[i].clr_name();
-      }
-      return ref;
-    }
-
-    /**
-     * @}
-     */
-
-    /**
      * @name Read/write, encrypt/decrypt methods of elements
      * @{
      */
@@ -110,14 +74,18 @@ namespace cingulata
     }
 
     /**
-     * @brief      Set element names and read them
+     * @brief      Read elements using their names
      *
-     * @param[in]  p_name  string name to use
+     * @param[in]  p_name  The name
      *
      * @return     reference to current object
      */
     T& read(const std::string& p_name) {
-      return set_name(p_name).read();
+      T& ref = *static_cast<T*>(this);
+      for (unsigned i = 0; i < ref.size(); ++i) {
+        ref[i].read(get_name(p_name, i));
+      }
+      return ref;
     }
 
     /**
@@ -134,15 +102,18 @@ namespace cingulata
     }
 
     /**
-     * @brief      Set element names and write them
+     * @brief      Write elements using their names
      *
-     * @param[in]  p_name  string name to use
+     * @param[in]  p_name  The name
      *
      * @return     reference to current object
      */
-    T& write(const std::string& p_name) {
-      set_name(p_name).write();
-      return *static_cast<T*>(this);
+    const T& write(const std::string& p_name) const {
+      const T& ref = *static_cast<const T*>(this);
+      for (unsigned i = 0; i < ref.size(); ++i) {
+        ref[i].write(get_name(p_name, i));
+      }
+      return ref;
     }
 
     /**
@@ -211,10 +182,11 @@ namespace cingulata
      *
      * @return     formatted name
      */
-    std::string get_name(const std::string& p_name, const unsigned p_order) {
+    static std::string get_name(const std::string& p_name, const unsigned p_order) {
       constexpr static int m_name_size_max = 256;
-      static char buf[m_name_size_max];
-      std::snprintf(buf, m_name_size_max, m_name_fmt.c_str(), p_name.c_str(), p_order);
+      static thread_local char buf[m_name_size_max];
+      int n = std::snprintf(buf, m_name_size_max, m_name_fmt.c_str(), p_name.c_str(), p_order);
+      assert(0 <= n && n < m_name_size_max);
       return buf;
     }
   };

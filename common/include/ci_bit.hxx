@@ -34,9 +34,6 @@ namespace cingulata
    *             obj_hdl member is not empty.
    *             - Operations between plain-text and cipher-text values are
    *               automatically optimized.
-   *             - A string name can be assigned to a @c CiBit object using
-   *               constructor or @c set_name function. This name follows object
-   *               lifetime.
    */
   class CiBit
   {
@@ -50,7 +47,7 @@ namespace cingulata
      * @param[in]  pt_val_p  plain-text value (optional)
      * @param[in]  name      name of new object (optional)
      */
-    CiBit(const bit_plain_t pt_val_p = 0, const std::string& name = "");
+    CiBit(const bit_plain_t pt_val_p = 0);
 
     /**
      * @brief      Copy-construct an object
@@ -94,29 +91,6 @@ namespace cingulata
     ~CiBit() = default;
 
     /**
-     * @brief      Get bit name if set beforehand or empty string otherwise.
-     *
-     * @return     object name
-     */
-    std::string get_name() const;
-
-    /**
-     * @brief      Set bit name
-     *
-     * @param[in]  p_name  string name to use
-     *
-     * @return     reference to current object
-     */
-    CiBit& set_name(const std::string& p_name);
-
-    /**
-     * @brief      Clear name and set it to default value
-     *
-     * @return     reference to current object
-     */
-    CiBit& clr_name();
-
-    /**
      * @brief      Returns plain-text bit value
      * @details    If current object is in encrypted state the result is
      *             undefined
@@ -137,27 +111,13 @@ namespace cingulata
     CiBit& set_val(const bit_plain_t pt_val_p);
 
     /**
-     * @brief      Read bit, use current bit name
-     *
-     * @return     reference to current object
-     */
-    CiBit& read();
-
-    /**
      * @brief      Set name and read bit
      *
      * @param[in]  p_name  string name to use
      *
      * @return     reference to current object
      */
-    CiBit& read(const std::string& p_name);
-
-    /**
-     * @brief      Write bit, use current bit name
-     *
-     * @return     reference to current object
-     */
-    const CiBit& write() const;
+    CiBit& read(const std::string& p_name = "");
 
     /**
      * @brief      Set name and write bit
@@ -166,7 +126,7 @@ namespace cingulata
      *
      * @return     reference to current object
      */
-    CiBit& write(const std::string& p_name);
+    const CiBit& write(const std::string& p_name = "") const;
 
     /**
      * @brief      Encrypt bit
@@ -268,7 +228,6 @@ namespace cingulata
   protected:
     bit_plain_t pt_val;
     ObjHandle obj_hdl;
-    std::string name;
 
     friend CiBit op_mux(const CiBit &, const CiBit &, const CiBit &);
   };

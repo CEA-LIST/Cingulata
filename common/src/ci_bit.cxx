@@ -26,10 +26,10 @@
 using namespace std;
 using namespace cingulata;
 
-const CiBit CiBit::zero(0, "_zero");
-const CiBit CiBit::one(1, "_one");
+const CiBit CiBit::zero(0);
+const CiBit CiBit::one(1);
 
-CiBit::CiBit(const bit_plain_t p_pt_val, const string& p_name) : pt_val(p_pt_val), name(p_name) {}
+CiBit::CiBit(const bit_plain_t p_pt_val) : pt_val(p_pt_val) {}
 
 CiBit::CiBit(const CiBit &other)
     : pt_val(other.pt_val), obj_hdl(other.obj_hdl) {}
@@ -42,7 +42,6 @@ CiBit& CiBit::operator=(const CiBit& other) {
       set_val(other.pt_val);
     else
       obj_hdl = other.obj_hdl;
-   clr_name();
   }
   return *this;
 }
@@ -50,20 +49,6 @@ CiBit& CiBit::operator=(const CiBit& other) {
 CiBit& CiBit::operator=(CiBit&& other) {
   if (this != &other)
     move(other);
-  return *this;
-}
-
-std::string CiBit::get_name() const {
-  return name;
-}
-
-CiBit& CiBit::set_name(const std::string& p_name) {
-  name = p_name;
-  return *this;
-}
-
-CiBit& CiBit::clr_name() {
-  name.clear();
   return *this;
 }
 
@@ -78,25 +63,16 @@ CiBit& CiBit::set_val(const bit_plain_t p_pt_val) {
   return *this;
 }
 
-CiBit& CiBit::read() {
-  obj_hdl = CiContext::get_bit_exec()->read(get_name());
+CiBit& CiBit::read(const string& p_name) {
+  obj_hdl = CiContext::get_bit_exec()->read(p_name);
   return *this;
 }
 
-CiBit& CiBit::read(const std::string& p_name) {
-  return set_name(p_name).read();
-}
-
-const CiBit& CiBit::write() const {
+const CiBit& CiBit::write(const string& p_name) const {
   ObjHandle hdl = obj_hdl;
   if (is_plain())
     hdl = CiContext::get_bit_exec()->encode(get_val());
-  CiContext::get_bit_exec()->write(hdl, get_name());
-  return *this;
-}
-
-CiBit& CiBit::write(const std::string& p_name) {
-  set_name(p_name).write();
+  CiContext::get_bit_exec()->write(hdl, p_name);
   return *this;
 }
 
@@ -150,9 +126,7 @@ CiBit& CiBit::NAME(const CiBit& rhs) { \
     NAME(rhs.get_val()); \
   } \
   else if (is_plain()) { \
-    const string o_name = get_name(); \
     *this = CiBit(rhs).OPER_NAME_IS_PLAIN(get_val()); \
-    set_name(o_name); \
   } \
   else if (obj_hdl == rhs.obj_hdl) { \
     SAME_HDL_CODE;\
@@ -195,7 +169,6 @@ void CiBit::clear_obj_handle() {
 void CiBit::move(const CiBit& other) {
   pt_val = std::move(other.pt_val);
   obj_hdl = std::move(other.obj_hdl);
-  name = std::move(other.name);
 }
 
 bit_plain_t CiBit::negate(const bit_plain_t p_pt_val) {

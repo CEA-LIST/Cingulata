@@ -57,13 +57,16 @@ ObjHandle BitTracker::read(const string &name) {
 
 void BitTracker::write(const ObjHandle &hdl, const string &name) {
   Circuit::node_id_t id = *hdl.get<Circuit::node_id_t>();
+  if (m_circuit.get_node(id).is_input()) {
+    id = m_circuit.add_gate(Circuit::GateType::BUF, {id});
+  }
   m_circuit.make_output(id);
   m_circuit.get_node(id).set_name(name);
 }
 
 #define DEFINE_1_INP_OPER(OP_NAME, GATE_TYPE)                                  \
   ObjHandle BitTracker::OP_NAME(const ObjHandle &lhs) {                        \
-    Circuit::node_id_t lhs_id = *lhs.get<Circuit::node_id_t>();                 \
+    Circuit::node_id_t lhs_id = *lhs.get<Circuit::node_id_t>();                \
     Circuit::node_id_t id =                                                    \
         m_circuit.add_gate(Circuit::GateType::GATE_TYPE, {lhs_id});            \
     return mm.new_handle(id);                                                  \
@@ -71,8 +74,8 @@ void BitTracker::write(const ObjHandle &hdl, const string &name) {
 
 #define DEFINE_2_INP_OPER(OP_NAME, GATE_TYPE)                                  \
   ObjHandle BitTracker::OP_NAME(const ObjHandle &lhs, const ObjHandle &rhs) {  \
-    Circuit::node_id_t lhs_id = *lhs.get<Circuit::node_id_t>();                 \
-    Circuit::node_id_t rhs_id = *rhs.get<Circuit::node_id_t>();                 \
+    Circuit::node_id_t lhs_id = *lhs.get<Circuit::node_id_t>();                \
+    Circuit::node_id_t rhs_id = *rhs.get<Circuit::node_id_t>();                \
     Circuit::node_id_t id =                                                    \
         m_circuit.add_gate(Circuit::GateType::GATE_TYPE, {lhs_id, rhs_id});    \
     return mm.new_handle(id);                                                  \

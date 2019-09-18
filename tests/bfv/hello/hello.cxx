@@ -45,15 +45,12 @@ int main() {
   CiInt b{CiInt::u8v(42)}; // use helper function to create an unsigned 8-bit
   CiInt c{-1, 16, false};  // or manually specify value, size and signedness
 
-  a.read("a"); // read variable a and set name
-
-  b.set_name("b"); // set name and ...
-  cin >> b;        //  read variable b
+  a.read("a"); // read variable with name a
+  b.read("b"); // read variable with name b
 
   c = a + b;
 
-  cout << c.set_name("c"); // set name and write variable
-  // c.write("c");           //  or do it at once
+  c.write("c"); // write variable with name c
 
   /* Export to file the "tracked" circuit */
   CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name, "hello");

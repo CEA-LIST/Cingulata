@@ -31,7 +31,7 @@ int main() {
   a.encrypt();
 
   CiBit d;
-  d.encrypt().set_name("lol");
+  d.encrypt();
   d = 1 ^ a;
 
   d.write();
