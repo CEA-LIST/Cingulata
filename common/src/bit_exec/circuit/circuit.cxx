@@ -41,11 +41,8 @@ Circuit::node_id_t Circuit::add_input() {
 
 Circuit::node_id_t
 Circuit::add_gate(const GateType p_gate_type,
-                  const std::initializer_list<node_id_t> &p_pred_ids) {
-  node_id_t id = add_node(p_pred_ids);
-  m_nodes[id].type() = NodeType::GATE;
-  m_nodes[id].gate_type() = p_gate_type;
-  return id;
+                  std::initializer_list<node_id_t> p_pred_ids) {
+  return add_gate(p_gate_type, p_pred_ids.begin(), p_pred_ids.end());
 }
 
 void Circuit::make_output(const node_id_t p_id) {
@@ -54,17 +51,6 @@ void Circuit::make_output(const node_id_t p_id) {
 }
 
 Circuit::node_id_t
-Circuit::add_node(const std::initializer_list<node_id_t> &p_pred_ids) {
-  node_id_t nid = m_nodes.size();
-  m_nodes.emplace_back();
-  m_node_succs.emplace_back();
-
-  // add predecessors
-  m_node_preds.emplace_back(p_pred_ids);
-
-  // add node as successor to each predecessor
-  for (const node_id_t id : p_pred_ids)
-    m_node_succs.at(id).emplace_back(nid);
-
-  return nid;
+Circuit::add_node(std::initializer_list<node_id_t> p_pred_ids) {
+  return add_node(p_pred_ids.begin(), p_pred_ids.end());
 }

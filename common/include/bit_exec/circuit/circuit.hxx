@@ -34,7 +34,6 @@ public:
   enum class GateType : uint8_t;
 
 public:
-
   Circuit() = default;
 
   void clear();
@@ -44,7 +43,11 @@ public:
 
   node_id_t add_input();
   node_id_t add_gate(const GateType p_gate_type,
-                     const std::initializer_list<node_id_t> &p_preds);
+                     std::initializer_list<node_id_t> p_preds);
+  template <typename InputIterator>
+  node_id_t add_gate(const GateType p_gate_type, const InputIterator begin,
+                     const InputIterator end);
+
   void make_output(const node_id_t p_id);
 
   size_t node_cnt() const { return m_nodes.size(); }
@@ -66,8 +69,10 @@ public:
   const std::vector<node_id_t> &get_inputs() const { return m_input_ids; }
   const std::vector<node_id_t> &get_outputs() const { return m_output_ids; }
 
-protected:
-  node_id_t add_node(const std::initializer_list<node_id_t> &p_pred_ids = {});
+  node_id_t add_node(std::initializer_list<node_id_t> p_pred_ids = {});
+
+  template <typename InputIterator>
+  node_id_t add_node(const InputIterator begin, const InputIterator end);
 
 private:
   std::string m_name;
@@ -152,6 +157,7 @@ private:
   friend class Circuit;
 };
 
+#include "circuit-impl.hxx"
 
 } // namespace cingulata
 

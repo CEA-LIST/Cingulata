@@ -22,13 +22,16 @@
 
 #include <cassert>
 #include <fstream>
+#include <sstream>
+#include <unordered_map>
+#include <unordered_set>
 
 using namespace std;
 using namespace cingulata;
 
 namespace {
 
-const char *gate_type_str(const Circuit::GateType gate_type) {
+string gate_type_str(const Circuit::GateType gate_type) {
   switch (gate_type) {
   case Circuit::GateType::ZERO:
     return "ZERO";
@@ -65,10 +68,10 @@ const char *gate_type_str(const Circuit::GateType gate_type) {
   }
 }
 
-const char *gate_cover_str(const Circuit::GateType gate_type) {
+string gate_cover_str(const Circuit::GateType gate_type) {
   switch (gate_type) {
   case Circuit::GateType::ZERO:
-    return "0";
+    return "";
   case Circuit::GateType::ONE:
     return "1";
   case Circuit::GateType::NOT:
@@ -122,6 +125,7 @@ void write_gate_lib_format(ostream &stream, const string &out_name,
 void write_gate_logic_format(ostream &stream, const string &out_name,
                              const vector<string> &inp_names,
                              const Circuit::GateType gate_type) {
+
   stream << ".names ";
   for (const string &name : inp_names) {
     assert(not name.empty());
@@ -131,15 +135,18 @@ void write_gate_logic_format(ostream &stream, const string &out_name,
   assert(not out_name.empty());
   stream << out_name << endl;
 
-  stream << gate_cover_str(gate_type) << endl;
+  const string cover = gate_cover_str(gate_type);
+  if (not cover.empty())
+    stream << gate_cover_str(gate_type) << endl;
 }
 
-void write_format_names(ostream &stream, const vector<string> &names) {
-  uint written_chars = 0; // nb of written chars per line
+void write_format_names(ostream &stream, const vector<string> &names,
+                        uint start_idx = 0) {
+  uint written_chars = start_idx; // nb of written chars per line
   for (const string &name : names) {
     assert(not name.empty());
     written_chars += name.size() + 1;
-    if (written_chars >= 72) {
+    if (written_chars >= 80) {
       stream << "\\" << endl;
       written_chars = name.size() + 1;
     }
@@ -164,11 +171,11 @@ void BlifOutput::write(ostream &stream, const Circuit &circuit) {
   stream << ".model " << circuit.get_name() << endl;
 
   stream << ".inputs ";
-  write_format_names(stream, get_names(node_names, circuit.get_inputs()));
+  write_format_names(stream, get_names(node_names, circuit.get_inputs()), 8);
   stream << endl;
 
   stream << ".outputs ";
-  write_format_names(stream, get_names(node_names, circuit.get_outputs()));
+  write_format_names(stream, get_names(node_names, circuit.get_outputs()), 9);
   stream << endl;
 
   /* get write gate function pointer depending on BlifOutput object parameters
@@ -232,6 +239,239 @@ vector<string> BlifOutput::generate_names(const Circuit &circuit) {
   return names;
 }
 
-Circuit BlifInput::read(const string &p_file_name) { return Circuit(); }
+namespace {
+void trim_and_remove_comments(string &str) {
+  size_t t;
 
-Circuit BlifInput::read(istream &stream) { return Circuit(); }
+  // left trim
+  t = str.find_first_not_of(" \t\n");
+  if (t != string::npos)
+    str.erase(0, t);
+
+  // remove comments
+  t = str.find_first_of("#");
+  if (t != string::npos)
+    str.erase(t);
+
+  // right trim
+  t = str.find_last_not_of(" \t\n");
+  if (t != string::npos)
+    str.erase(t + 1);
+}
+
+string get_line_cleared(istream &stream) {
+  string line;
+  getline(stream, line);
+  trim_and_remove_comments(line);
+  return line;
+}
+
+string get_multiline_cleared(istream &stream) {
+  string line = get_line_cleared(stream);
+  while (line.back() == '\\') {
+    assert(stream);
+
+    line.back() = ' ';
+    line += get_line_cleared(stream);
+  }
+  return line;
+}
+
+vector<string> read_tokens(istream &iss) {
+  vector<string> tokens;
+  string tmp;
+  while (iss >> tmp) {
+    tokens.push_back(tmp);
+  }
+  return tokens;
+}
+
+string get_name_lib_token(const string &token) {
+  size_t p = token.find('=');
+  assert(p != string::npos);
+  assert(p + 1 < token.size());
+  return token.substr(p + 1);
+}
+
+Circuit::GateType get_lib_gate_type(const string &name) {
+  static const unordered_map<string, Circuit::GateType> name_to_gate_type{
+      {"ZERO", Circuit::GateType::ZERO},   {"ONE", Circuit::GateType::ONE},
+      {"NOT", Circuit::GateType::NOT},     {"BUF", Circuit::GateType::BUF},
+      {"AND", Circuit::GateType::AND},     {"NAND", Circuit::GateType::NAND},
+      {"ANDNY", Circuit::GateType::ANDNY}, {"ANDYN", Circuit::GateType::ANDYN},
+      {"OR", Circuit::GateType::OR},       {"NOR", Circuit::GateType::NOR},
+      {"ORNY", Circuit::GateType::ORNY},   {"ORYN", Circuit::GateType::ORYN},
+      {"XOR", Circuit::GateType::XOR},     {"XNOR", Circuit::GateType::XNOR},
+      {"MUX", Circuit::GateType::MUX}};
+
+  if (name_to_gate_type.find(name) != name_to_gate_type.end()) {
+    return name_to_gate_type.at(name);
+  } else {
+    fprintf(stderr, "Warning - Unknown lib gate type '%s'\n", name.c_str());
+    return Circuit::GateType::UNKNOWN;
+  }
+}
+
+Circuit::GateType get_logic_gate_type(const string &tt) {
+  static const unordered_map<string, Circuit::GateType> tt_to_gate_type{
+      {"", Circuit::GateType::ZERO},
+      {"0", Circuit::GateType::ZERO},
+      {"1", Circuit::GateType::ONE},
+      {"0 1", Circuit::GateType::NOT},
+      {"1 1", Circuit::GateType::BUF},
+      {"11 1", Circuit::GateType::AND},
+      {"11 0", Circuit::GateType::NAND},
+      {"01 1", Circuit::GateType::ANDNY},
+      {"10 1", Circuit::GateType::ANDYN},
+      {"00 0", Circuit::GateType::OR},
+      {"00 1", Circuit::GateType::NOR},
+      {"10 0", Circuit::GateType::ORNY},
+      {"01 0", Circuit::GateType::ORYN},
+      {"01 1\n10 1", Circuit::GateType::XOR},
+      {"00 1\n11 1", Circuit::GateType::XNOR},
+      {"010 1\n011 1\n101 1\n111 1", Circuit::GateType::MUX}};
+
+  if (tt_to_gate_type.find(tt) != tt_to_gate_type.end()) {
+    return tt_to_gate_type.at(tt);
+  } else {
+    fprintf(stderr, "Warning - Unknown lib gate type '%s'\n", tt.c_str());
+    return Circuit::GateType::UNKNOWN;
+  }
+}
+
+void add_inputs(Circuit &circuit,
+                unordered_map<string, Circuit::node_id_t> &name_to_id,
+                const vector<string> &names) {
+  assert(names.size() > 0);
+
+  for (const string &name : names) {
+    Circuit::node_id_t id = circuit.add_input();
+    circuit.get_node(id).set_name(name);
+
+    assert((name_to_id.find(name) == name_to_id.end())); // no key repetition
+    name_to_id.emplace(name, id);
+  }
+}
+
+void parse_lib_gate(Circuit &circuit,
+                    unordered_map<string, Circuit::node_id_t> &name_to_id,
+                    const vector<string> &names) {
+  assert(names.size() > 1);
+
+  const Circuit::GateType gate_type = get_lib_gate_type(names[0]);
+
+  vector<Circuit::node_id_t> input_ids;
+  for (unsigned i = 1; i < names.size() - 1; ++i) {
+    const string &name = get_name_lib_token(names[i]);
+    const Circuit::node_id_t id = name_to_id.at(name);
+    input_ids.push_back(id);
+  }
+  Circuit::node_id_t id =
+      circuit.add_gate(gate_type, input_ids.begin(), input_ids.end());
+
+  const string &name = get_name_lib_token(names.back());
+
+  assert((name_to_id.find(name) == name_to_id.end())); // no key repetition
+  name_to_id.emplace(name, id);
+}
+
+void parse_logit_gate(Circuit &circuit,
+                      unordered_map<string, Circuit::node_id_t> &name_to_id,
+                      const vector<string> &names, const string &truth_table) {
+  assert(names.size() > 0);
+
+  const Circuit::GateType gate_type = get_logic_gate_type(truth_table);
+
+  vector<Circuit::node_id_t> input_ids;
+  for (unsigned i = 0; i < names.size() - 1; ++i) {
+    const string &name = names[i];
+    const Circuit::node_id_t id = name_to_id.at(name);
+    input_ids.push_back(id);
+  }
+  Circuit::node_id_t id =
+      circuit.add_gate(gate_type, input_ids.begin(), input_ids.end());
+
+  const string &name = names.back();
+
+  assert((name_to_id.find(name) == name_to_id.end())); // no key repetition
+  name_to_id.emplace(name, id);
+}
+
+} // namespace
+
+Circuit BlifInput::read(const string &file_name) {
+  ifstream file(file_name);
+  if (file.is_open()) {
+    return read(file);
+  } else {
+    fprintf(stderr, "Error: Unable to open file '%s'\n", file_name.c_str());
+    exit(-1);
+  }
+}
+
+Circuit BlifInput::read(istream &stream) {
+  Circuit circuit;
+  unordered_map<string, Circuit::node_id_t> name_to_id;
+  vector<string> output_names;
+
+  string line = get_multiline_cleared(stream);
+  while (stream) {
+    if (line.empty()) {
+      line = get_multiline_cleared(stream);
+      continue;
+    }
+
+    istringstream iss(line);
+
+    string token;
+    iss >> token;
+
+    vector<string> tokens = read_tokens(iss);
+
+    if (token == ".names") {
+      string truth_table;
+
+      // read truth table lines
+      while (stream) {
+        line = get_multiline_cleared(stream);
+        if (line.empty() or line.at(0) == '.')
+          break;
+        truth_table += line + '\n';
+      }
+      if (not truth_table.empty())
+        truth_table.pop_back();
+
+      parse_logit_gate(circuit, name_to_id, tokens, truth_table);
+    } else {
+      if (token == ".model") {
+        assert(tokens.size() == 1 and "model line must have exactly 2 tokens");
+        circuit.set_name(tokens.front());
+      } else if (token == ".inputs") {
+        add_inputs(circuit, name_to_id, tokens);
+      } else if (token == ".outputs") {
+        for (const string &name : tokens) {
+          output_names.emplace_back(name);
+        }
+        assert(unordered_set<string>(output_names.begin(), output_names.end())
+                   .size() == output_names.size()); // no key repetition
+      } else if (token == ".gate") {
+        parse_lib_gate(circuit, name_to_id, tokens);
+      } else if (token == ".end") {
+        break;
+      } else {
+        fprintf(stderr, "Unknown token on line '%s'\n", line.c_str());
+      }
+
+      line = get_multiline_cleared(stream);
+    }
+  }
+
+  // set output nodes
+  for (const string &name : output_names) {
+    Circuit::node_id_t id = name_to_id.at(name);
+    circuit.get_node(id).set_name(name);
+    circuit.make_output(id);
+  }
+
+  return circuit;
+}
