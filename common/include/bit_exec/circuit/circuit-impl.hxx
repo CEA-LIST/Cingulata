@@ -23,7 +23,7 @@ Circuit::node_id_t Circuit::add_gate(const GateType p_gate_type,
                                      const InputIterator first,
                                      const InputIterator last) {
   node_id_t id = add_node(first, last);
-  m_nodes[id].type() = NodeType::GATE;
-  m_nodes[id].gate_type() = p_gate_type;
+  m_nodes[id].set_type(NodeType::GATE);
+  m_nodes[id].set_gate_type(p_gate_type);
   return id;
 }

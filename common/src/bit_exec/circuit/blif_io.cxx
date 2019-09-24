@@ -188,14 +188,13 @@ void BlifOutput::write(ostream &stream, const Circuit &circuit) {
   /* write each gate node except inputs */
   for (size_t id = 0; id < circuit.node_cnt(); ++id) {
     const auto &node = circuit.get_node(id);
-    if (node.is_input())
-      continue;
+    if (node.is_gate()) {
+      const vector<string> inp_names =
+          get_names(node_names, circuit.get_preds(id));
+      const string &out_name = node_names.at(id);
 
-    const vector<string> inp_names =
-        get_names(node_names, circuit.get_preds(id));
-    const string &out_name = node_names.at(id);
-
-    (*write_gate)(stream, out_name, inp_names, node.gate_type());
+      (*write_gate)(stream, out_name, inp_names, node.get_gate_type());
+    }
   }
 
   stream << ".end" << endl;
@@ -218,21 +217,36 @@ vector<string> BlifOutput::generate_names(const Circuit &circuit) {
   unsigned out_counter = 0;
   unsigned gate_counter = 0;
 
-  vector<string> names;
+  vector<string> names(circuit.node_cnt());
 
-  for (const Circuit::Node &node : circuit.get_nodes()) {
-    const string &name = node.get_name();
+  for (const Circuit::node_id_t id : circuit.get_inputs()) {
+    string name = circuit.get_name(id);
     if (name.empty()) {
-      if (node.is_input()) {
-        std::snprintf(buf, m_name_size_max, sm_inp_name_fmt, inp_counter++);
-      } else if (node.is_output()) {
-        std::snprintf(buf, m_name_size_max, sm_out_name_fmt, out_counter++);
-      } else {
-        std::snprintf(buf, m_name_size_max, sm_gate_name_fmt, gate_counter++);
-      }
-      names.emplace_back(buf);
-    } else {
-      names.emplace_back(name);
+      std::snprintf(buf, m_name_size_max, sm_inp_name_fmt, inp_counter++);
+      name = buf;
+    }
+    names[id] = name;
+  }
+
+  for (const Circuit::node_id_t id : circuit.get_outputs()) {
+    string name = circuit.get_name(id);
+    if (name.empty()) {
+      std::snprintf(buf, m_name_size_max, sm_out_name_fmt, out_counter++);
+      name = buf;
+    }
+    names[id] = name;
+
+    // fill the only predecessors with output name
+    const auto &pred_ids = circuit.get_preds(id);
+    assert(pred_ids.size() == 1);
+    names[pred_ids.front()] = name;
+  }
+
+  for (size_t id = 0; id < circuit.node_cnt(); ++id) {
+    const Circuit::Node &node = circuit.get_node(id);
+    if (node.is_gate() and names[id].empty()) {
+      std::snprintf(buf, m_name_size_max, sm_gate_name_fmt, gate_counter++);
+      names[id] = buf;
     }
   }
 
@@ -345,8 +359,7 @@ void add_inputs(Circuit &circuit,
   assert(names.size() > 0);
 
   for (const string &name : names) {
-    Circuit::node_id_t id = circuit.add_input();
-    circuit.get_node(id).set_name(name);
+    Circuit::node_id_t id = circuit.add_input(name);
 
     assert((name_to_id.find(name) == name_to_id.end())); // no key repetition
     name_to_id.emplace(name, id);
@@ -449,9 +462,7 @@ Circuit BlifInput::read(istream &stream) {
       } else if (token == ".inputs") {
         add_inputs(circuit, name_to_id, tokens);
       } else if (token == ".outputs") {
-        for (const string &name : tokens) {
-          output_names.emplace_back(name);
-        }
+        output_names.insert(output_names.end(), tokens.begin(), tokens.end());
         assert(unordered_set<string>(output_names.begin(), output_names.end())
                    .size() == output_names.size()); // no key repetition
       } else if (token == ".gate") {
@@ -468,9 +479,8 @@ Circuit BlifInput::read(istream &stream) {
 
   // set output nodes
   for (const string &name : output_names) {
-    Circuit::node_id_t id = name_to_id.at(name);
-    circuit.get_node(id).set_name(name);
-    circuit.make_output(id);
+    Circuit::node_id_t nid = circuit.add_output(name_to_id.at(name), name);
+    name_to_id[name] = nid;
   }
 
   return circuit;

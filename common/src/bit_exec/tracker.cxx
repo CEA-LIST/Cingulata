@@ -45,23 +45,18 @@ ObjHandle BitTracker::encrypt(const bit_plain_t pt_val) {
 
 bit_plain_t BitTracker::decrypt(const ObjHandle &hdl) {
   Circuit::node_id_t id = *hdl.get<Circuit::node_id_t>();
-  m_circuit.make_output(id);
+  m_circuit.add_output(id);
   return 0;
 }
 
 ObjHandle BitTracker::read(const string &name) {
-  Circuit::node_id_t id = m_circuit.add_input();
-  m_circuit.get_node(id).set_name(name);
+  Circuit::node_id_t id = m_circuit.add_input(name);
   return mm.new_handle(id);
 }
 
 void BitTracker::write(const ObjHandle &hdl, const string &name) {
   Circuit::node_id_t id = *hdl.get<Circuit::node_id_t>();
-  if (m_circuit.get_node(id).is_input()) {
-    id = m_circuit.add_gate(Circuit::GateType::BUF, {id});
-  }
-  m_circuit.make_output(id);
-  m_circuit.get_node(id).set_name(name);
+  m_circuit.add_output(id, name);
 }
 
 #define DEFINE_1_INP_OPER(OP_NAME, GATE_TYPE)                                  \

@@ -21,6 +21,7 @@
 
 #include <cassert>
 
+using namespace std;
 using namespace cingulata;
 
 void Circuit::clear() {
@@ -32,10 +33,11 @@ void Circuit::clear() {
   m_output_ids.clear();
 }
 
-Circuit::node_id_t Circuit::add_input() {
+Circuit::node_id_t Circuit::add_input(const string &p_name) {
   node_id_t id = add_node();
-  m_nodes[id].type() = NodeType::INPUT;
+  m_nodes[id].set_type(NodeType::INPUT);
   m_input_ids.emplace_back(id);
+  m_io_names[id] = p_name;
   return id;
 }
 
@@ -45,9 +47,13 @@ Circuit::add_gate(const GateType p_gate_type,
   return add_gate(p_gate_type, p_pred_ids.begin(), p_pred_ids.end());
 }
 
-void Circuit::make_output(const node_id_t p_id) {
-  m_nodes.at(p_id).make_output();
-  m_output_ids.emplace_back(p_id);
+Circuit::node_id_t Circuit::add_output(const node_id_t p_id,
+                                       const string &p_name) {
+  node_id_t id = add_node({p_id});
+  m_nodes[id].set_type(NodeType::OUTPUT);
+  m_output_ids.emplace_back(id);
+  m_io_names[id] = p_name;
+  return id;
 }
 
 Circuit::node_id_t

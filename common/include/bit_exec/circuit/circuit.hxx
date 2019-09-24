@@ -21,6 +21,7 @@
 #define CINGULATA_CIRCUIT
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace cingulata {
@@ -41,14 +42,14 @@ public:
   const std::string &get_name() const { return m_name; }
   void set_name(const std::string &p_name) { m_name = p_name; }
 
-  node_id_t add_input();
+  node_id_t add_input(const std::string &p_name = "");
   node_id_t add_gate(const GateType p_gate_type,
                      std::initializer_list<node_id_t> p_preds);
   template <typename InputIterator>
   node_id_t add_gate(const GateType p_gate_type, const InputIterator begin,
                      const InputIterator end);
 
-  void make_output(const node_id_t p_id);
+  node_id_t add_output(const node_id_t p_id, const std::string &p_name = "");
 
   size_t node_cnt() const { return m_nodes.size(); }
 
@@ -69,6 +70,10 @@ public:
   const std::vector<node_id_t> &get_inputs() const { return m_input_ids; }
   const std::vector<node_id_t> &get_outputs() const { return m_output_ids; }
 
+  const std::string &get_name(const node_id_t id) const {
+    return m_io_names.at(id);
+  }
+
   node_id_t add_node(std::initializer_list<node_id_t> p_pred_ids = {});
 
   template <typename InputIterator>
@@ -88,14 +93,11 @@ private:
 
   std::vector<node_id_t> m_input_ids;
   std::vector<node_id_t> m_output_ids;
+
+  std::unordered_map<node_id_t, std::string> m_io_names;
 };
 
-enum class Circuit::NodeType : uint8_t {
-  UNKNOWN = 0,
-  INPUT = 1 << 0,
-  OUTPUT = 1 << 1,
-  GATE = 1 << 2
-};
+enum class Circuit::NodeType : uint8_t { UNKNOWN = 0, INPUT, OUTPUT, GATE };
 
 enum class Circuit::GateType : uint8_t {
   UNKNOWN = 0,
@@ -121,36 +123,20 @@ public:
   Node() = default;
 
 public:
-  bool is_input() const {
-    return static_cast<uint8_t>(m_type) & static_cast<uint8_t>(NodeType::INPUT);
-  }
+  bool is_input() const { return m_type == NodeType::INPUT; }
 
-  bool is_output() const {
-    return static_cast<uint8_t>(m_type) &
-           static_cast<uint8_t>(NodeType::OUTPUT);
-  }
+  bool is_output() const { return m_type == NodeType::OUTPUT; }
 
-  bool is_gate() const {
-    return static_cast<uint8_t>(m_type) & static_cast<uint8_t>(NodeType::GATE);
-  }
+  bool is_gate() const { return m_type == NodeType::GATE; }
 
-  const std::string &get_name() const { return m_name; }
-  void set_name(const std::string &p_name) { m_name = p_name; }
-
-  const NodeType type() const { return m_type; }
-  const GateType gate_type() const { return m_gate_type; }
+  NodeType get_type() const { return m_type; }
+  GateType get_gate_type() const { return m_gate_type; }
 
 protected:
-  NodeType &type() { return m_type; }
-  GateType &gate_type() { return m_gate_type; }
-
-  void make_output() {
-    m_type = static_cast<NodeType>(static_cast<uint8_t>(m_type) |
-                                   static_cast<uint8_t>(NodeType::OUTPUT));
-  }
+  void set_type(const NodeType p_type) { m_type = p_type; }
+  void set_gate_type(const GateType p_gate_type) { m_gate_type = p_gate_type; }
 
 private:
-  std::string m_name;
   NodeType m_type = NodeType::UNKNOWN;
   GateType m_gate_type = GateType::UNKNOWN;
 
