@@ -18,8 +18,8 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 #include <bit_exec/interface.hxx>
 #include <ci_bit.hxx>
@@ -28,6 +28,7 @@
 using namespace std;
 using namespace cingulata;
 
+/* clang-format off */
 tuple<
   string,
   std::function<void (CiBit&, const CiBit&)>,
@@ -56,40 +57,38 @@ tuple<
                                                              // a  0 0 1 1
   { "", nullptr, {}}
 };
+/* clang-format on */
 
-
-class CiBitBinaryOper : public ::testing::TestWithParam<tuple<bool,bool>> {
+class CiBitBinaryOper : public ::testing::TestWithParam<tuple<bool, bool>> {
 public:
   bool encrypt_1st;
   bool encrypt_2nd;
 
-  virtual void SetUp() {
-    tie(encrypt_1st, encrypt_2nd) = GetParam();
-  }
+  virtual void SetUp() { tie(encrypt_1st, encrypt_2nd) = GetParam(); }
 };
 
 /* Member binary CiBit operators */
 TEST_P(CiBitBinaryOper, two_input_single) {
-  for (int idx = 0; ; ++idx)
-  {
-    auto& op_name = get<0>(obj_operators[idx]);
-    auto& op_func = get<1>(obj_operators[idx]);
-    auto& op_tt = get<2>(obj_operators[idx]);
+  for (int idx = 0;; ++idx) {
+    auto &op_name = get<0>(obj_operators[idx]);
+    auto &op_func = get<1>(obj_operators[idx]);
+    auto &op_tt = get<2>(obj_operators[idx]);
 
-    if (op_name.empty()) break;
+    if (op_name.empty())
+      break;
 
     for (int v = 0; v < op_tt.size(); ++v) {
       int a_val_inp = 1 & (v >> 1);
       string a_name("A");
       CiBit a(a_val_inp);
-      if (encrypt_1st) a.encrypt();
-      a.set_name(a_name);
+      if (encrypt_1st)
+        a.encrypt();
 
       int b_val_inp = 1 & (v >> 0);
       string b_name("B");
       CiBit b(b_val_inp);
-      if (encrypt_2nd) b.encrypt();
-      b.set_name(b_name);
+      if (encrypt_2nd)
+        b.encrypt();
 
       op_func(a, b);
 
@@ -98,38 +97,36 @@ TEST_P(CiBitBinaryOper, two_input_single) {
 
       // operator result is good
       ASSERT_EQ(op_tt[v], a_val_out)
-        << " operator '" << op_name << "'" << " (" << a_val_inp << "," << b_val_inp << ")";
+          << " operator '" << op_name << "'"
+          << " (" << a_val_inp << "," << b_val_inp << ")";
 
       // value of b does not change
       ASSERT_EQ(b_val_inp, b_val_out) << " operator '" << op_name << "'";
 
       // stays plain afterwards
-      ASSERT_TRUE(encrypt_2nd or b.is_plain()) << " operator '" << op_name << "'";
-
-      // name do not change
-      ASSERT_EQ(a.get_name(), a_name) << " operator '" << op_name << "'";;
-      ASSERT_EQ(b.get_name(), b_name) << " operator '" << op_name << "'";;
+      ASSERT_TRUE(encrypt_2nd or b.is_plain())
+          << " operator '" << op_name << "'";
     }
   }
 }
 
 /* Member binary CiBit operators with one plaintext input */
 TEST_P(CiBitBinaryOper, two_input_pt_single) {
-  for (int idx = 0; ; ++idx)
-  {
-    auto& op_name = get<0>(obj_operators[idx]);
-    auto& op_func = get<1>(obj_operators[idx]);
-    auto& op_tt = get<2>(obj_operators[idx]);
+  for (int idx = 0;; ++idx) {
+    auto &op_name = get<0>(obj_operators[idx]);
+    auto &op_func = get<1>(obj_operators[idx]);
+    auto &op_tt = get<2>(obj_operators[idx]);
 
-    if (op_name.empty()) break;
+    if (op_name.empty())
+      break;
 
     vector<int> op_tt_computed;
     for (int v = 0; v < op_tt.size(); ++v) {
       int a_val_inp = 1 & (v >> 1);
       string a_name("A");
       CiBit a(a_val_inp);
-      if (encrypt_1st) a.encrypt();
-      a.set_name(a_name);
+      if (encrypt_1st)
+        a.encrypt();
 
       int b_val_inp = 1 & (v >> 0);
       int b_val_out = b_val_inp;
@@ -140,14 +137,12 @@ TEST_P(CiBitBinaryOper, two_input_pt_single) {
 
       // value of b does not change
       ASSERT_EQ(b_val_inp, b_val_out) << " operator '" << op_name << "'";
-
-      // name do not change
-      ASSERT_EQ(a.get_name(), a_name) << " operator '" << op_name << "'";;
     }
     ASSERT_THAT(op_tt_computed, ::testing::ElementsAreArray(op_tt));
   }
 }
 
+/* clang-format off */
 tuple<
   string,
   std::function<CiBit (const CiBit&, const CiBit&)>,
@@ -189,30 +184,31 @@ tuple<
 
   { "", nullptr, {}}
 };
+/* clang-format on */
 
 /* Non-member binary CiBit operators */
 TEST_P(CiBitBinaryOper, two_input_ext_single) {
-  for (int idx = 0; ; ++idx)
-  {
-    auto& op_name = get<0>(operators[idx]);
-    auto& op_func = get<1>(operators[idx]);
-    auto& op_tt = get<2>(operators[idx]);
+  for (int idx = 0;; ++idx) {
+    auto &op_name = get<0>(operators[idx]);
+    auto &op_func = get<1>(operators[idx]);
+    auto &op_tt = get<2>(operators[idx]);
 
-    if (op_name.empty()) break;
+    if (op_name.empty())
+      break;
 
     vector<int> op_tt_computed;
     for (int v = 0; v < op_tt.size(); ++v) {
       int a_val_inp = 1 & (v >> 1);
       string a_name("A");
       CiBit a(a_val_inp);
-      if (encrypt_1st) a.encrypt();
-      a.set_name(a_name);
+      if (encrypt_1st)
+        a.encrypt();
 
       int b_val_inp = 1 & (v >> 0);
       string b_name("B");
       CiBit b(b_val_inp);
-      if (encrypt_2nd) b.encrypt();
-      b.set_name(b_name);
+      if (encrypt_2nd)
+        b.encrypt();
 
       CiBit c = op_func(a, b);
 
@@ -225,100 +221,20 @@ TEST_P(CiBitBinaryOper, two_input_ext_single) {
       ASSERT_EQ(b_val_inp, b_val_out) << " operator '" << op_name << "'";
 
       // stays plain afterwards
-      ASSERT_TRUE(encrypt_1st or a.is_plain()) << " operator '" << op_name << "'";
-      ASSERT_TRUE(encrypt_2nd or b.is_plain()) << " operator '" << op_name << "'";
-
-      // name do not change
-      ASSERT_EQ(a.get_name(), a_name) << " operator '" << op_name << "'";;
-      ASSERT_EQ(b.get_name(), b_name) << " operator '" << op_name << "'";;
-      ASSERT_TRUE(c.get_name().empty()) << " operator '" << op_name << "'";;
+      ASSERT_TRUE(encrypt_1st or a.is_plain())
+          << " operator '" << op_name << "'";
+      ASSERT_TRUE(encrypt_2nd or b.is_plain())
+          << " operator '" << op_name << "'";
     }
     ASSERT_THAT(op_tt_computed, ::testing::ElementsAreArray(op_tt));
   }
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        CiBitBinaryOper,
-                        ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+INSTANTIATE_TEST_CASE_P(, CiBitBinaryOper,
+                        ::testing::Combine(::testing::Bool(),
+                                           ::testing::Bool()));
 
-
-TEST(CiBit, set_name_single) {
-  CiBit a;
-  string a_name = "A";
-
-  a.set_name(a_name);
-  ASSERT_EQ(a.get_name(), a_name);
-
-  a.set_name(a_name + a_name);
-  ASSERT_EQ(a_name + a_name, a.get_name());
-}
-
-TEST(CiBit, clr_name_single) {
-  CiBit a;
-  string a_name = "A";
-  a.set_name(a_name);
-  a.clr_name();
-  ASSERT_NE(a_name, a.get_name());
-}
-
-TEST(CiBit, name_new_obj_single) {
-  /** plaintext constructor */
-  {
-    CiBit a(rand()%2);
-    ASSERT_TRUE(a.get_name().empty()) << "pt";
-  }
-
-  /** plaintext constructor name */
-  {
-    string a_name = "A";
-    CiBit a(rand()%2, a_name);
-    ASSERT_EQ(a.get_name(), a_name) << "pt_name";
-  }
-
-  /** copy constructor */
-  {
-    string a_name = "A";
-    CiBit a(rand()%2, a_name);
-
-    CiBit b(a);
-    ASSERT_EQ(a.get_name(), a_name) << "copy";
-    ASSERT_TRUE(b.get_name().empty()) << "copy";
-  }
-
-  /** move constructor */
-  {
-    string a_name = "A";
-    CiBit b(CiBit(rand()%2, a_name));
-
-    ASSERT_EQ(b.get_name(), a_name) << "move";
-  }
-}
-
-TEST(CiBit, name_assign_single) {
-  /** assign */
-  {
-    string a_name = "A";
-    CiBit a(rand()%2, a_name);
-
-    string b_name = "B";
-    CiBit b(rand()%2, b_name);
-    b = a;
-
-    ASSERT_EQ(a.get_name(), a_name) << "assign";
-    ASSERT_TRUE(b.get_name().empty()) << "assign";
-  }
-
-  /** move-assign */
-  {
-    CiBit b;
-
-    string a_name = "A";
-    b = CiBit(rand()%2, a_name);
-
-    ASSERT_EQ(b.get_name(), a_name) << "move-assign";
-  }
-}
-
+/* clang-format off */
 tuple<
   string,
   std::function<void (CiBit&)>
@@ -334,50 +250,10 @@ tuple<
 
   { "", nullptr }
 };
+/* clang-format on */
 
-TEST(CiBit, name_unchanged_single) {
-  for (int idx = 0; ; ++idx)
-  {
-    auto& op_name = get<0>(name_fncs[idx]);
-    auto& op_func = get<1>(name_fncs[idx]);
-
-    if (op_name.empty()) break;
-
-    string a_name = "A";
-    CiBit a(rand()%2, a_name);
-
-    op_func(a);
-
-    ASSERT_EQ(a.get_name(), a_name) << "set_val";
-  }
-}
-
-TEST(CiBit, name_change_single) {
-  {
-    string a_name = "A";
-    string b_name = "B";
-    CiBit a(rand()%2, a_name);
-
-    CiBit().write(b_name);
-    a.read(b_name);
-
-    ASSERT_EQ(a.get_name(), b_name) << "set_val";
-  }
-
-  {
-    string a_name = "A";
-    string b_name = "B";
-    CiBit a(rand()%2, a_name);
-
-    a.write(b_name);
-
-    ASSERT_EQ(a.get_name(), b_name) << "set_val";
-  }
-}
-
-
-
-class CiBitTernaryOper : public ::testing::TestWithParam<tuple<bool,bool,bool>> {
+class CiBitTernaryOper
+    : public ::testing::TestWithParam<tuple<bool, bool, bool>> {
 public:
   bool encrypt_1st;
   bool encrypt_2nd;
@@ -388,7 +264,7 @@ public:
   }
 };
 
-
+/* clang-format off */
 tuple<
   string,
   std::function<CiBit (const CiBit&, const CiBit&, const CiBit&)>,
@@ -399,36 +275,37 @@ tuple<
 
   { "", nullptr, {}}
 };
+/* clang-format on */
 
 /* Non-member ternary CiBit operators */
 TEST_P(CiBitTernaryOper, three_input) {
-  for (int idx = 0; ; ++idx)
-  {
-    auto& op_name = get<0>(ternary_operators[idx]);
-    auto& op_func = get<1>(ternary_operators[idx]);
-    auto& op_tt = get<2>(ternary_operators[idx]);
+  for (int idx = 0;; ++idx) {
+    auto &op_name = get<0>(ternary_operators[idx]);
+    auto &op_func = get<1>(ternary_operators[idx]);
+    auto &op_tt = get<2>(ternary_operators[idx]);
 
-    if (op_name.empty()) break;
+    if (op_name.empty())
+      break;
 
     vector<int> op_tt_computed;
     for (int v = 0; v < op_tt.size(); ++v) {
       int a_val_inp = 1 & (v >> 2);
       string a_name("A");
       CiBit a(a_val_inp);
-      if (encrypt_1st) a.encrypt();
-      a.set_name(a_name);
+      if (encrypt_1st)
+        a.encrypt();
 
       int b_val_inp = 1 & (v >> 1);
       string b_name("B");
       CiBit b(b_val_inp);
-      if (encrypt_2nd) b.encrypt();
-      b.set_name(b_name);
+      if (encrypt_2nd)
+        b.encrypt();
 
       int c_val_inp = 1 & (v >> 0);
       string c_name("B");
       CiBit c(c_val_inp);
-      if (encrypt_3rd) c.encrypt();
-      c.set_name(c_name);
+      if (encrypt_3rd)
+        c.encrypt();
 
       CiBit d = op_func(a, b, c);
 
@@ -443,22 +320,18 @@ TEST_P(CiBitTernaryOper, three_input) {
       ASSERT_EQ(c_val_inp, c_val_out) << " operator '" << op_name << "'";
 
       // stays plain afterwards
-      ASSERT_TRUE(encrypt_1st or a.is_plain()) << " operator '" << op_name << "'";
-      ASSERT_TRUE(encrypt_2nd or b.is_plain()) << " operator '" << op_name << "'";
-      ASSERT_TRUE(encrypt_3rd or c.is_plain()) << " operator '" << op_name << "'";
-
-      // name do not change
-      ASSERT_EQ(a.get_name(), a_name) << " operator '" << op_name << "'";;
-      ASSERT_EQ(b.get_name(), b_name) << " operator '" << op_name << "'";;
-      ASSERT_EQ(c.get_name(), c_name) << " operator '" << op_name << "'";;
-      ASSERT_TRUE(d.get_name().empty()) << " operator '" << op_name << "'";;
+      ASSERT_TRUE(encrypt_1st or a.is_plain())
+          << " operator '" << op_name << "'";
+      ASSERT_TRUE(encrypt_2nd or b.is_plain())
+          << " operator '" << op_name << "'";
+      ASSERT_TRUE(encrypt_3rd or c.is_plain())
+          << " operator '" << op_name << "'";
     }
 
     ASSERT_THAT(op_tt_computed, ::testing::ElementsAreArray(op_tt));
   }
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        CiBitTernaryOper,
-                        ::testing::Combine(::testing::Bool(), ::testing::Bool(), ::testing::Bool()));
-
+INSTANTIATE_TEST_CASE_P(, CiBitTernaryOper,
+                        ::testing::Combine(::testing::Bool(), ::testing::Bool(),
+                                           ::testing::Bool()));
