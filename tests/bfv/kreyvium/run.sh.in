@@ -38,9 +38,9 @@ echo "Input encryption"
 NR_THREADS=1
 
 #encrypt cipher key
-$APPS_DIR/encrypt -v --threads $NR_THREADS `$APPS_DIR/helper --msb-first --bit-cnt 8 --prefix input/i:key_ 85 85 85 85 85 85 85 85 85 85 85 85 85 85 85 85`
+$APPS_DIR/encrypt -v --threads $NR_THREADS `$APPS_DIR/helper --msb-first --bit-cnt 8 --prefix input/key_ 85 85 85 85 85 85 85 85 85 85 85 85 85 85 85 85`
 #encrypt IV
-$APPS_DIR/encrypt -v --threads $NR_THREADS --clear  `$APPS_DIR/helper --msb-first --bit-cnt 8 --prefix input/i:iv_  11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11`
+$APPS_DIR/encrypt -v --threads $NR_THREADS --clear  `$APPS_DIR/helper --msb-first --bit-cnt 8 --prefix input/iv_  11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11`
 
 echo "Homomorphic execution..."
 time $APPS_DIR/dyn_omp $CIRCUIT --threads $NR_THREADS # -v

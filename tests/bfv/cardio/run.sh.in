@@ -40,19 +40,19 @@ NR_THREADS=1
 KS=(241 210 225 219 92 43 197)
 
 #encrypt client data
-$APPS_DIR/helper --bit-cnt 5 --prefix %i:flags_         --suffix '' $((15 ^ KS[0])) > clear_data.data
-$APPS_DIR/helper --bit-cnt 8 --prefix %i:age_           --suffix '' $((55 ^ KS[1])) >> clear_data.data
-$APPS_DIR/helper --bit-cnt 8 --prefix %i:hdl_           --suffix '' $((50 ^ KS[2])) >> clear_data.data
-$APPS_DIR/helper --bit-cnt 8 --prefix %i:height_        --suffix '' $((80 ^ KS[3])) >> clear_data.data
-$APPS_DIR/helper --bit-cnt 8 --prefix %i:weight_        --suffix '' $((80 ^ KS[4])) >> clear_data.data
-$APPS_DIR/helper --bit-cnt 8 --prefix %i:physical_act_  --suffix '' $((45 ^ KS[5])) >> clear_data.data
-$APPS_DIR/helper --bit-cnt 8 --prefix %i:drinking_      --suffix '' $((4 ^ KS[6]))  >> clear_data.data
+$APPS_DIR/helper --bit-cnt 5 --prefix %flags_         --suffix '' $((15 ^ KS[0])) > clear_data.data
+$APPS_DIR/helper --bit-cnt 8 --prefix %age_           --suffix '' $((55 ^ KS[1])) >> clear_data.data
+$APPS_DIR/helper --bit-cnt 8 --prefix %hdl_           --suffix '' $((50 ^ KS[2])) >> clear_data.data
+$APPS_DIR/helper --bit-cnt 8 --prefix %height_        --suffix '' $((80 ^ KS[3])) >> clear_data.data
+$APPS_DIR/helper --bit-cnt 8 --prefix %weight_        --suffix '' $((80 ^ KS[4])) >> clear_data.data
+$APPS_DIR/helper --bit-cnt 8 --prefix %physical_act_  --suffix '' $((45 ^ KS[5])) >> clear_data.data
+$APPS_DIR/helper --bit-cnt 8 --prefix %drinking_      --suffix '' $((4 ^ KS[6]))  >> clear_data.data
 sed -i 's/%/\n/g' clear_data.data
 sed -i '/^$/d' clear_data.data
 
 # encrypt 7*8-bit kreyvium ciphered inputs and homomorphically mined kreyvium key
 for (( i = 0; i < ${#KS[@]}; i++ )); do
-  TMP=`$APPS_DIR/helper --bit-cnt 8 --prefix "input/i:ks_"$i"_"  ${KS[i]}`
+  TMP=`$APPS_DIR/helper --bit-cnt 8 --prefix "input/ks_"$i"_"  ${KS[i]}`
   $APPS_DIR/encrypt  -v --threads $NR_THREADS $TMP
 done
 

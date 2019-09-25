@@ -51,11 +51,11 @@ echo "Input encryption"
 NR_THREADS=$(nproc)
 
 # Encrypt IP1
-TMP=`$APPS_DIR/helper --bit-cnt 32 --prefix input/i:a_   $(ipv4dec $1)`
+TMP=`$APPS_DIR/helper --bit-cnt 32 --prefix input/a_   $(ipv4dec $1)`
 $APPS_DIR/encrypt -v   --threads $NR_THREADS $TMP
 
 # Encrypt IP2
-TMP=`$APPS_DIR/helper --bit-cnt 32 --prefix input/i:b_   $(ipv4dec $2)`
+TMP=`$APPS_DIR/helper --bit-cnt 32 --prefix input/b_   $(ipv4dec $2)`
 $APPS_DIR/encrypt -v   --threads $NR_THREADS $TMP
 
 echo "Homomorphic execution..."

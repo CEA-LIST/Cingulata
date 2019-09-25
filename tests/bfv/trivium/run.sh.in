@@ -42,11 +42,11 @@ KEY_BIN='0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1
 IV_BIN='0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1'
 
 echo "KEY encryption"
-TMP=`$APPS_DIR/helper --bit-cnt 1 --prefix input/"i:key_" --msb-first $KEY_BIN`
+TMP=`$APPS_DIR/helper --bit-cnt 1 --prefix "input/key_" --msb-first $KEY_BIN`
 $APPS_DIR/encrypt --public-key fhe_key.pk -v --threads $NR_THREADS $TMP
 
 echo "IV formatting"
-TMP=`$APPS_DIR/helper --bit-cnt 1 --prefix input/"i:iv_" --msb-first $IV_BIN`
+TMP=`$APPS_DIR/helper --bit-cnt 1 --prefix "input/iv_" --msb-first $IV_BIN`
 $APPS_DIR/encrypt --public-key fhe_key.pk -v --threads $NR_THREADS --clear $TMP
 
 echo "FHE execution"
