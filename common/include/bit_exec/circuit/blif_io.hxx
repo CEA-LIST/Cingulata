@@ -20,7 +20,10 @@
 #ifndef CINGULATA_BLIF_IO
 #define CINGULATA_BLIF_IO
 
+#include "circuit.hxx"
+
 #include <iostream>
+#include <unordered_map>
 #include <vector>
 
 namespace cingulata {
@@ -55,6 +58,17 @@ public:
 
   Circuit read(const std::string &p_file_name);
   Circuit read(std::istream &);
+
+protected:
+  Circuit circuit;
+  std::unordered_map<std::string, Circuit::node_id_t> name_to_id;
+  std::vector<std::string> output_names;
+
+  void parse_inputs(const std::vector<std::string> &names);
+  void parse_outputs(const std::vector<std::string> &names);
+  void parse_lib_gate(const std::vector<std::string> &names);
+  void parse_logit_gate(const std::vector<std::string> &names,
+                        const std::string &truth_table);
 };
 
 } // namespace cingulata

@@ -31,3 +31,5 @@ add_library(common ${SRCS})
 
 target_include_directories(common PUBLIC ${INCLUDE_DIR})
 target_compile_options(common PRIVATE -Wall)
+
+target_link_libraries(common PUBLIC spdlog::spdlog)

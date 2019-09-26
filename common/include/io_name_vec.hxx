@@ -162,7 +162,7 @@ namespace cingulata
     std::vector<bit_plain_t> get_bits_val(const size_t p_bit_cnt = -1) const {
       const T& ref = *static_cast<const T*>(this);
       std::vector<bit_plain_t> bv(ref.size());
-      for (int i = 0; i < ref.size(); ++i)
+      for (size_t i = 0; i < ref.size(); ++i)
         bv[i] = ref[i].get_val();
       return bv;
     }

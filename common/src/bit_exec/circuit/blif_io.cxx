@@ -20,6 +20,8 @@
 #include <bit_exec/circuit/blif_io.hxx>
 #include <bit_exec/circuit/circuit.hxx>
 
+#include <spdlog/spdlog.h>
+
 #include <cassert>
 #include <fstream>
 #include <sstream>
@@ -64,6 +66,7 @@ string gate_type_str(const Circuit::GateType gate_type) {
   case Circuit::GateType::MUX:
     return "MUX";
   default:
+    spdlog::warn("gate_cover_str - gate type unknown");
     return "UNKNOWN";
   }
 }
@@ -101,6 +104,7 @@ string gate_cover_str(const Circuit::GateType gate_type) {
   case Circuit::GateType::MUX:
     return "010 1\n011 1\n101 1\n111 1";
   default:
+    spdlog::warn("gate_cover_str - gate type unknown");
     return "UNKNOWN";
   }
 }
@@ -201,11 +205,13 @@ void BlifOutput::write(ostream &stream, const Circuit &circuit) {
 }
 
 void BlifOutput::write(const string &file_name, const Circuit &circuit) {
+  spdlog::debug("BlifInput::write(\"{}\",circuit) call", file_name);
   ofstream file(file_name);
   if (file.is_open()) {
     write(file, circuit);
   } else {
-    fprintf(stderr, "Error: Unable to open file '%s'\n", file_name.c_str());
+    spdlog::error("Unable to open blif file '{}' for write", file_name);
+    exit(-1);
   }
 }
 
@@ -321,7 +327,7 @@ Circuit::GateType get_lib_gate_type(const string &name) {
   if (name_to_gate_type.find(name) != name_to_gate_type.end()) {
     return name_to_gate_type.at(name);
   } else {
-    fprintf(stderr, "Warning - Unknown lib gate type '%s'\n", name.c_str());
+    spdlog::warn("get_logic_gate_type - unknown lib gate type: {}", name);
     return Circuit::GateType::UNKNOWN;
   }
 }
@@ -348,14 +354,13 @@ Circuit::GateType get_logic_gate_type(const string &tt) {
   if (tt_to_gate_type.find(tt) != tt_to_gate_type.end()) {
     return tt_to_gate_type.at(tt);
   } else {
-    fprintf(stderr, "Warning - Unknown lib gate type '%s'\n", tt.c_str());
+    spdlog::warn("get_logic_gate_type - unknown logic gate type:\n{}", tt);
     return Circuit::GateType::UNKNOWN;
   }
 }
+} // namespace
 
-void add_inputs(Circuit &circuit,
-                unordered_map<string, Circuit::node_id_t> &name_to_id,
-                const vector<string> &names) {
+void BlifInput::parse_inputs(const vector<string> &names) {
   assert(names.size() > 0);
 
   for (const string &name : names) {
@@ -365,10 +370,13 @@ void add_inputs(Circuit &circuit,
     name_to_id.emplace(name, id);
   }
 }
+void BlifInput::parse_outputs(const vector<string> &names) {
+  output_names.insert(output_names.end(), names.begin(), names.end());
+  assert(unordered_set<string>(output_names.begin(), output_names.end())
+             .size() == output_names.size()); // no key repetition
+}
 
-void parse_lib_gate(Circuit &circuit,
-                    unordered_map<string, Circuit::node_id_t> &name_to_id,
-                    const vector<string> &names) {
+void BlifInput::parse_lib_gate(const vector<string> &names) {
   assert(names.size() > 1);
 
   const Circuit::GateType gate_type = get_lib_gate_type(names[0]);
@@ -388,9 +396,7 @@ void parse_lib_gate(Circuit &circuit,
   name_to_id.emplace(name, id);
 }
 
-void parse_logit_gate(Circuit &circuit,
-                      unordered_map<string, Circuit::node_id_t> &name_to_id,
-                      const vector<string> &names, const string &truth_table) {
+void BlifInput::parse_logit_gate(const vector<string> &names, const string &truth_table) {
   assert(names.size() > 0);
 
   const Circuit::GateType gate_type = get_logic_gate_type(truth_table);
@@ -410,22 +416,24 @@ void parse_logit_gate(Circuit &circuit,
   name_to_id.emplace(name, id);
 }
 
-} // namespace
-
 Circuit BlifInput::read(const string &file_name) {
+  spdlog::debug("BlifInput::read(\"{}\") call", file_name);
+
   ifstream file(file_name);
   if (file.is_open()) {
     return read(file);
   } else {
-    fprintf(stderr, "Error: Unable to open file '%s'\n", file_name.c_str());
+    spdlog::error("Unable to open blif file '{}' for read", file_name);
     exit(-1);
   }
 }
 
 Circuit BlifInput::read(istream &stream) {
-  Circuit circuit;
-  unordered_map<string, Circuit::node_id_t> name_to_id;
-  vector<string> output_names;
+  spdlog::debug("BlifInput::read(stream) call");
+
+  circuit.clear();
+  name_to_id.clear();
+  output_names.clear();
 
   string line = get_multiline_cleared(stream);
   while (stream) {
@@ -442,35 +450,33 @@ Circuit BlifInput::read(istream &stream) {
     vector<string> tokens = read_tokens(iss);
 
     if (token == ".names") {
-      string truth_table;
-
       // read truth table lines
+      string truth_table;
+      string line_tmp;
       while (stream) {
-        line = get_multiline_cleared(stream);
-        if (line.empty() or line.at(0) == '.')
+        line_tmp = get_multiline_cleared(stream);
+        if (line_tmp.empty() or line_tmp.at(0) == '.')
           break;
-        truth_table += line + '\n';
+        truth_table += line_tmp + '\n';
       }
       if (not truth_table.empty())
         truth_table.pop_back();
 
-      parse_logit_gate(circuit, name_to_id, tokens, truth_table);
+      parse_logit_gate(tokens, truth_table);
+      line = line_tmp;
     } else {
       if (token == ".model") {
         assert(tokens.size() == 1 and "model line must have exactly 2 tokens");
         circuit.set_name(tokens.front());
       } else if (token == ".inputs") {
-        add_inputs(circuit, name_to_id, tokens);
+        parse_inputs(tokens);
       } else if (token == ".outputs") {
-        output_names.insert(output_names.end(), tokens.begin(), tokens.end());
-        assert(unordered_set<string>(output_names.begin(), output_names.end())
-                   .size() == output_names.size()); // no key repetition
+        parse_outputs(tokens);
       } else if (token == ".gate") {
-        parse_lib_gate(circuit, name_to_id, tokens);
+        parse_lib_gate(tokens);
       } else if (token == ".end") {
         break;
       } else {
-        fprintf(stderr, "Unknown token on line '%s'\n", line.c_str());
       }
 
       line = get_multiline_cleared(stream);

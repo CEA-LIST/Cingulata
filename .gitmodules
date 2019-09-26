@@ -7,3 +7,6 @@
 [submodule "cinguparam"]
 	path = submodules/CinguParam
 	url = https://github.com/CEA-LIST/CinguParam.git
+[submodule "spdlog"]
+	path = submodules/spdlog
+	url = https://github.com/gabime/spdlog.git
