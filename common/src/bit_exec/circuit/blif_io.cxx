@@ -33,37 +33,37 @@ using namespace cingulata;
 
 namespace {
 
-string gate_type_str(const Circuit::GateType gate_type) {
+string gate_type_str(const Node::GateType gate_type) {
   switch (gate_type) {
-  case Circuit::GateType::ZERO:
+  case Node::GateType::ZERO:
     return "ZERO";
-  case Circuit::GateType::ONE:
+  case Node::GateType::ONE:
     return "ONE";
-  case Circuit::GateType::NOT:
+  case Node::GateType::NOT:
     return "NOT";
-  case Circuit::GateType::BUF:
+  case Node::GateType::BUF:
     return "BUF";
-  case Circuit::GateType::AND:
+  case Node::GateType::AND:
     return "AND";
-  case Circuit::GateType::NAND:
+  case Node::GateType::NAND:
     return "NAND";
-  case Circuit::GateType::ANDNY:
+  case Node::GateType::ANDNY:
     return "ANDNY";
-  case Circuit::GateType::ANDYN:
+  case Node::GateType::ANDYN:
     return "ANDYN";
-  case Circuit::GateType::OR:
+  case Node::GateType::OR:
     return "OR";
-  case Circuit::GateType::NOR:
+  case Node::GateType::NOR:
     return "NOR";
-  case Circuit::GateType::ORNY:
+  case Node::GateType::ORNY:
     return "ORNY";
-  case Circuit::GateType::ORYN:
+  case Node::GateType::ORYN:
     return "ORYN";
-  case Circuit::GateType::XOR:
+  case Node::GateType::XOR:
     return "XOR";
-  case Circuit::GateType::XNOR:
+  case Node::GateType::XNOR:
     return "XNOR";
-  case Circuit::GateType::MUX:
+  case Node::GateType::MUX:
     return "MUX";
   default:
     spdlog::warn("gate_cover_str - gate type unknown");
@@ -71,37 +71,37 @@ string gate_type_str(const Circuit::GateType gate_type) {
   }
 }
 
-string gate_cover_str(const Circuit::GateType gate_type) {
+string gate_cover_str(const Node::GateType gate_type) {
   switch (gate_type) {
-  case Circuit::GateType::ZERO:
+  case Node::GateType::ZERO:
     return "";
-  case Circuit::GateType::ONE:
+  case Node::GateType::ONE:
     return "1";
-  case Circuit::GateType::NOT:
+  case Node::GateType::NOT:
     return "0 1";
-  case Circuit::GateType::BUF:
+  case Node::GateType::BUF:
     return "1 1";
-  case Circuit::GateType::AND:
+  case Node::GateType::AND:
     return "11 1";
-  case Circuit::GateType::NAND:
+  case Node::GateType::NAND:
     return "11 0";
-  case Circuit::GateType::ANDNY:
+  case Node::GateType::ANDNY:
     return "01 1";
-  case Circuit::GateType::ANDYN:
+  case Node::GateType::ANDYN:
     return "10 1";
-  case Circuit::GateType::OR:
+  case Node::GateType::OR:
     return "00 0";
-  case Circuit::GateType::NOR:
+  case Node::GateType::NOR:
     return "00 1";
-  case Circuit::GateType::ORNY:
+  case Node::GateType::ORNY:
     return "10 0";
-  case Circuit::GateType::ORYN:
+  case Node::GateType::ORYN:
     return "01 0";
-  case Circuit::GateType::XOR:
+  case Node::GateType::XOR:
     return "01 1\n10 1";
-  case Circuit::GateType::XNOR:
+  case Node::GateType::XNOR:
     return "00 1\n11 1";
-  case Circuit::GateType::MUX:
+  case Node::GateType::MUX:
     return "010 1\n011 1\n101 1\n111 1";
   default:
     spdlog::warn("gate_cover_str - gate type unknown");
@@ -111,7 +111,7 @@ string gate_cover_str(const Circuit::GateType gate_type) {
 
 void write_gate_lib_format(ostream &stream, const string &out_name,
                            const vector<string> &inp_names,
-                           const Circuit::GateType gate_type) {
+                           const Node::GateType gate_type) {
 
   stream << ".gate " << gate_type_str(gate_type);
 
@@ -128,7 +128,7 @@ void write_gate_lib_format(ostream &stream, const string &out_name,
 
 void write_gate_logic_format(ostream &stream, const string &out_name,
                              const vector<string> &inp_names,
-                             const Circuit::GateType gate_type) {
+                             const Node::GateType gate_type) {
 
   stream << ".names ";
   for (const string &name : inp_names) {
@@ -159,7 +159,7 @@ void write_format_names(ostream &stream, const vector<string> &names,
 }
 
 vector<string> get_names(const vector<string> &node_names,
-                         const vector<Circuit::node_id_t> &ids) {
+                         const vector<Node::id_t> &ids) {
   vector<string> names;
   for (const auto id : ids)
     names.emplace_back(node_names.at(id));
@@ -225,7 +225,7 @@ vector<string> BlifOutput::generate_names(const Circuit &circuit) {
 
   vector<string> names(circuit.node_cnt());
 
-  for (const Circuit::node_id_t id : circuit.get_inputs()) {
+  for (const Node::id_t id : circuit.get_inputs()) {
     string name = circuit.get_name(id);
     if (name.empty()) {
       std::snprintf(buf, m_name_size_max, sm_inp_name_fmt, inp_counter++);
@@ -234,7 +234,7 @@ vector<string> BlifOutput::generate_names(const Circuit &circuit) {
     names[id] = name;
   }
 
-  for (const Circuit::node_id_t id : circuit.get_outputs()) {
+  for (const Node::id_t id : circuit.get_outputs()) {
     string name = circuit.get_name(id);
     if (name.empty()) {
       std::snprintf(buf, m_name_size_max, sm_out_name_fmt, out_counter++);
@@ -249,7 +249,7 @@ vector<string> BlifOutput::generate_names(const Circuit &circuit) {
   }
 
   for (size_t id = 0; id < circuit.node_cnt(); ++id) {
-    const Circuit::Node &node = circuit.get_node(id);
+    const Node &node = circuit.get_node(id);
     if (node.is_gate() and names[id].empty()) {
       std::snprintf(buf, m_name_size_max, sm_gate_name_fmt, gate_counter++);
       names[id] = buf;
@@ -313,49 +313,49 @@ string get_name_lib_token(const string &token) {
   return token.substr(p + 1);
 }
 
-Circuit::GateType get_lib_gate_type(const string &name) {
-  static const unordered_map<string, Circuit::GateType> name_to_gate_type{
-      {"ZERO", Circuit::GateType::ZERO},   {"ONE", Circuit::GateType::ONE},
-      {"NOT", Circuit::GateType::NOT},     {"BUF", Circuit::GateType::BUF},
-      {"AND", Circuit::GateType::AND},     {"NAND", Circuit::GateType::NAND},
-      {"ANDNY", Circuit::GateType::ANDNY}, {"ANDYN", Circuit::GateType::ANDYN},
-      {"OR", Circuit::GateType::OR},       {"NOR", Circuit::GateType::NOR},
-      {"ORNY", Circuit::GateType::ORNY},   {"ORYN", Circuit::GateType::ORYN},
-      {"XOR", Circuit::GateType::XOR},     {"XNOR", Circuit::GateType::XNOR},
-      {"MUX", Circuit::GateType::MUX}};
+Node::GateType get_lib_gate_type(const string &name) {
+  static const unordered_map<string, Node::GateType> name_to_gate_type{
+      {"ZERO", Node::GateType::ZERO},   {"ONE", Node::GateType::ONE},
+      {"NOT", Node::GateType::NOT},     {"BUF", Node::GateType::BUF},
+      {"AND", Node::GateType::AND},     {"NAND", Node::GateType::NAND},
+      {"ANDNY", Node::GateType::ANDNY}, {"ANDYN", Node::GateType::ANDYN},
+      {"OR", Node::GateType::OR},       {"NOR", Node::GateType::NOR},
+      {"ORNY", Node::GateType::ORNY},   {"ORYN", Node::GateType::ORYN},
+      {"XOR", Node::GateType::XOR},     {"XNOR", Node::GateType::XNOR},
+      {"MUX", Node::GateType::MUX}};
 
   if (name_to_gate_type.find(name) != name_to_gate_type.end()) {
     return name_to_gate_type.at(name);
   } else {
     spdlog::warn("get_logic_gate_type - unknown lib gate type: {}", name);
-    return Circuit::GateType::UNKNOWN;
+    return Node::GateType::UNKNOWN;
   }
 }
 
-Circuit::GateType get_logic_gate_type(const string &tt) {
-  static const unordered_map<string, Circuit::GateType> tt_to_gate_type{
-      {"", Circuit::GateType::ZERO},
-      {"0", Circuit::GateType::ZERO},
-      {"1", Circuit::GateType::ONE},
-      {"0 1", Circuit::GateType::NOT},
-      {"1 1", Circuit::GateType::BUF},
-      {"11 1", Circuit::GateType::AND},
-      {"11 0", Circuit::GateType::NAND},
-      {"01 1", Circuit::GateType::ANDNY},
-      {"10 1", Circuit::GateType::ANDYN},
-      {"00 0", Circuit::GateType::OR},
-      {"00 1", Circuit::GateType::NOR},
-      {"10 0", Circuit::GateType::ORNY},
-      {"01 0", Circuit::GateType::ORYN},
-      {"01 1\n10 1", Circuit::GateType::XOR},
-      {"00 1\n11 1", Circuit::GateType::XNOR},
-      {"010 1\n011 1\n101 1\n111 1", Circuit::GateType::MUX}};
+Node::GateType get_logic_gate_type(const string &tt) {
+  static const unordered_map<string, Node::GateType> tt_to_gate_type{
+      {"", Node::GateType::ZERO},
+      {"0", Node::GateType::ZERO},
+      {"1", Node::GateType::ONE},
+      {"0 1", Node::GateType::NOT},
+      {"1 1", Node::GateType::BUF},
+      {"11 1", Node::GateType::AND},
+      {"11 0", Node::GateType::NAND},
+      {"01 1", Node::GateType::ANDNY},
+      {"10 1", Node::GateType::ANDYN},
+      {"00 0", Node::GateType::OR},
+      {"00 1", Node::GateType::NOR},
+      {"10 0", Node::GateType::ORNY},
+      {"01 0", Node::GateType::ORYN},
+      {"01 1\n10 1", Node::GateType::XOR},
+      {"00 1\n11 1", Node::GateType::XNOR},
+      {"010 1\n011 1\n101 1\n111 1", Node::GateType::MUX}};
 
   if (tt_to_gate_type.find(tt) != tt_to_gate_type.end()) {
     return tt_to_gate_type.at(tt);
   } else {
     spdlog::warn("get_logic_gate_type - unknown logic gate type:\n{}", tt);
-    return Circuit::GateType::UNKNOWN;
+    return Node::GateType::UNKNOWN;
   }
 }
 } // namespace
@@ -364,7 +364,7 @@ void BlifInput::parse_inputs(const vector<string> &names) {
   assert(names.size() > 0);
 
   for (const string &name : names) {
-    Circuit::node_id_t id = circuit.add_input(name);
+    Node::id_t id = circuit.add_input(name);
 
     assert((name_to_id.find(name) == name_to_id.end())); // no key repetition
     name_to_id.emplace(name, id);
@@ -379,15 +379,15 @@ void BlifInput::parse_outputs(const vector<string> &names) {
 void BlifInput::parse_lib_gate(const vector<string> &names) {
   assert(names.size() > 1);
 
-  const Circuit::GateType gate_type = get_lib_gate_type(names[0]);
+  const Node::GateType gate_type = get_lib_gate_type(names[0]);
 
-  vector<Circuit::node_id_t> input_ids;
+  vector<Node::id_t> input_ids;
   for (unsigned i = 1; i < names.size() - 1; ++i) {
     const string &name = get_name_lib_token(names[i]);
-    const Circuit::node_id_t id = name_to_id.at(name);
+    const Node::id_t id = name_to_id.at(name);
     input_ids.push_back(id);
   }
-  Circuit::node_id_t id =
+  Node::id_t id =
       circuit.add_gate(gate_type, input_ids.begin(), input_ids.end());
 
   const string &name = get_name_lib_token(names.back());
@@ -399,15 +399,15 @@ void BlifInput::parse_lib_gate(const vector<string> &names) {
 void BlifInput::parse_logit_gate(const vector<string> &names, const string &truth_table) {
   assert(names.size() > 0);
 
-  const Circuit::GateType gate_type = get_logic_gate_type(truth_table);
+  const Node::GateType gate_type = get_logic_gate_type(truth_table);
 
-  vector<Circuit::node_id_t> input_ids;
+  vector<Node::id_t> input_ids;
   for (unsigned i = 0; i < names.size() - 1; ++i) {
     const string &name = names[i];
-    const Circuit::node_id_t id = name_to_id.at(name);
+    const Node::id_t id = name_to_id.at(name);
     input_ids.push_back(id);
   }
-  Circuit::node_id_t id =
+  Node::id_t id =
       circuit.add_gate(gate_type, input_ids.begin(), input_ids.end());
 
   const string &name = names.back();
@@ -485,7 +485,7 @@ Circuit BlifInput::read(istream &stream) {
 
   // set output nodes
   for (const string &name : output_names) {
-    Circuit::node_id_t nid = circuit.add_output(name_to_id.at(name), name);
+    Node::id_t nid = circuit.add_output(name_to_id.at(name), name);
     name_to_id[name] = nid;
   }
 

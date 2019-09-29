@@ -30,11 +30,11 @@ using namespace cingulata;
 void BitTracker::reset() { m_circuit.clear(); }
 
 ObjHandle BitTracker::encode(const bit_plain_t pt_val) {
-  Circuit::node_id_t id;
+  Node::id_t id;
   if (pt_val == 0) {
-    id = m_circuit.add_gate(Circuit::GateType::ZERO, {});
+    id = m_circuit.add_gate(Node::GateType::ZERO, {});
   } else {
-    id = m_circuit.add_gate(Circuit::GateType::ONE, {});
+    id = m_circuit.add_gate(Node::GateType::ONE, {});
   }
   return mm.new_handle(id);
 }
@@ -44,35 +44,35 @@ ObjHandle BitTracker::encrypt(const bit_plain_t pt_val) {
 }
 
 bit_plain_t BitTracker::decrypt(const ObjHandle &hdl) {
-  Circuit::node_id_t id = *hdl.get<Circuit::node_id_t>();
+  Node::id_t id = *hdl.get<Node::id_t>();
   m_circuit.add_output(id);
   return 0;
 }
 
 ObjHandle BitTracker::read(const string &name) {
-  Circuit::node_id_t id = m_circuit.add_input(name);
+  Node::id_t id = m_circuit.add_input(name);
   return mm.new_handle(id);
 }
 
 void BitTracker::write(const ObjHandle &hdl, const string &name) {
-  Circuit::node_id_t id = *hdl.get<Circuit::node_id_t>();
+  Node::id_t id = *hdl.get<Node::id_t>();
   m_circuit.add_output(id, name);
 }
 
 #define DEFINE_1_INP_OPER(OP_NAME, GATE_TYPE)                                  \
   ObjHandle BitTracker::OP_NAME(const ObjHandle &lhs) {                        \
-    Circuit::node_id_t lhs_id = *lhs.get<Circuit::node_id_t>();                \
-    Circuit::node_id_t id =                                                    \
-        m_circuit.add_gate(Circuit::GateType::GATE_TYPE, {lhs_id});            \
+    Node::id_t lhs_id = *lhs.get<Node::id_t>();                \
+    Node::id_t id =                                                    \
+        m_circuit.add_gate(Node::GateType::GATE_TYPE, {lhs_id});            \
     return mm.new_handle(id);                                                  \
   }
 
 #define DEFINE_2_INP_OPER(OP_NAME, GATE_TYPE)                                  \
   ObjHandle BitTracker::OP_NAME(const ObjHandle &lhs, const ObjHandle &rhs) {  \
-    Circuit::node_id_t lhs_id = *lhs.get<Circuit::node_id_t>();                \
-    Circuit::node_id_t rhs_id = *rhs.get<Circuit::node_id_t>();                \
-    Circuit::node_id_t id =                                                    \
-        m_circuit.add_gate(Circuit::GateType::GATE_TYPE, {lhs_id, rhs_id});    \
+    Node::id_t lhs_id = *lhs.get<Node::id_t>();                \
+    Node::id_t rhs_id = *rhs.get<Node::id_t>();                \
+    Node::id_t id =                                                    \
+        m_circuit.add_gate(Node::GateType::GATE_TYPE, {lhs_id, rhs_id});    \
     return mm.new_handle(id);                                                  \
   }
 
@@ -90,7 +90,7 @@ DEFINE_2_INP_OPER(op_xor, XOR);
 
 // ObjHandle BitTracker::op_mux(const ObjHandle& cond, const ObjHandle& in1,
 // const ObjHandle& in2) {
-//   return m_circuit.add_gate(Circuit::GateType::MUX, {cond, in1, in2});
+//   return m_circuit.add_gate(Node::GateType::MUX, {cond, in1, in2});
 // }
 
 void BitTracker::export_blif(ostream &stream, const string &model_name) {

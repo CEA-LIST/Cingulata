@@ -82,7 +82,7 @@ public:
                    const std::string &model_name = "CIRCUIT");
 
 protected:
-  obj_man::Basic<obj_man::Allocator<Circuit::node_id_t>> mm;
+  obj_man::Basic<obj_man::Allocator<Node::id_t>> mm;
 
   Circuit m_circuit;
 };

@@ -61,7 +61,7 @@ public:
 
 protected:
   Circuit circuit;
-  std::unordered_map<std::string, Circuit::node_id_t> name_to_id;
+  std::unordered_map<std::string, Node::id_t> name_to_id;
   std::vector<std::string> output_names;
 
   void parse_inputs(const std::vector<std::string> &names);

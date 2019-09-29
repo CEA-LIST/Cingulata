@@ -20,6 +20,10 @@
 #ifndef CINGULATA_CIRCUIT
 #define CINGULATA_CIRCUIT
 
+#include "node.hxx"
+
+#include <spdlog/spdlog.h>
+
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -28,13 +32,6 @@ namespace cingulata {
 
 class Circuit {
 public:
-  typedef unsigned int node_id_t;
-
-  class Node;
-  enum class NodeType : uint8_t;
-  enum class GateType : uint8_t;
-
-public:
   Circuit() = default;
 
   void clear();
@@ -42,42 +39,42 @@ public:
   const std::string &get_name() const { return m_name; }
   void set_name(const std::string &p_name) { m_name = p_name; }
 
-  node_id_t add_input(const std::string &p_name = "");
-  node_id_t add_gate(const GateType p_gate_type,
-                     std::initializer_list<node_id_t> p_preds);
+  Node::id_t add_input(const std::string &p_name = "");
+  Node::id_t add_gate(const Node::GateType p_gate_type,
+                     std::initializer_list<Node::id_t> p_preds);
   template <typename InputIterator>
-  node_id_t add_gate(const GateType p_gate_type, const InputIterator begin,
+  Node::id_t add_gate(const Node::GateType p_gate_type, const InputIterator begin,
                      const InputIterator end);
 
-  node_id_t add_output(const node_id_t p_id, const std::string &p_name = "");
+  Node::id_t add_output(const Node::id_t p_id, const std::string &p_name = "");
 
   size_t node_cnt() const { return m_nodes.size(); }
 
   const std::vector<Node> &get_nodes() const { return m_nodes; }
   std::vector<Node> &get_nodes() { return m_nodes; }
 
-  Node &get_node(const node_id_t p_id) { return m_nodes.at(p_id); }
-  const Node &get_node(const node_id_t p_id) const { return m_nodes.at(p_id); }
+  Node &get_node(const Node::id_t p_id) { return m_nodes.at(p_id); }
+  const Node &get_node(const Node::id_t p_id) const { return m_nodes.at(p_id); }
 
-  const std::vector<node_id_t> &get_preds(const node_id_t p_id) const {
-    return m_node_preds.at(p_id);
+  const std::vector<Node::id_t> &get_preds(const Node::id_t p_id) const {
+    return m_nodes.at(p_id).get_preds();
   }
 
-  const std::vector<node_id_t> &get_succs(const node_id_t p_id) const {
-    return m_node_succs.at(p_id);
+  const std::vector<Node::id_t> &get_succs(const Node::id_t p_id) const {
+    return m_nodes.at(p_id).get_succs();
   }
 
-  const std::vector<node_id_t> &get_inputs() const { return m_input_ids; }
-  const std::vector<node_id_t> &get_outputs() const { return m_output_ids; }
+  const std::vector<Node::id_t> &get_inputs() const { return m_input_ids; }
+  const std::vector<Node::id_t> &get_outputs() const { return m_output_ids; }
 
-  const std::string &get_name(const node_id_t id) const {
+  const std::string &get_name(const Node::id_t id) const {
     return m_io_names.at(id);
   }
 
-  node_id_t add_node(std::initializer_list<node_id_t> p_pred_ids = {});
+  Node::id_t add_node(std::initializer_list<Node::id_t> p_pred_ids = {});
 
   template <typename InputIterator>
-  node_id_t add_node(const InputIterator begin, const InputIterator end);
+  Node::id_t add_node(const InputIterator begin, const InputIterator end);
 
 private:
   std::string m_name;
@@ -85,62 +82,10 @@ private:
   // m_nodes[id] - node "id" data object
   std::vector<Node> m_nodes;
 
-  // list of predecessors per node
-  std::vector<std::vector<node_id_t>> m_node_preds;
+  std::vector<Node::id_t> m_input_ids;
+  std::vector<Node::id_t> m_output_ids;
 
-  // list of successors per node
-  std::vector<std::vector<node_id_t>> m_node_succs;
-
-  std::vector<node_id_t> m_input_ids;
-  std::vector<node_id_t> m_output_ids;
-
-  std::unordered_map<node_id_t, std::string> m_io_names;
-};
-
-enum class Circuit::NodeType : uint8_t { UNKNOWN = 0, INPUT, OUTPUT, GATE };
-
-enum class Circuit::GateType : uint8_t {
-  UNKNOWN = 0,
-  ZERO,
-  ONE,
-  NOT,
-  BUF,
-  AND,
-  NAND,
-  ANDNY,
-  ANDYN,
-  OR,
-  NOR,
-  ORNY,
-  ORYN,
-  XOR,
-  XNOR,
-  MUX
-};
-
-class Circuit::Node {
-public:
-  Node() = default;
-
-public:
-  bool is_input() const { return m_type == NodeType::INPUT; }
-
-  bool is_output() const { return m_type == NodeType::OUTPUT; }
-
-  bool is_gate() const { return m_type == NodeType::GATE; }
-
-  NodeType get_type() const { return m_type; }
-  GateType get_gate_type() const { return m_gate_type; }
-
-protected:
-  void set_type(const NodeType p_type) { m_type = p_type; }
-  void set_gate_type(const GateType p_gate_type) { m_gate_type = p_gate_type; }
-
-private:
-  NodeType m_type = NodeType::UNKNOWN;
-  GateType m_gate_type = GateType::UNKNOWN;
-
-  friend class Circuit;
+  std::unordered_map<Node::id_t, std::string> m_io_names;
 };
 
 #include "circuit-impl.hxx"

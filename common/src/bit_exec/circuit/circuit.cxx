@@ -25,38 +25,45 @@ using namespace std;
 using namespace cingulata;
 
 void Circuit::clear() {
+  spdlog::debug("Circuit::clear - call");
+
   m_name.clear();
   m_nodes.clear();
-  m_node_preds.clear();
-  m_node_succs.clear();
   m_input_ids.clear();
   m_output_ids.clear();
 }
 
-Circuit::node_id_t Circuit::add_input(const string &p_name) {
-  node_id_t id = add_node();
-  m_nodes[id].set_type(NodeType::INPUT);
+Node::id_t Circuit::add_input(const string &p_name) {
+
+  Node::id_t id = add_node();
+  m_nodes[id].set_type(Node::NodeType::INPUT);
   m_input_ids.emplace_back(id);
   m_io_names[id] = p_name;
+
+  spdlog::debug("Circuit::add_input - {}", m_nodes[id]);
+
   return id;
 }
 
-Circuit::node_id_t
-Circuit::add_gate(const GateType p_gate_type,
-                  std::initializer_list<node_id_t> p_pred_ids) {
+Node::id_t
+Circuit::add_gate(const Node::GateType p_gate_type,
+                  std::initializer_list<Node::id_t> p_pred_ids) {
   return add_gate(p_gate_type, p_pred_ids.begin(), p_pred_ids.end());
 }
 
-Circuit::node_id_t Circuit::add_output(const node_id_t p_id,
+Node::id_t Circuit::add_output(const Node::id_t p_id,
                                        const string &p_name) {
-  node_id_t id = add_node({p_id});
-  m_nodes[id].set_type(NodeType::OUTPUT);
+  Node::id_t id = add_node({p_id});
+  m_nodes[id].set_type(Node::NodeType::OUTPUT);
   m_output_ids.emplace_back(id);
   m_io_names[id] = p_name;
+
+  spdlog::debug("Circuit::add_output - {}", m_nodes[id]);
+
   return id;
 }
 
-Circuit::node_id_t
-Circuit::add_node(std::initializer_list<node_id_t> p_pred_ids) {
+Node::id_t
+Circuit::add_node(std::initializer_list<Node::id_t> p_pred_ids) {
   return add_node(p_pred_ids.begin(), p_pred_ids.end());
 }
