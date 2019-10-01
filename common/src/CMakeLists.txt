@@ -25,6 +25,8 @@ set(SRCS
     bit_exec/clear.cxx
     bit_exec/circuit/blif_io.cxx
     bit_exec/circuit/circuit.cxx
+    bit_exec/parallel/scheduler.cxx
+    bit_exec/parallel/worker.cxx
     )
 
 add_library(common ${SRCS})
@@ -32,4 +34,9 @@ add_library(common ${SRCS})
 target_include_directories(common PUBLIC ${INCLUDE_DIR})
 target_compile_options(common PRIVATE -Wall)
 
+# link pthread
+find_package(Threads REQUIRED)
+target_link_libraries(common PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+
+# link spdlog
 target_link_libraries(common PUBLIC spdlog::spdlog)
