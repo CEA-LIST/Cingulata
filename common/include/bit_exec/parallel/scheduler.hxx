@@ -25,6 +25,7 @@
 #include <bit_exec/obj_handle.hxx>
 
 #include <atomic>
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -51,7 +52,7 @@ enum Slot::State : uint8_t {
 
 class Scheduler {
 public:
-  Scheduler(const std::vector<IBitExec *> &p_bit_execs,
+  Scheduler(const std::vector<std::shared_ptr<IBitExec>> &p_bit_execs,
             const size_t p_buffer_size);
 
   void run(const Circuit &p_circuit,

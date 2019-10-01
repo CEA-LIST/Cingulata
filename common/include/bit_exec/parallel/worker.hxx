@@ -23,6 +23,7 @@
 #include <bit_exec/interface.hxx>
 
 #include <cassert>
+#include <memory>
 
 namespace cingulata {
 
@@ -31,7 +32,7 @@ class Slot;
 
 class Worker {
 public:
-  Worker(Scheduler *p_scheduler, IBitExec *const p_bit_exec, int p_id)
+  Worker(Scheduler *p_scheduler, std::shared_ptr<IBitExec> p_bit_exec, int p_id)
       : m_scheduler(p_scheduler), m_bit_exec(p_bit_exec), m_id(p_id) {
     assert(p_scheduler != nullptr);
     assert(m_bit_exec != nullptr);
@@ -43,7 +44,7 @@ private:
   void exec(const Slot *const slot);
 
   Scheduler *m_scheduler;
-  IBitExec *m_bit_exec;
+  std::shared_ptr<IBitExec> m_bit_exec;
   int m_id;
 };
 

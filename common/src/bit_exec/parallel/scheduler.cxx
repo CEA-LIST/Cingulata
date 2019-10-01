@@ -28,7 +28,7 @@
 using namespace std;
 using namespace cingulata;
 
-Scheduler::Scheduler(const std::vector<IBitExec *> &p_bit_execs,
+Scheduler::Scheduler(const std::vector<shared_ptr<IBitExec>> &p_bit_execs,
                      const size_t p_buffer_size) {
   for (size_t i = 0; i < p_bit_execs.size(); ++i) {
     m_workers.emplace_back(new Worker(this, p_bit_execs[i], i));
