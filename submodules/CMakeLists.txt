@@ -67,18 +67,4 @@ if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
   endif()
 
   add_subdirectory(fmt EXCLUDE_FROM_ALL)
-
-  # add spdlog logging module
-  message(STATUS "Submodule spdlog update")
-  execute_process(
-    COMMAND ${GIT_EXECUTABLE} submodule update --init ${SUBMODULES_PATH}/spdlog
-    RESULT_VARIABLE GIT_SUBMOD_RESULT
-  )
-  if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-    message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
-  endif()
-
-  # use fmt module initialized earlier
-  option(SPDLOG_FMT_EXTERNAL "" ON)
-  add_subdirectory(spdlog EXCLUDE_FROM_ALL)
 endif()

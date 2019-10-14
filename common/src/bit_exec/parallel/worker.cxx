@@ -20,29 +20,29 @@
 #include <bit_exec/parallel/worker.hxx>
 
 #include <bit_exec/parallel/scheduler.hxx>
+#include <logging.hxx>
 
-#include <fmt/ostream.h>
-#include <spdlog/spdlog.h>
 #include <thread>
 
 using namespace std;
 using namespace cingulata;
 
 void Worker::run() {
-  spdlog::debug("{} Worker::run - start", this_thread::get_id());
+  CINGU_LOG_DEBUG("{} Worker::run - start", this_thread::get_id());
   while (not m_scheduler->is_finished()) {
     Slot *slot = m_scheduler->find_ready_slot();
-    if (slot == nullptr) continue;
+    if (slot == nullptr)
+      continue;
     exec(slot);
     m_scheduler->job_done(slot->node->get_id());
     slot->state = Slot::EMPTY;
   }
-  spdlog::debug("{} Worker::run - done", this_thread::get_id());
+  CINGU_LOG_DEBUG("{} Worker::run - done", this_thread::get_id());
 }
 
 void Worker::exec(const Slot *const slot) {
   const Node &node = *(slot->node);
-  spdlog::debug("{} Worker::exec - begin {}", this_thread::get_id(), node);
+  CINGU_LOG_DEBUG("{} Worker::exec - begin {}", this_thread::get_id(), node);
 
   assert(m_scheduler->get_handle(node.get_id()).is_empty());
 
@@ -114,7 +114,8 @@ void Worker::exec(const Slot *const slot) {
     out_hdl = m_bit_exec->op_mux(inp_hdls[0], inp_hdls[1], inp_hdls[2]);
     break;
   default:
-    spdlog::warn("{} Worker::exec - unknown operation (output handle is empty)", this_thread::get_id());
+    CINGU_LOG_WARN("{} Worker::exec - unknown operation (output handle is empty)",
+                this_thread::get_id());
   }
 
   m_scheduler->set_handle(node.get_id(), out_hdl);

@@ -20,9 +20,8 @@
 #include <bit_exec/parallel/scheduler.hxx>
 
 #include <bit_exec/parallel/worker.hxx>
+#include <logging.hxx>
 
-#include <fmt/ostream.h>
-#include <spdlog/spdlog.h>
 #include <thread>
 
 using namespace std;
@@ -42,7 +41,7 @@ Scheduler::Scheduler(const std::vector<shared_ptr<IBitExec>> &p_bit_execs,
 void Scheduler::run(const Circuit &p_circuit,
                     unordered_map<string, ObjHandle> &outputs,
                     const unordered_map<string, ObjHandle> &inputs) {
-  spdlog::debug("{} Scheduler::run - start", this_thread::get_id());
+  CINGU_LOG_DEBUG("{} Scheduler::run - start", this_thread::get_id());
 
   set_circuit(p_circuit);
   schedule_no_input_gates();
@@ -57,7 +56,7 @@ void Scheduler::run(const Circuit &p_circuit,
   for (thread &th : threads)
     th.join();
 
-  spdlog::debug("{} Scheduler::run - done", this_thread::get_id());
+  CINGU_LOG_DEBUG("{} Scheduler::run - done", this_thread::get_id());
 }
 
 void Scheduler::set_circuit(const Circuit &p_circuit) {
@@ -103,8 +102,8 @@ void Scheduler::schedule_no_input_gates() {
 }
 
 void Scheduler::job_done(const Node::id_t id) {
-  spdlog::debug("{} Scheduler::job_done - {}", this_thread::get_id(),
-                m_circuit.get_node(id));
+  CINGU_LOG_DEBUG("{} Scheduler::job_done - {}", this_thread::get_id(),
+               m_circuit.get_node(id));
 
   vector<Node::id_t> ready_nodes;
 
@@ -138,7 +137,7 @@ void Scheduler::schedule_job(const Node::id_t sid) {
     const Node::id_t id = node->get_preds().front();
     m_outputs.at(m_circuit.get_name(sid)) = get_handle(id);
     m_nb_outputs_done--;
-    spdlog::trace(
+    CINGU_LOG_TRACE(
         "{} Scheduler::schedule_job - node {} output {} (remaining {})",
         this_thread::get_id(), *node, m_circuit.get_name(sid),
         m_nb_outputs_done);
@@ -146,36 +145,37 @@ void Scheduler::schedule_job(const Node::id_t sid) {
     Slot *slot = find_empty_slot();
     slot->node = node;
     slot->state = Slot::State::READY;
-    spdlog::trace("{} Scheduler::schedule_job - node {}", this_thread::get_id(),
-                  *node);
+    CINGU_LOG_TRACE("{} Scheduler::schedule_job - node {}", this_thread::get_id(),
+                 *node);
   }
 }
 
 Slot *Scheduler::find_empty_slot(const size_t start_idx) {
-  spdlog::trace("{} Scheduler::find_empty_slot", this_thread::get_id());
-  return find_slot(Slot::State::EMPTY, Slot::State::TAKEN, start_idx);
+  CINGU_LOG_TRACE("{} Scheduler::find_empty_slot", this_thread::get_id());
+  return find_slot(Slot::State::EMPTY, Slot::State::TAKEN, start_idx, false);
 }
 
 Slot *Scheduler::find_ready_slot(const size_t start_idx) {
-  spdlog::trace("{} Scheduler::find_ready_slot", this_thread::get_id());
-  return find_slot(Slot::State::READY, Slot::State::EXEC, start_idx);
+  CINGU_LOG_TRACE("{} Scheduler::find_ready_slot", this_thread::get_id());
+  return find_slot(Slot::State::READY, Slot::State::EXEC, start_idx, true);
 }
 
 Slot *Scheduler::find_slot(const Slot::State state, const Slot::State new_state,
-                           const size_t start_idx) {
+                           const size_t start_idx,
+                           const bool return_after_cycle) {
   size_t slot_idx = start_idx;
   Slot *slot = m_slot_buffer.at(slot_idx);
   Slot::State tmp = state;
   while (not slot->state.compare_exchange_weak(tmp, new_state)) {
     slot_idx = (slot_idx + 1) % m_slot_buffer.size();
-    if (slot_idx == start_idx)
+    if (return_after_cycle and slot_idx == start_idx)
       return nullptr;
 
     slot = m_slot_buffer[slot_idx];
     tmp = state;
   }
 
-  spdlog::trace("{} Scheduler::find_slot - found slot {}",
-                this_thread::get_id(), slot_idx);
+  CINGU_LOG_TRACE("{} Scheduler::find_slot - found slot {}", this_thread::get_id(),
+               slot_idx);
   return slot;
 }

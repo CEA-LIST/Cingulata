@@ -22,7 +22,7 @@
 
 #include "node.hxx"
 
-#include <spdlog/spdlog.h>
+#include <logging.hxx>
 
 #include <string>
 #include <unordered_map>

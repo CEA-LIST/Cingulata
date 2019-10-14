@@ -68,7 +68,7 @@ public:
   Slot *find_empty_slot(const size_t start_idx = 0);
   Slot *find_ready_slot(const size_t start_idx = 0);
   Slot *find_slot(const Slot::State state, const Slot::State new_state,
-                  const size_t start_idx);
+                  const size_t start_idx, const bool return_after_cycle);
 
   ObjHandle get_handle(const Node::id_t id) const {
     return m_handles.at(id); // TODO replace with []

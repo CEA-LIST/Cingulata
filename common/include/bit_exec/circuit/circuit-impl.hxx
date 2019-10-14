@@ -26,7 +26,7 @@ Node::id_t Circuit::add_gate(const Node::GateType p_gate_type,
   node.set_type(Node::NodeType::GATE);
   node.set_gate_type(p_gate_type);
 
-  spdlog::debug("Circuit::add_gate - {}", node);
+  CINGU_LOG_DEBUG("Circuit::add_gate - {}", node);
 
   return id;
 }
