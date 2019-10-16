@@ -22,20 +22,25 @@
 #include <bit_exec/parallel/worker.hxx>
 #include <logging.hxx>
 
-#include <thread>
-
 using namespace std;
 using namespace cingulata;
+using namespace cingulata::parallel;
 
 Scheduler::Scheduler(const std::vector<shared_ptr<IBitExec>> &p_bit_execs,
-                     const size_t p_buffer_size) {
+                     const size_t p_buffer_size)
+    : m_slot_buffer(p_buffer_size) {
   for (size_t i = 0; i < p_bit_execs.size(); ++i) {
-    m_workers.emplace_back(new Worker(this, p_bit_execs[i], i));
+    m_workers.emplace_back(new Worker(this, p_bit_execs[i]));
   }
+}
 
-  for (size_t i = 0; i < p_buffer_size; ++i) {
-    m_slot_buffer.push_back(new Slot(Slot::EMPTY));
-  }
+Scheduler::~Scheduler() {
+  for (Worker *worker : m_workers)
+    delete worker;
+  for (const auto *ptr : m_nb_exec_pred)
+    delete ptr;
+  for (const auto *ptr : m_nb_exec_succ)
+    delete ptr;
 }
 
 void Scheduler::run(const Circuit &p_circuit,
@@ -60,6 +65,9 @@ void Scheduler::run(const Circuit &p_circuit,
 }
 
 void Scheduler::set_circuit(const Circuit &p_circuit) {
+  CINGU_LOG_DEBUG("{} Scheduler::set_circuit - number of nodes {}",
+                  this_thread::get_id(), p_circuit.node_cnt());
+
   m_circuit = p_circuit;
 
   const size_t node_cnt = m_circuit.node_cnt();
@@ -75,6 +83,17 @@ void Scheduler::set_circuit(const Circuit &p_circuit) {
     m_nb_exec_pred.emplace_back(new atomic<int>(nb_preds));
   }
 
+  // clear previous data
+  for (const auto *ptr : m_nb_exec_succ)
+    delete ptr;
+  m_nb_exec_succ.clear();
+
+  // initially all successors are needed
+  for (size_t id = 0; id < node_cnt; ++id) {
+    const size_t nb_succs = m_circuit.get_succs(id).size();
+    m_nb_exec_succ.emplace_back(new atomic<int>(nb_succs));
+  }
+
   m_handles.clear();
   m_handles.resize(node_cnt);
 
@@ -86,14 +105,21 @@ void Scheduler::set_circuit(const Circuit &p_circuit) {
 }
 
 void Scheduler::set_inputs(const unordered_map<string, ObjHandle> &inputs) {
+  CINGU_LOG_DEBUG("{} Scheduler::set_inputs - {}", this_thread::get_id(),
+                  inputs.size());
+
   for (const Node::id_t id : m_circuit.get_inputs()) {
     const string &name = m_circuit.get_name(id);
+    assert(inputs.find(name) != inputs.end());
     m_handles[id] = inputs.at(name);
     job_done(id);
   }
 }
 
 void Scheduler::schedule_no_input_gates() {
+  CINGU_LOG_DEBUG("{} Scheduler::schedule_no_input_gates",
+                  this_thread::get_id());
+
   for (const Node &node : m_circuit.get_nodes()) {
     if (node.get_preds().size() == 0 and node.is_gate()) {
       schedule_job(node.get_id());
@@ -101,14 +127,11 @@ void Scheduler::schedule_no_input_gates() {
   }
 }
 
-void Scheduler::job_done(const Node::id_t id) {
-  CINGU_LOG_DEBUG("{} Scheduler::job_done - {}", this_thread::get_id(),
-               m_circuit.get_node(id));
-
-  vector<Node::id_t> ready_nodes;
+vector<Node::id_t> Scheduler::get_ready_succ_ids(const Node::id_t id) {
+  vector<Node::id_t> nodes;
 
   const auto &succ_ids = m_circuit.get_succs(id);
-  ready_nodes.reserve(succ_ids.size());
+  nodes.reserve(succ_ids.size());
 
   // update executed predecessors count and find ready successor nodes (ie whose
   // predecessors are all executed)
@@ -117,15 +140,50 @@ void Scheduler::job_done(const Node::id_t id) {
     nb--;
 
     int tmp = 0;
-    bool avail_for_sched = nb.compare_exchange_strong(tmp, -1);
-    if (avail_for_sched) {
-      ready_nodes.emplace_back(sid);
+    if (nb.compare_exchange_strong(tmp, -1)) {
+      nodes.emplace_back(sid);
     }
   }
 
-  // push ready jobs to circular buffer empty slots
+  return nodes;
+}
+
+vector<Node::id_t> Scheduler::get_useless_pred_ids(const Node::id_t id) {
+  vector<Node::id_t> nodes;
+
+  const auto &pred_ids = m_circuit.get_preds(id);
+  nodes.reserve(pred_ids.size());
+
+  // update executed predecessors count and find ready successor nodes (ie whose
+  // predecessors are all executed)
+  for (const Node::id_t pid : pred_ids) {
+    auto &nb = *m_nb_exec_succ.at(pid); // TODO replace at with []
+    nb--;
+
+    int tmp = 0;
+    if (nb.compare_exchange_strong(tmp, -1)) {
+      nodes.emplace_back(pid);
+    }
+  }
+
+  return nodes;
+}
+
+void Scheduler::job_done(const Node::id_t id) {
+  CINGU_LOG_DEBUG("{} Scheduler::job_done - {}", this_thread::get_id(),
+                  m_circuit.get_node(id));
+
+  // push ready jobs to circular waiting list
+  vector<Node::id_t> ready_nodes = get_ready_succ_ids(id);
   for (const Node::id_t sid : ready_nodes) {
     schedule_job(sid);
+  }
+
+  // clear handles for not needed nodes
+  vector<Node::id_t> useless_nodes = get_useless_pred_ids(id);
+  for (const Node::id_t pid : useless_nodes) {
+    assert(not get_handle(pid).is_empty());
+    del_handle(pid);
   }
 }
 
@@ -142,40 +200,8 @@ void Scheduler::schedule_job(const Node::id_t sid) {
         this_thread::get_id(), *node, m_circuit.get_name(sid),
         m_nb_outputs_done);
   } else {
-    Slot *slot = find_empty_slot();
-    slot->node = node;
-    slot->state = Slot::State::READY;
-    CINGU_LOG_TRACE("{} Scheduler::schedule_job - node {}", this_thread::get_id(),
-                 *node);
+    m_slot_buffer.push(node);
+    CINGU_LOG_TRACE("{} Scheduler::schedule_job - node {}",
+                    this_thread::get_id(), *node);
   }
-}
-
-Slot *Scheduler::find_empty_slot(const size_t start_idx) {
-  CINGU_LOG_TRACE("{} Scheduler::find_empty_slot", this_thread::get_id());
-  return find_slot(Slot::State::EMPTY, Slot::State::TAKEN, start_idx, false);
-}
-
-Slot *Scheduler::find_ready_slot(const size_t start_idx) {
-  CINGU_LOG_TRACE("{} Scheduler::find_ready_slot", this_thread::get_id());
-  return find_slot(Slot::State::READY, Slot::State::EXEC, start_idx, true);
-}
-
-Slot *Scheduler::find_slot(const Slot::State state, const Slot::State new_state,
-                           const size_t start_idx,
-                           const bool return_after_cycle) {
-  size_t slot_idx = start_idx;
-  Slot *slot = m_slot_buffer.at(slot_idx);
-  Slot::State tmp = state;
-  while (not slot->state.compare_exchange_weak(tmp, new_state)) {
-    slot_idx = (slot_idx + 1) % m_slot_buffer.size();
-    if (return_after_cycle and slot_idx == start_idx)
-      return nullptr;
-
-    slot = m_slot_buffer[slot_idx];
-    tmp = state;
-  }
-
-  CINGU_LOG_TRACE("{} Scheduler::find_slot - found slot {}", this_thread::get_id(),
-               slot_idx);
-  return slot;
 }

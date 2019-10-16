@@ -23,82 +23,87 @@
 #include <bit_exec/circuit/circuit.hxx>
 #include <bit_exec/interface.hxx>
 #include <bit_exec/obj_handle.hxx>
+#include <bit_exec/parallel/slot_buffer.hxx>
 
 #include <atomic>
-#include <memory>
+#include <thread>
 #include <unordered_map>
 #include <vector>
 
 namespace cingulata {
+namespace parallel {
 
 class Worker;
-
-class Slot {
-public:
-  enum State : uint8_t;
-  std::atomic<State> state;
-
-  Node *node;
-
-  Slot(State p_state) : state(p_state) {}
-};
-
-enum Slot::State : uint8_t {
-  EMPTY, // empty
-  TAKEN, // reserved
-  READY, // ready for execution
-  EXEC   // in execution
-};
 
 class Scheduler {
 public:
   Scheduler(const std::vector<std::shared_ptr<IBitExec>> &p_bit_execs,
             const size_t p_buffer_size);
 
+  ~Scheduler();
+
   void run(const Circuit &p_circuit,
            std::unordered_map<std::string, ObjHandle> &outputs,
            const std::unordered_map<std::string, ObjHandle> &inputs);
-
-  void job_done(const Node::id_t id);
-
-  void schedule_job(const Node::id_t id);
-
-  bool is_finished() { return m_nb_outputs_done == 0; }
-
-  Slot *find_empty_slot(const size_t start_idx = 0);
-  Slot *find_ready_slot(const size_t start_idx = 0);
-  Slot *find_slot(const Slot::State state, const Slot::State new_state,
-                  const size_t start_idx, const bool return_after_cycle);
-
-  ObjHandle get_handle(const Node::id_t id) const {
-    return m_handles.at(id); // TODO replace with []
-  }
-
-  void set_handle(const Node::id_t id, ObjHandle hdl) {
-    m_handles.at(id) = hdl; // TODO replace with []
-  }
-
-  const Circuit &get_circuit() const { return m_circuit; }
-
 private:
+  friend class Worker;
+
   void set_circuit(const Circuit &p_circuit);
   void
   set_inputs(const std::unordered_map<std::string, ObjHandle> &inp_out_hdls);
-  void schedule_no_input_gates();
   const std::unordered_map<std::string, ObjHandle> &get_outputs() const {
     return m_outputs;
   }
+  void schedule_no_input_gates();
 
+  bool is_finished() { return m_nb_outputs_done == 0; }
+
+  void job_done(const cingulata::Node::id_t id);
+  void schedule_job(const cingulata::Node::id_t id);
+  Node *get_next_job() { return m_slot_buffer.pop(); }
+
+  ObjHandle get_handle(const cingulata::Node::id_t id) const {
+    CINGU_LOG_TRACE("{} Scheduler::get_handle - {}", std::this_thread::get_id(),
+                    m_circuit.get_node(id));
+    assert(not m_handles.at(id).is_empty());
+    return m_handles.at(id); // TODO replace with []
+  }
+
+  void set_handle(const cingulata::Node::id_t id, ObjHandle hdl) {
+    CINGU_LOG_TRACE("{} Scheduler::set_handle - {}", std::this_thread::get_id(),
+                    m_circuit.get_node(id));
+    assert(m_handles.at(id).is_empty());
+    m_handles.at(id) = hdl; // TODO replace with []
+  }
+
+  void del_handle(const cingulata::Node::id_t id) {
+    CINGU_LOG_TRACE("{} Scheduler::del_handle - {}", std::this_thread::get_id(),
+                    m_circuit.get_node(id));
+    assert(not m_handles.at(id).is_empty());
+    m_handles.at(id).reset();  // TODO replace with []
+  }
+
+  std::vector<cingulata::Node::id_t>
+  get_ready_succ_ids(const cingulata::Node::id_t id);
+  std::vector<cingulata::Node::id_t>
+  get_useless_pred_ids(const cingulata::Node::id_t id);
+
+private:
   Circuit m_circuit;
 
   std::vector<Worker *> m_workers;
 
-  std::vector<Slot *> m_slot_buffer;
+  Buffer<cingulata::Node> m_slot_buffer;
 
   std::vector<std::atomic<int> *>
       m_nb_exec_pred; // if m_nb_exec_pred[v]==0 => v is available for
                       // execution, m_nb_exec_pred[v]==-1 => executed or in
                       // execution queue
+
+  std::vector<std::atomic<int> *>
+      m_nb_exec_succ; // if m_nb_exec_succ[v]==0 => v is no longer used so
+                      // handle can be deleted, m_nb_exec_succ[v]==-1 =>
+                      // handle already deleted
 
   std::vector<ObjHandle> m_handles;
 
@@ -106,6 +111,7 @@ private:
   std::atomic<size_t> m_nb_outputs_done;
 };
 
+} // namespace parallel
 } // namespace cingulata
 
 #endif

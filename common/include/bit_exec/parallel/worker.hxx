@@ -20,20 +20,21 @@
 #ifndef CINGULATA_PARALLEL_WORKER
 #define CINGULATA_PARALLEL_WORKER
 
+#include <bit_exec/circuit/circuit.hxx>
 #include <bit_exec/interface.hxx>
 
 #include <cassert>
 #include <memory>
 
 namespace cingulata {
+namespace parallel {
 
 class Scheduler;
-class Slot;
 
 class Worker {
 public:
-  Worker(Scheduler *p_scheduler, std::shared_ptr<IBitExec> p_bit_exec, int p_id)
-      : m_scheduler(p_scheduler), m_bit_exec(p_bit_exec), m_id(p_id) {
+  Worker(Scheduler *p_scheduler, std::shared_ptr<IBitExec> p_bit_exec)
+      : m_scheduler(p_scheduler), m_bit_exec(p_bit_exec) {
     assert(p_scheduler != nullptr);
     assert(m_bit_exec != nullptr);
   }
@@ -41,13 +42,13 @@ public:
   void run();
 
 private:
-  void exec(const Slot *const slot);
+  void exec(const cingulata::Node &);
 
   Scheduler *m_scheduler;
   std::shared_ptr<IBitExec> m_bit_exec;
-  int m_id;
 };
 
+} // namespace parallel
 } // namespace cingulata
 
 #endif

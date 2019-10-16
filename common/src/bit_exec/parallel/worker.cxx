@@ -25,36 +25,34 @@
 #include <thread>
 
 using namespace std;
-using namespace cingulata;
+using namespace cingulata::parallel;
 
 void Worker::run() {
   CINGU_LOG_DEBUG("{} Worker::run - start", this_thread::get_id());
+
   while (not m_scheduler->is_finished()) {
-    Slot *slot = m_scheduler->find_ready_slot();
-    if (slot == nullptr)
+    Node *node = m_scheduler->get_next_job();
+    if (node == nullptr)
       continue;
-    exec(slot);
-    m_scheduler->job_done(slot->node->get_id());
-    slot->state = Slot::EMPTY;
+    exec(*node);
+    m_scheduler->job_done(node->get_id());
   }
+
   CINGU_LOG_DEBUG("{} Worker::run - done", this_thread::get_id());
 }
 
-void Worker::exec(const Slot *const slot) {
-  const Node &node = *(slot->node);
+void Worker::exec(const Node &node) {
   CINGU_LOG_DEBUG("{} Worker::exec - begin {}", this_thread::get_id(), node);
 
-  assert(m_scheduler->get_handle(node.get_id()).is_empty());
-
   vector<ObjHandle> inp_hdls(node.get_preds().size());
-  for (size_t i = 0; i < node.get_preds().size(); ++i) {
-    const auto id = node.get_preds()[i];
+  auto preds = node.get_preds();
+  for (size_t i = 0; i < preds.size(); ++i) {
+    const auto id = preds[i];
     inp_hdls[i] = m_scheduler->get_handle(id);
-    assert(not inp_hdls[i].is_empty());
   }
 
   ObjHandle out_hdl;
-  switch (slot->node->get_gate_type()) {
+  switch (node.get_gate_type()) {
   case Node::GateType::ZERO:
     out_hdl = m_bit_exec->encode(0);
     break;
@@ -114,8 +112,9 @@ void Worker::exec(const Slot *const slot) {
     out_hdl = m_bit_exec->op_mux(inp_hdls[0], inp_hdls[1], inp_hdls[2]);
     break;
   default:
-    CINGU_LOG_WARN("{} Worker::exec - unknown operation (output handle is empty)",
-                this_thread::get_id());
+    CINGU_LOG_WARN(
+        "{} Worker::exec - unknown operation (output handle is empty)",
+        this_thread::get_id());
   }
 
   m_scheduler->set_handle(node.get_id(), out_hdl);
