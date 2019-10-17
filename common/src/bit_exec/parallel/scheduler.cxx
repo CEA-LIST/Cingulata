@@ -95,7 +95,7 @@ void Scheduler::set_circuit(const Circuit &p_circuit) {
   m_handles.clear();
   m_handles.resize(node_cnt);
 
-  // fill map with handles so that it'll be thread-safe
+  // fill map with empty handles so that it'll be thread-safe
   for (const Node::id_t id : m_circuit.get_outputs())
     m_outputs[m_circuit.get_name(id)] = ObjHandle();
 
@@ -108,9 +108,14 @@ void Scheduler::set_inputs(const unordered_map<string, ObjHandle> &inputs) {
 
   for (const Node::id_t id : m_circuit.get_inputs()) {
     const string &name = m_circuit.get_name(id);
-    assert(inputs.find(name) != inputs.end());
-    m_handles[id] = inputs.at(name);
-    job_done(id);
+    if (inputs.find(name) == inputs.end()) {
+      CINGU_LOG_ERROR(
+          "{} Scheduler::set_inputs - circuit input with name {} not given",
+          this_thread::get_id(), name);
+      exit(-1);
+    }
+    set_handle(id, inputs.at(name));
+    job_done(&m_circuit.get_node(id));
   }
 }
 
@@ -120,15 +125,15 @@ void Scheduler::schedule_no_input_gates() {
 
   for (const Node &node : m_circuit.get_nodes()) {
     if (node.get_preds().size() == 0 and node.is_gate()) {
-      schedule_job(node.get_id());
+      schedule_job(&node);
     }
   }
 }
 
-vector<Node::id_t> Scheduler::get_ready_succ_ids(const Node::id_t id) {
+vector<Node::id_t> Scheduler::get_ready_succ_ids(const Node *const node) {
   vector<Node::id_t> nodes;
 
-  const auto &succ_ids = m_circuit.get_succs(id);
+  const auto &succ_ids = node->get_succs();
   nodes.reserve(succ_ids.size());
 
   // update executed predecessors count and find ready successor nodes (ie whose
@@ -146,10 +151,10 @@ vector<Node::id_t> Scheduler::get_ready_succ_ids(const Node::id_t id) {
   return nodes;
 }
 
-vector<Node::id_t> Scheduler::get_useless_pred_ids(const Node::id_t id) {
+vector<Node::id_t> Scheduler::get_useless_pred_ids(const Node *const node) {
   vector<Node::id_t> nodes;
 
-  const auto &pred_ids = m_circuit.get_preds(id);
+  const auto &pred_ids = node->get_preds();
   nodes.reserve(pred_ids.size());
 
   // update executed predecessors count and find ready successor nodes (ie whose
@@ -167,35 +172,37 @@ vector<Node::id_t> Scheduler::get_useless_pred_ids(const Node::id_t id) {
   return nodes;
 }
 
-void Scheduler::job_done(const Node::id_t id) {
-  CINGU_LOG_DEBUG("{} Scheduler::job_done - {}", this_thread::get_id(),
-                  m_circuit.get_node(id));
+void Scheduler::job_done(const Node *const node) {
+  CINGU_LOG_DEBUG("{} Scheduler::job_done - {}", this_thread::get_id(), *node);
 
   // push ready jobs to circular waiting list
-  vector<Node::id_t> ready_nodes = get_ready_succ_ids(id);
+  vector<Node::id_t> ready_nodes = get_ready_succ_ids(node);
   for (const Node::id_t sid : ready_nodes) {
-    schedule_job(sid);
+    schedule_job(&m_circuit.get_node(sid));
   }
 
   // clear handles for not needed nodes
-  vector<Node::id_t> useless_nodes = get_useless_pred_ids(id);
+  vector<Node::id_t> useless_nodes = get_useless_pred_ids(node);
   for (const Node::id_t pid : useless_nodes) {
     del_handle(pid);
   }
 }
 
-void Scheduler::schedule_job(const Node::id_t sid) {
-  Node *node = &m_circuit.get_node(sid);
-
+void Scheduler::schedule_job(const Node *const node) {
   if (node->is_output()) {
-    assert(node->get_preds().size() == 1);
-    const Node::id_t id = node->get_preds().front();
-    m_outputs.at(m_circuit.get_name(sid)) = get_handle(id);
+    const Node::id_t sid = node->get_id();
+
+    const auto &preds = node->get_preds();
+    assert(preds.size() == 1);
+    const Node::id_t id = preds.front();
+
+    const string &name = m_circuit.get_name(sid);
+    m_outputs[name] = get_handle(id);
+
     m_nb_outputs_done--;
     CINGU_LOG_TRACE(
         "{} Scheduler::schedule_job - node {} output {} (remaining {})",
-        this_thread::get_id(), *node, m_circuit.get_name(sid),
-        m_nb_outputs_done);
+        this_thread::get_id(), *node, name, m_nb_outputs_done);
   } else {
     m_ring_buffer.push(node);
     CINGU_LOG_TRACE("{} Scheduler::schedule_job - node {}",

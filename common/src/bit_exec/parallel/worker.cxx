@@ -31,28 +31,28 @@ void Worker::run() {
   CINGU_LOG_DEBUG("{} Worker::run - start", this_thread::get_id());
 
   while (not m_scheduler->is_finished()) {
-    Node *node = m_scheduler->get_next_job();
+    const Node *const node = m_scheduler->get_next_job();
     if (node == nullptr)
       continue;
-    exec(*node);
-    m_scheduler->job_done(node->get_id());
+    exec(node);
+    m_scheduler->job_done(node);
   }
 
   CINGU_LOG_DEBUG("{} Worker::run - done", this_thread::get_id());
 }
 
-void Worker::exec(const Node &node) {
-  CINGU_LOG_DEBUG("{} Worker::exec - begin {}", this_thread::get_id(), node);
+void Worker::exec(const Node *const node) {
+  CINGU_LOG_DEBUG("{} Worker::exec - begin {}", this_thread::get_id(), *node);
 
-  vector<ObjHandle> inp_hdls(node.get_preds().size());
-  auto preds = node.get_preds();
+  auto preds = node->get_preds();
+  vector<ObjHandle> inp_hdls(preds.size());
   for (size_t i = 0; i < preds.size(); ++i) {
     const auto id = preds[i];
     inp_hdls[i] = m_scheduler->get_handle(id);
   }
 
   ObjHandle out_hdl;
-  switch (node.get_gate_type()) {
+  switch (node->get_gate_type()) {
   case Node::GateType::ZERO:
     assert(inp_hdls.size() == 0);
     out_hdl = m_bit_exec->encode(0);
@@ -119,5 +119,5 @@ void Worker::exec(const Node &node) {
         this_thread::get_id());
   }
 
-  m_scheduler->set_handle(node.get_id(), out_hdl);
+  m_scheduler->set_handle(node->get_id(), out_hdl);
 }

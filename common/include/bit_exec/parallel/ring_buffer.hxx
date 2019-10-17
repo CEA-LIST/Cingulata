@@ -66,8 +66,8 @@ public:
   }
 
   /**
-   * @brief      Pushes data to an empty location of the buffer. RingBuffer size is
-   * incresed if no empty location is found.
+   * @brief      Pushes data to an empty location of the buffer. RingBuffer size
+   * is incresed if no empty location is found.
    *
    * @param      data  The data
    */
@@ -101,7 +101,8 @@ public:
 
 private:
   void increase_size() {
-    CINGU_LOG_DEBUG("{} RingBuffer<T>::increase_size", std::this_thread::get_id());
+    CINGU_LOG_DEBUG("{} RingBuffer<T>::increase_size",
+                    std::this_thread::get_id());
 
     Slot *tmp = alloc_slots();
     tmp[START_SIZE - 1].next = m_first_slot;
@@ -113,7 +114,8 @@ private:
   }
 
   Slot *alloc_slots() {
-    CINGU_LOG_DEBUG("{} RingBuffer<T>::alloc_slots", std::this_thread::get_id());
+    CINGU_LOG_DEBUG("{} RingBuffer<T>::alloc_slots",
+                    std::this_thread::get_id());
 
     Slot *tmp = new Slot[START_SIZE];
 

@@ -42,7 +42,7 @@ public:
   void run();
 
 private:
-  void exec(const cingulata::Node &);
+  void exec(const cingulata::Node *const node);
 
   Scheduler *m_scheduler;
   std::shared_ptr<IBitExec> m_bit_exec;
