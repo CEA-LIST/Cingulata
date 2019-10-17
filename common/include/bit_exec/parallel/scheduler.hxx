@@ -50,7 +50,7 @@ public:
 private:
   void set_circuit(const Circuit &p_circuit);
   void
-  set_inputs(const std::unordered_map<std::string, ObjHandle> &inp_out_hdls);
+  set_inputs(const std::unordered_map<std::string, ObjHandle> &inputs);
   const std::unordered_map<std::string, ObjHandle> &get_outputs() const {
     return m_outputs;
   }

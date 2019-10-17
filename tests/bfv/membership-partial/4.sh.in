@@ -61,8 +61,8 @@ echo "Input encryption"
 NR_THREADS=$(nproc)
 
 # target IP
-$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS --clear `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/ --idx-places 0   $(ipv4byte $1 0) $(ipv4byte $1 1) $(ipv4byte $1 2)`
-$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/ --idx-places 0 --start-idx 24    $(ipv4byte $1 3)`
+$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS --clear `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i: --idx-places 0   $(ipv4byte $1 0) $(ipv4byte $1 1) $(ipv4byte $1 2)`
+$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i: --idx-places 0 --start-idx 24    $(ipv4byte $1 3)`
 
 ##--msb-first --prefix input/b_"$i"_ --idx-places 0 --start-idx $((34+32*($i-1))) $(ipv4byte ${IP[$i]} 0) $(ipv4byte ${IP[$i]} 1) $(ipv4byte ${IP[$i]} 2)`
 #--prefix input/b_"$i"_ --idx-places 0 --start-idx $((58+32*($i-1)))  $(ipv4byte ${IP[$i]} 3)

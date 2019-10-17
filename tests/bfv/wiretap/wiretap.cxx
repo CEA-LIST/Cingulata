@@ -28,7 +28,7 @@
 using namespace std;
 using namespace cingulata;
 
-#define QUERY_SIZE 10
+#define QUERY_SIZE 10u
 
 int main() {
   CiInt w{CiInt::s32};
@@ -40,9 +40,9 @@ int main() {
   CiInt r{QUERY_SIZE};   // automatically determine bit size
   assert(r.size() == 4); // attention the run.sh size is 4 bits!!
   r = 0;
-  for (int i = 0; i < QUERY_SIZE; i++)
-    r += (w == q[i]) * CiInt(i + 1);
-  r -= 1;
+  for (unsigned i = 0; i < QUERY_SIZE; i++) {
+    r ^= (w == q[i]) * CiInt(i + 1);
+  }
   r.write("s");
   CiContext::get_bit_exec_t<BitTracker>()->export_blif(blif_name, "wiretap");
 }

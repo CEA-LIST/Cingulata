@@ -191,12 +191,13 @@ void BlifOutput::write(ostream &stream, const Circuit &circuit) {
   /* write each gate node except inputs */
   for (size_t id = 0; id < circuit.node_cnt(); ++id) {
     const auto &node = circuit.get_node(id);
-    if (node.is_gate()) {
+    if (not node.is_input()) {
       const vector<string> inp_names =
           get_names(node_names, circuit.get_preds(id));
       const string &out_name = node_names.at(id);
+      const Node::GateType& gate_type = node.is_gate() ? node.get_gate_type() : Node::GateType::BUF;
 
-      (*write_gate)(stream, out_name, inp_names, node.get_gate_type());
+      (*write_gate)(stream, out_name, inp_names, gate_type);
     }
   }
 
@@ -230,7 +231,9 @@ vector<string> BlifOutput::generate_names(const Circuit &circuit) {
       std::snprintf(buf, m_name_size_max, sm_inp_name_fmt, inp_counter++);
       name = buf;
     }
+    assert(names[id].empty());
     names[id] = name;
+    assert(not names[id].empty());
   }
 
   for (const Node::id_t id : circuit.get_outputs()) {
@@ -239,19 +242,18 @@ vector<string> BlifOutput::generate_names(const Circuit &circuit) {
       std::snprintf(buf, m_name_size_max, sm_out_name_fmt, out_counter++);
       name = buf;
     }
+    assert(names[id].empty());
     names[id] = name;
-
-    // fill the only predecessors with output name
-    const auto &pred_ids = circuit.get_preds(id);
-    assert(pred_ids.size() == 1);
-    names[pred_ids.front()] = name;
+    assert(not names[id].empty());
   }
 
   for (size_t id = 0; id < circuit.node_cnt(); ++id) {
     const Node &node = circuit.get_node(id);
-    if (node.is_gate() and names[id].empty()) {
+    if (node.is_gate()) {
       std::snprintf(buf, m_name_size_max, sm_gate_name_fmt, gate_counter++);
+      assert(names[id].empty());
       names[id] = buf;
+      assert(not names[id].empty());
     }
   }
 
@@ -287,7 +289,7 @@ string get_line_cleared(istream &stream) {
 
 string get_multiline_cleared(istream &stream) {
   string line = get_line_cleared(stream);
-  while (line.back() == '\\') {
+  while (not line.empty() and line.back() == '\\') {
     assert(stream);
 
     line.back() = ' ';

@@ -63,7 +63,7 @@ echo "Input encryption"
 NR_THREADS=$(nproc)
 
 # target IP
-$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS  `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/ --idx-places 0   $(ipv4byte $1 0)  $(ipv4byte $1 1) $(ipv4byte $1 2)  $(ipv4byte $1 3)`
+$APPS_DIR/encrypt -v --public-key fhe_key.pk  --threads $NR_THREADS  `$APPS_DIR/helper --bit-cnt 8 --msb-first --prefix input/i: --idx-places 0   $(ipv4byte $1 0)  $(ipv4byte $1 1) $(ipv4byte $1 2)  $(ipv4byte $1 3)`
 
 # We encrypt IP per IP then byte per byte
 for (( i=1; i<=$LIST_SIZE; i++ ))
