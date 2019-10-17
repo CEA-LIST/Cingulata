@@ -54,9 +54,11 @@ void Worker::exec(const Node &node) {
   ObjHandle out_hdl;
   switch (node.get_gate_type()) {
   case Node::GateType::ZERO:
+    assert(inp_hdls.size() == 0);
     out_hdl = m_bit_exec->encode(0);
     break;
   case Node::GateType::ONE:
+    assert(inp_hdls.size() == 0);
     out_hdl = m_bit_exec->encode(1);
     break;
   case Node::GateType::NOT:
@@ -113,7 +115,7 @@ void Worker::exec(const Node &node) {
     break;
   default:
     CINGU_LOG_WARN(
-        "{} Worker::exec - unknown operation (output handle is empty)",
+        "{} Worker::exec - unknown operation (output handle will be empty)",
         this_thread::get_id());
   }
 

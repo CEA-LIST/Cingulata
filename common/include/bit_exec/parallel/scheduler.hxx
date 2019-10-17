@@ -23,7 +23,7 @@
 #include <bit_exec/circuit/circuit.hxx>
 #include <bit_exec/interface.hxx>
 #include <bit_exec/obj_handle.hxx>
-#include <bit_exec/parallel/slot_buffer.hxx>
+#include <bit_exec/parallel/ring_buffer.hxx>
 
 #include <atomic>
 #include <thread>
@@ -36,18 +36,18 @@ namespace parallel {
 class Worker;
 
 class Scheduler {
+  friend class Worker;
+
 public:
-  Scheduler(const std::vector<std::shared_ptr<IBitExec>> &p_bit_execs,
-            const size_t p_buffer_size);
+  Scheduler(const std::vector<std::shared_ptr<IBitExec>> &p_bit_execs);
 
   ~Scheduler();
 
   void run(const Circuit &p_circuit,
            std::unordered_map<std::string, ObjHandle> &outputs,
            const std::unordered_map<std::string, ObjHandle> &inputs);
-private:
-  friend class Worker;
 
+private:
   void set_circuit(const Circuit &p_circuit);
   void
   set_inputs(const std::unordered_map<std::string, ObjHandle> &inp_out_hdls);
@@ -60,7 +60,7 @@ private:
 
   void job_done(const cingulata::Node::id_t id);
   void schedule_job(const cingulata::Node::id_t id);
-  Node *get_next_job() { return m_slot_buffer.pop(); }
+  Node *get_next_job() { return m_ring_buffer.pop(); }
 
   ObjHandle get_handle(const cingulata::Node::id_t id) const {
     CINGU_LOG_TRACE("{} Scheduler::get_handle - {}", std::this_thread::get_id(),
@@ -80,7 +80,7 @@ private:
     CINGU_LOG_TRACE("{} Scheduler::del_handle - {}", std::this_thread::get_id(),
                     m_circuit.get_node(id));
     assert(not m_handles.at(id).is_empty());
-    m_handles.at(id).reset();  // TODO replace with []
+    m_handles.at(id).reset(); // TODO replace with []
   }
 
   std::vector<cingulata::Node::id_t>
@@ -93,7 +93,7 @@ private:
 
   std::vector<Worker *> m_workers;
 
-  Buffer<cingulata::Node> m_slot_buffer;
+  RingBuffer<cingulata::Node> m_ring_buffer;
 
   std::vector<std::atomic<int> *>
       m_nb_exec_pred; // if m_nb_exec_pred[v]==0 => v is available for

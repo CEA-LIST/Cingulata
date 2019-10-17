@@ -26,9 +26,7 @@ using namespace std;
 using namespace cingulata;
 using namespace cingulata::parallel;
 
-Scheduler::Scheduler(const std::vector<shared_ptr<IBitExec>> &p_bit_execs,
-                     const size_t p_buffer_size)
-    : m_slot_buffer(p_buffer_size) {
+Scheduler::Scheduler(const std::vector<shared_ptr<IBitExec>> &p_bit_execs) {
   for (size_t i = 0; i < p_bit_execs.size(); ++i) {
     m_workers.emplace_back(new Worker(this, p_bit_execs[i]));
   }
@@ -182,7 +180,6 @@ void Scheduler::job_done(const Node::id_t id) {
   // clear handles for not needed nodes
   vector<Node::id_t> useless_nodes = get_useless_pred_ids(id);
   for (const Node::id_t pid : useless_nodes) {
-    assert(not get_handle(pid).is_empty());
     del_handle(pid);
   }
 }
@@ -200,7 +197,7 @@ void Scheduler::schedule_job(const Node::id_t sid) {
         this_thread::get_id(), *node, m_circuit.get_name(sid),
         m_nb_outputs_done);
   } else {
-    m_slot_buffer.push(node);
+    m_ring_buffer.push(node);
     CINGU_LOG_TRACE("{} Scheduler::schedule_job - node {}",
                     this_thread::get_id(), *node);
   }
