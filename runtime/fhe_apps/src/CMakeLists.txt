@@ -27,5 +27,14 @@ set_target_properties(pack PROPERTIES
 add_executable(helper helper.cxx)
 target_link_libraries(helper)
 
+
+add_executable(blif_exec blif_exec.cxx)
+target_link_libraries(blif_exec fhe_fv_bit_exec)
+
+find_package(Boost 1.58 REQUIRED COMPONENTS program_options)
+target_link_libraries(blif_exec ${Boost_LIBRARIES})
+target_include_directories(blif_exec PRIVATE ${Boost_INCLUDE_DIRS})
+
+
 add_custom_target(fhe_apps
-  DEPENDS encrypt decrypt generate_keys pack helper)
+  DEPENDS encrypt decrypt generate_keys pack helper blif_exec)
