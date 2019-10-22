@@ -22,56 +22,50 @@
  *  @brief Uniform random number generator (uses /dev/urandom).
  */
 
-#ifndef __UNIFORM_HXX__
-#define __UNIFORM_HXX__
+#ifndef UNIFORM_HXX
+#define UNIFORM_HXX
 
 #include <flint/fmpz.h>
 
 class UniformRng {
-  protected:
-    /** @brief Initializes uniform RNG.
-     */
-    static inline void init();
+public:
+  /** @brief Sample number from uniform distribution.
+   *
+   *  This method samples a number \c num uniformly
+   *    defined on interval [0;2^bitCnt).
+   *  Variable \c num should be initialized.
+   *
+   *  @param num sampled number
+   *  @param bitCnt number of bits in \c num
+   */
+  static void sample(fmpz_t num, unsigned int bitCnt);
 
-    /** @brief Automatic initializer
-     */
-    static class _init {
-      public:
-        inline _init();
-    } _initializer;
+  /**
+   * @brief      Sample @c size random bytes
+   *
+   * @param      buff  buffer where bytes are written
+   * @param[in]  size  number of bytes to sample
+   */
+  static void sample(char *buff, const unsigned size);
 
+  /**
+   * @brief      Sample an unsigned integer
+   *
+   * @return     uniformely distributed unsigned integer
+   */
+  static unsigned sample();
+
+protected:
+  /** @brief Initializes uniform RNG.
+   */
+  static inline void init();
+
+  /** @brief Automatic initializer
+   */
+  static class _init {
   public:
-    /** @brief Sample number from uniform distribution.
-     *
-     *  This method samples a number \c num uniformly
-     *    defined on interval [0;2^bitCnt).
-     *  Variable \c num should be initialized.
-     *
-     *  @param num sampled number
-     *  @param bitCnt number of bits in \c num
-     */
-    static void sample(fmpz_t num, unsigned int bitCnt);
-
-    /** @brief Sample number from uniform distribution with a given
-     *     Hamming weight.
-     *
-     *  This method samples a number \c num uniformly. The resulting
-     *    \c num has a Hamming weight \c hammingWeight, thus \c hammingWeight 
-     *    bits of \c num will be logical ones.
-     *  The number of bits in \c num is given by \c bitCnt.
-     *  Variable \c num should be initialized.
-     *
-     *  @remarks Runtime of this function depends statistically on
-     *    the ratio between \c hammingWeight and \c bitCnt.
-     *    For performance reason \c hammingWeight is limited to half of
-     *    \c bitCnt.
-     *
-     *  @param num sampled number
-     *  @param bitCnt number of bits in \c num
-     *  @param hammingWeight Hamming weight of obtained \c num
-     */
-    static void sample(fmpz_t num, unsigned int bitCnt,
-                        unsigned int hammingWeight);
+    inline _init();
+  } _initializer;
 };
 
 #endif

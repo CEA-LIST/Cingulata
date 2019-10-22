@@ -22,37 +22,20 @@
  *  @brief Polynomial quotient ring objects
  */
 
-#ifndef __POLY_RING_HXX__
-#define __POLY_RING_HXX__
-
-#include <assert.h>
-#include <flint/flint.h>
-#include <flint/fmpz.h>
-#include <flint/fmpz_poly.h>
-#include <iostream>
-#include <vector>
+#ifndef POLY_RING_HXX
+#define POLY_RING_HXX
 
 #include "fhe_params.hxx"
+
+#include <cassert>
+#include <flint/fmpz_poly.h>
+#include <vector>
 
 /** @brief Polynomial quotient ring class.
  *
  *  @remarks Inner polynomial structure is a \c fmpz_poly_t.
  */
 class PolyRing {
-private:
-  /** @brief Polynomial with coefficients mod N
-   */
-  fmpz_poly_t polyData;
-
-protected:
-
-  /** @brief Reduce polynomial \poly by the cyclotomic polynomial defining
-   *    the polynomial ring
-   *
-   *  @param poly the polynomial to reduce
-   */
-  static void reduce(PolyRing &poly);
-
 public:
   /** @brief Build an empty polynomial
    */
@@ -67,14 +50,14 @@ public:
    *  @param copy full-copy the list of coefficients when true (default)
    *                and assign-copy when false
    */
-  PolyRing(fmpz_poly_t poly, bool copy = true);
+  PolyRing(fmpz_poly_t poly);
 
   /**
    * @brief Build a polynomial ring element from a vector of uint coefficients
    *
    * @param poly_coeff coefficient vector
    */
-  PolyRing(const std::vector<unsigned int>& poly_coeff);
+  PolyRing(const std::vector<unsigned int> &poly_coeff);
 
   /** @brief Copy-construct a polynomial
    */
@@ -149,7 +132,8 @@ public:
    *  @param left_poly left side of multiplication.
    *  @param right_poly right side of multiplication.
    */
-  static void multiply(PolyRing &prod_poly, const PolyRing &left_poly, const PolyRing &right_poly);
+  static void multiply(PolyRing &prod_poly, const PolyRing &left_poly,
+                       const PolyRing &right_poly);
 
   /** @brief In-place multiply two polynomials.
    *
@@ -188,7 +172,8 @@ public:
    *  @param t numerator of the rational.
    *  @param q denominator of the rational.
    */
-  static void multiply_round(PolyRing &poly, const unsigned int t, const fmpz_t q);
+  static void multiply_round(PolyRing &poly, const unsigned int t,
+                             const fmpz_t q);
 
   /** @brief In-place square a polynomial.
    *
@@ -201,25 +186,27 @@ public:
    */
   static void square(PolyRing &poly);
 
+  static void copy(PolyRing &out, const PolyRing &inp);
+
   /** @brief Assignment operator
    *
    *  Assigns a copy of polynomial object \c poly to current object.
    *
    *  @param poly polynomial object to assign to current object
    */
-  PolyRing& operator=(const PolyRing &poly);
+  PolyRing &operator=(const PolyRing &poly);
 
   /**
    * @brief Sets polynomial coefficient with a \c fmpz_t
    */
   void setCoeff(const unsigned int idx, const fmpz_t value) {
-    fmpz_poly_set_coeff_fmpz(this->polyData, idx, value);
+    fmpz_set(polyData->coeffs + idx, value);
   }
 
   /**
    * @brief Gets polynomial coefficient as a \c fmpz_t
    */
-  fmpz* getCoeff(const unsigned int idx) const {
+  fmpz *getCoeff(const unsigned int idx) const {
     assert(idx < length());
     return fmpz_poly_get_coeff_ptr(this->polyData, idx);
   }
@@ -228,7 +215,7 @@ public:
    * @brief Sets polynomial coefficient with an \c unsigned
    */
   void setCoeffUi(const unsigned int idx, const unsigned int value) {
-    fmpz_poly_set_coeff_ui(this->polyData, idx, value);
+    fmpz_set_ui(polyData->coeffs + idx, value);
   }
 
   /**
@@ -243,41 +230,67 @@ public:
    *
    *  @param in_stream FILE pointer from which to read
    */
-  void read(FILE* const in_stream, const bool binary = true);
+  void read(FILE *const in_stream, const bool binary = true);
 
   /** @brief Write polynomial to an output stream (binary format)
    *
    *  @param out_stream FILE pointer to which to write
    */
-  void write(FILE* const out_stream, const bool binary = true) const;
+  void write(FILE *const out_stream, const bool binary = true) const;
 
   /** @brief Write printer-friendly version of polynomial to an output stream
    *
    *  @param out_stream stream to which to write
    */
-  void print(FILE* const stream) const;
+  void print(FILE *const stream) const;
 
   /** @brief Return the number of coefficient in polynomial
    */
   unsigned int length() const;
 
+  fmpz_poly_struct *poly() { return polyData; }
+  const fmpz_poly_struct *const poly() const { return polyData; }
+
   /**
    * @brief write an fmpz to a file
-   * 
+   *
    * @param d fmpz number to write
    * @param stream file descriptor to write to
    * @param binary write in binary or string form
    */
-  static void write_fmpz(FILE* const stream, fmpz_t d, const bool binary);
-  
+  static void write_fmpz(FILE *const stream, fmpz_t d, const bool binary);
+
   /**
    * @brief read an fmpz from a file
-   * 
+   *
    * @param d fmpz number to read
    * @param stream file descriptor to read from
    * @param binary read in binary or string form
    */
-  static void read_fmpz(fmpz_t d, FILE* const stream, const bool binary);
+  static void read_fmpz(fmpz_t d, FILE *const stream, const bool binary);
+
+private:
+  static thread_local fmpz_poly_t sm_tmp_poly;
+
+  /** @brief      Initialize static members
+   */
+  static thread_local class _init {
+  public:
+    _init();
+    ~_init();
+  } _initializer;
+
+  /** @brief Polynomial with coefficients mod N
+   */
+  fmpz_poly_t polyData;
+
+protected:
+  /** @brief Reduce polynomial \poly by the cyclotomic polynomial defining
+   *    the polynomial ring
+   *
+   *  @param poly the polynomial to reduce
+   */
+  static void reduce(fmpz_poly_t out, const fmpz_poly_t inp);
 };
 
 #endif

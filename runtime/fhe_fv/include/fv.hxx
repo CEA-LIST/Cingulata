@@ -18,19 +18,18 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-#ifndef __FV_HXX__
-#define __FV_HXX__
+#ifndef FV_HXX
+#define FV_HXX
 
 #include "ciphertext.hxx"
 #include "encdec.hxx"
 #include "fhe_params.hxx"
 #include "fv.hxx"
-#include "keygen.hxx"
-#include "keys_all.hxx"
-#include "keys_share.hxx"
 #include "normal.hxx"
 #include "polyring.hxx"
+#include "public_key.hxx"
 #include "rand_polynom.hxx"
+#include "secret_key.hxx"
 #include "uniform.hxx"
 
 #endif

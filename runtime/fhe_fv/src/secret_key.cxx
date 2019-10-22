@@ -18,41 +18,39 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-#ifndef ALLOCATOR
-#define ALLOCATOR
+#include "rand_polynom.hxx"
+#include "secret_key.hxx"
 
-namespace cingulata {
-namespace obj_man {
+#include <iostream>
 
-/**
- * @brief      Generic allocator class for type @c ObjT objects
- *
- * @tparam     ObjT  type of objects to allocate
- */
-template <typename ObjT> class Allocator {
-public:
-  /**
-   * @brief      Create a new object
-   *
-   * @param[in]  args  The arguments to pass to object constructor
-   *
-   * @tparam     Args  parameter pack
-   *
-   * @return     pointer to new object
-   */
-  template <typename... Args> void *new_obj(Args&& ... args) const {
-    return new ObjT(std::forward<Args>(args)...);
+using namespace std;
+
+void SecretKey::read(const std::string &fileName, const bool binary) {
+  FILE *stream = fopen(fileName.c_str(), binary ? "rb" : "r");
+
+  if (stream == nullptr) {
+    cout << "SecretKey::read -- Cannot open public key file: '" << fileName
+         << "'" << endl;
+    abort();
   }
 
-  /**
-   * @brief      Delete an object
-   *
-   * @param      ptr   pointer to object to delete
-   */
-  void del_obj(void *ptr) const { delete static_cast<ObjT *>(ptr); }
-};
+  m_sk.read(stream, binary);
+  fclose(stream);
+}
 
-} // namespace obj_man
-} // namespace cingulata
+void SecretKey::write(const std::string &fileName, const bool binary) const {
+  FILE *stream = fopen(fileName.c_str(), binary ? "wb" : "w");
 
-#endif
+  if (stream == nullptr) {
+    cout << "SecretKey::write -- Cannot open public key file: '" << fileName
+         << "'" << endl;
+    abort();
+  }
+
+  m_sk.write(stream, binary);
+  fclose(stream);
+}
+
+void SecretKey::generate() {
+  RandPolynom::sampleUniformBinary(m_sk.poly(), FheParams::SK_H);
+}

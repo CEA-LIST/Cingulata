@@ -55,7 +55,7 @@ public:
    *
    * @return     a new generic object handle
    */
-  template <typename... Args> ObjHandle new_handle(Args... args);
+  template <typename... Args> ObjHandle new_handle(Args&& ... args);
 
 protected:
   const AllocT &m_alloc;

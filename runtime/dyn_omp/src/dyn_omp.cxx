@@ -20,20 +20,22 @@
 
 /**
  * @file dyn_omp.cxx
- * @brief Application for executing blif circuit files using homomorphic operations
+ * @brief Application for executing blif circuit files using homomorphic
+ * operations
  */
 
+#include "bfv_bit_exec.hxx"
 #include "blif_circuit.hxx"
-#include "scheduler.hxx"
 #include "homomorphic_executor.hxx"
+#include "scheduler.hxx"
 
-#include <iostream>
-#include <fstream>
+#include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
-#include <boost/algorithm/string.hpp>
-#include <thread>
 #include <chrono>
+#include <fstream>
+#include <iostream>
+#include <thread>
 
 using namespace std;
 using namespace std::chrono;
@@ -54,7 +56,6 @@ enum class PriorityType {
 struct Options {
   string FheParamsFile;
   string PublicKeyFile;
-  string EvalKeyFile;
   string BlifFile;
   string ClearInputsFile;
   int nrThreads;
@@ -62,17 +63,17 @@ struct Options {
   bool stringOutput;
   PriorityType priority = PriorityType::Topological;
 
-  static PriorityType parsePriority(const string& token) {
+  static PriorityType parsePriority(const string &token) {
     return string2priority.at(token);
   }
 
-  static string toString(const PriorityType& priority) {
+  static string toString(const PriorityType &priority) {
     return priority2string.at(priority);
   }
 
   static vector<string> getAllowedPriorities() {
     vector<string> res;
-    for (auto it: priority2string) {
+    for (auto it : priority2string) {
       res.push_back(it.second);
     }
     return res;
@@ -83,19 +84,19 @@ private:
   static map<string, PriorityType> string2priority;
 
   static class _init {
-    public:
-      _init() {
-        priority2string[PriorityType::Topological] = "topo";
-        priority2string[PriorityType::InverseTopological] = "inv-topo";
-        priority2string[PriorityType::Earliest] = "earliest";
-        priority2string[PriorityType::Latest] = "latest";
-        priority2string[PriorityType::MaxOutDegree] = "max-out";
-        priority2string[PriorityType::MinOutDegree] = "min-out";
+  public:
+    _init() {
+      priority2string[PriorityType::Topological] = "topo";
+      priority2string[PriorityType::InverseTopological] = "inv-topo";
+      priority2string[PriorityType::Earliest] = "earliest";
+      priority2string[PriorityType::Latest] = "latest";
+      priority2string[PriorityType::MaxOutDegree] = "max-out";
+      priority2string[PriorityType::MinOutDegree] = "min-out";
 
-        for (auto it: priority2string) {
-          string2priority[it.second] = it.first;
-        }
+      for (auto it : priority2string) {
+        string2priority[it.second] = it.first;
       }
+    }
   } _initializer;
 };
 
@@ -103,37 +104,36 @@ map<PriorityType, string> Options::priority2string;
 map<string, PriorityType> Options::string2priority;
 Options::_init Options::_initializer;
 
-istream& operator>>(istream& in, PriorityType& priority)
-{
+istream &operator>>(istream &in, PriorityType &priority) {
   string token;
   in >> token;
 
   try {
     priority = Options::parsePriority(token);
-  } catch (out_of_range& exc) {
+  } catch (out_of_range &exc) {
     throw po::invalid_option_value(token);
   }
 
   return in;
 }
 
-ostream& operator<<(ostream& out, PriorityType& priority)
-{
+ostream &operator<<(ostream &out, PriorityType &priority) {
   out << Options::toString(priority);
   return out;
 }
 
-Options parseArgs(int argc, char** argv) {
+Options parseArgs(int argc, char **argv) {
   Options options;
   vector<string> outputFileMessagePairs;
   string priorityHelp = "Priority function used for scheduling";
-  priorityHelp += " available options: " + ba::join(Options::getAllowedPriorities(), ", ");
+  priorityHelp +=
+      " available options: " + ba::join(Options::getAllowedPriorities(), ", ");
 
+  /* clang-format off */
   po::options_description config("Options");
   config.add_options()
       ("fhe-params", po::value<string>(&options.FheParamsFile)->default_value("fhe_params.xml"), "FHE parameters")
       ("public-key", po::value<string>(&options.PublicKeyFile)->default_value("fhe_key.pk"), "public key")
-      ("eval-key", po::value<string>(&options.EvalKeyFile)->default_value("fhe_key.evk"), "evaluation key")
       ("strout", po::bool_switch(&options.stringOutput)->default_value(false), "output ciphertexts in string format")
       ("clear-inps", po::value<string>(&options.ClearInputsFile)->default_value(""), "clear inputs file")
       ("threads", po::value<int>(&options.nrThreads)->default_value(1), "number of parallel execution threads")
@@ -152,19 +152,17 @@ Options parseArgs(int argc, char** argv) {
 
   po::positional_options_description p;
   p.add("in_file", -1);
+  /* clang-format on */
 
   try {
     po::variables_map vm;
-    po::store(po::command_line_parser(argc, argv)
-                  .options(all)
-                  .positional(p)
-                  .run(),
-              vm);
+    po::store(
+        po::command_line_parser(argc, argv).options(all).positional(p).run(),
+        vm);
 
     if (vm.count("help")) {
       cout << "Homomorphically executes a BLIF circuit" << endl;
-      cout << "Usage: " << argv[0] <<
-        " [options] <blif file>" << endl;
+      cout << "Usage: " << argv[0] << " [options] <blif file>" << endl;
       cout << config << endl;
       exit(0);
     }
@@ -177,7 +175,7 @@ Options parseArgs(int argc, char** argv) {
       exit(-1);
     }
 
-  } catch (po::error& e) {
+  } catch (po::error &e) {
     cerr << "ERROR: " << e.what() << endl;
     cerr << config << endl;
     exit(-1);
@@ -190,7 +188,8 @@ Options parseArgs(int argc, char** argv) {
   return options;
 }
 
-void readClearInputsFile(unordered_map<string, bool>& clearInps, const Options& options) {
+void readClearInputsFile(unordered_map<string, bool> &clearInps,
+                         const Options &options) {
   ifstream file;
   file.open(options.ClearInputsFile.c_str());
   if (file.is_open()) {
@@ -198,37 +197,42 @@ void readClearInputsFile(unordered_map<string, bool>& clearInps, const Options& 
     while (getline(file, line)) {
       ba::trim(line);
 
-      if (line.size() == 0) continue;
+      if (line.size() == 0)
+        continue;
 
       vector<string> spLine;
       ba::split(spLine, line, ba::is_space(), ba::token_compress_on);
 
       if (spLine.size() < 2) {
-        cerr << "Line with only one token found when parsing clear inputs file!!!" << endl;
+        cerr << "Line with only one token found when parsing clear inputs "
+                "file!!!"
+             << endl;
         exit(-1);
       }
 
       try {
         clearInps[spLine[0]] = boost::lexical_cast<bool>(spLine[1]);
-      } catch (boost::bad_lexical_cast const&) {
-        cerr << "Integer conversion error when parsing clear inputs file!!!" << endl;
+      } catch (boost::bad_lexical_cast const &) {
+        cerr << "Integer conversion error when parsing clear inputs file!!!"
+             << endl;
         exit(-1);
       }
     }
     if (options.verbose) {
-      cout << "Read " << clearInps.size() << " clear inputs from file '" << options.ClearInputsFile << "'" << endl;
+      cout << "Read " << clearInps.size() << " clear inputs from file '"
+           << options.ClearInputsFile << "'" << endl;
     }
   }
   file.close();
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   /* Parse command line options */
   Options options = parseArgs(argc, argv);
 
   /* Read FHE scheme parameters */
-  FheParams::readXml(options.FheParamsFile.c_str());
+  cingu::BfvBitExec bfv_exec(options.FheParamsFile, options.PublicKeyFile,
+                             cingu::BfvBitExec::Public);
 
   if (options.verbose) {
     cout << "Reading circuit file " << options.BlifFile << endl;
@@ -248,32 +252,32 @@ int main(int argc, char **argv)
   }
 
   /* Create homomorphic execution environment */
-  HomomorphicExecutor* homExec = new HomomorphicExecutor(circuit,
-      options.EvalKeyFile, options.PublicKeyFile, options.verbose, options.stringOutput);
+  HomomorphicExecutor *homExec = new HomomorphicExecutor(
+      bfv_exec, circuit, options.verbose, options.stringOutput);
 
   /* Create priority object in function of cmd line parameter */
-  Priority* priority = nullptr;
+  Priority *priority = nullptr;
   switch (options.priority) {
-    case PriorityType::Topological:
-      priority = new PriorityTopological(circuit);
-      break;
-    case PriorityType::InverseTopological:
-      priority = new PriorityInverseTopological(circuit);
-      break;
-    case PriorityType::Earliest:
-      priority = new PriorityEarliest();
-      break;
-    case PriorityType::Latest:
-      priority = new PriorityLatest();
-      break;
-    case PriorityType::MaxOutDegree:
-      priority = new PriorityMaxOutDegree(circuit);
-      break;
-    case PriorityType::MinOutDegree:
-      priority = new PriorityMinOutDegree(circuit);
-      break;
-    default:
-      throw runtime_error("ERROR: priority object not created");
+  case PriorityType::Topological:
+    priority = new PriorityTopological(circuit);
+    break;
+  case PriorityType::InverseTopological:
+    priority = new PriorityInverseTopological(circuit);
+    break;
+  case PriorityType::Earliest:
+    priority = new PriorityEarliest();
+    break;
+  case PriorityType::Latest:
+    priority = new PriorityLatest();
+    break;
+  case PriorityType::MaxOutDegree:
+    priority = new PriorityMaxOutDegree(circuit);
+    break;
+  case PriorityType::MinOutDegree:
+    priority = new PriorityMinOutDegree(circuit);
+    break;
+  default:
+    throw runtime_error("ERROR: priority object not created");
   }
 
   if (options.verbose) {
@@ -281,9 +285,9 @@ int main(int argc, char **argv)
   }
 
   /* Create scheduler */
-  Scheduler* sched = new Scheduler(circuit, priority);
+  Scheduler *sched = new Scheduler(circuit, priority);
 
-  function<void ()> doWork = [homExec, sched, &circuit]() {
+  function<void()> doWork = [homExec, sched, &circuit]() {
     Scheduler::Operation oper;
     do {
       oper = sched->next();

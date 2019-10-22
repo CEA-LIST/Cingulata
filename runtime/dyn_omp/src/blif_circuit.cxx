@@ -20,8 +20,8 @@
 
 #include "blif_circuit.hxx"
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <vector>
 
 #include <boost/algorithm/string.hpp>
@@ -33,25 +33,21 @@ using namespace std;
  * Mapping between BLIF truth tables and gate types
  */
 unordered_map<string, GateType> truthTable2gate = {
-  {"0;", GateType::CONST_0},
-  {"1;", GateType::CONST_1},
-  {"01 1;10 1;", GateType::XOR},
-  {"10 1;01 1;", GateType::XOR},
-  {"11 1;", GateType::AND},
-  {"00 0;", GateType::OR},
-  {"0 1;", GateType::NOT},
-  {"1 1;", GateType::BUFF},
+    {"0;", GateType::CONST_0},     {"1;", GateType::CONST_1},
+    {"01 1;10 1;", GateType::XOR}, {"10 1;01 1;", GateType::XOR},
+    {"11 1;", GateType::AND},      {"00 0;", GateType::OR},
+    {"0 1;", GateType::NOT},       {"1 1;", GateType::BUFF},
 };
 
-GateType parseTruthTableString(const string& ttToken) {
+GateType parseTruthTableString(const string &ttToken) {
   GateType type = GateType::UNDEF;
 
   try {
     type = truthTable2gate.at(ttToken);
-  } catch (out_of_range& exc) {
+  } catch (out_of_range &exc) {
     throw runtime_error("ERROR: Unknown gate with truth table " + ttToken);
   }
-  
+
   return type;
 }
 
@@ -60,17 +56,13 @@ struct GateRaw {
   string truthTable;
   string output;
 
-  GateRaw(vector<string> opers, string tt):
-    inputs(opers.begin(), opers.end() - 1),
-    truthTable(tt),
-    output(opers.back())
-  {}
+  GateRaw(vector<string> opers, string tt)
+      : inputs(opers.begin(), opers.end() - 1), truthTable(tt),
+        output(opers.back()) {}
 };
 
-void ReadBlifFileRaw(string fn,
-    vector<GateRaw>& circuit,
-    vector<string>& inpNodes,
-    vector<string>& outNodes) {
+void ReadBlifFileRaw(string fn, vector<GateRaw> &circuit,
+                     vector<string> &inpNodes, vector<string> &outNodes) {
   string line;
   ifstream blifFile(fn.c_str());
   if (not blifFile.is_open()) {
@@ -78,41 +70,38 @@ void ReadBlifFileRaw(string fn,
   }
 
   vector<string> operators;
-  vector<string>* current = NULL;
+  vector<string> *current = NULL;
   string truthTable;
 
-  enum {
-    DEFAULT,
-    INPUT,
-    OUTPUT,
-    NAMES
-  } state = DEFAULT;
-  
+  enum { DEFAULT, INPUT, OUTPUT, NAMES } state = DEFAULT;
+
   while (getline(blifFile, line)) {
     ba::trim(line);
-    
-    if (line.size() == 0 or line[0] == '#') continue;
-    if (ba::starts_with(line, ".model")) continue;
 
-    if (ba::starts_with(line, ".end")) break;
+    if (line.size() == 0 or line[0] == '#')
+      continue;
+    if (ba::starts_with(line, ".model"))
+      continue;
 
-    if (ba::starts_with(line, ".inputs") or ba::starts_with(line, ".outputs") or ba::starts_with(line, ".names")) {
+    if (ba::starts_with(line, ".end"))
+      break;
+
+    if (ba::starts_with(line, ".inputs") or ba::starts_with(line, ".outputs") or
+        ba::starts_with(line, ".names")) {
       if (state == NAMES) {
         circuit.push_back(GateRaw(operators, truthTable));
         operators.clear();
         truthTable = "";
         state = DEFAULT;
       }
-      
+
       if (ba::starts_with(line, ".inputs")) {
         state = INPUT;
         current = &inpNodes;
-      }
-      else if (ba::starts_with(line, ".outputs")) {
+      } else if (ba::starts_with(line, ".outputs")) {
         state = OUTPUT;
         current = &outNodes;
-      }
-      else if (ba::starts_with(line, ".names")) {
+      } else if (ba::starts_with(line, ".names")) {
         state = NAMES;
         current = &operators;
       }
@@ -122,18 +111,15 @@ void ReadBlifFileRaw(string fn,
       ba::split(spLine, line, ba::is_space(), ba::token_compress_on);
 
       current->insert(current->end(), spLine.begin() + 1, spLine.end());
-    }
-    else if (ba::starts_with(line, ".")) {
+    } else if (ba::starts_with(line, ".")) {
       throw runtime_error("ERROR: Unknown BLIF command " + line);
-    }
-    else if (state == INPUT or state == OUTPUT) {
+    } else if (state == INPUT or state == OUTPUT) {
       ba::trim_if(line, ba::is_any_of("\\") or ba::is_space());
       vector<string> spLine;
       ba::split(spLine, line, ba::is_space(), ba::token_compress_on);
 
       current->insert(current->end(), spLine.begin(), spLine.end());
-    }
-    else if (state == NAMES) {
+    } else if (state == NAMES) {
       truthTable += line + ";";
     }
   }
@@ -143,7 +129,7 @@ void ReadBlifFileRaw(string fn,
   blifFile.close();
 }
 
-Circuit ReadBlifFile(const string& fn) {
+Circuit ReadBlifFile(const string &fn) {
   vector<GateRaw> circuitRaw;
   vector<string> inpNodes, outNodes;
   ReadBlifFileRaw(fn, circuitRaw, inpNodes, outNodes);
@@ -151,31 +137,34 @@ Circuit ReadBlifFile(const string& fn) {
   Circuit circuit;
   unordered_map<string, Circuit::vertex_descriptor> id2vertex;
 
-  for (auto id: inpNodes) {
+  for (auto id : inpNodes) {
     id2vertex[id] = add_vertex(GateProperties(id, GateType::INPUT), circuit);
   }
-  for (auto gateRaw: circuitRaw) {
-    id2vertex[gateRaw.output] = add_vertex(GateProperties(gateRaw.output), circuit);
+  for (auto gateRaw : circuitRaw) {
+    id2vertex[gateRaw.output] =
+        add_vertex(GateProperties(gateRaw.output), circuit);
   }
-  for (auto id: outNodes) {
+  for (auto id : outNodes) {
     circuit[id2vertex.at(id)].isOutput = true;
   }
 
-  for (auto gateRaw: circuitRaw) {
+  for (auto gateRaw : circuitRaw) {
     Circuit::vertex_descriptor out = id2vertex.at(gateRaw.output);
-  
-    for (auto inp: gateRaw.inputs) {
+
+    for (auto inp : gateRaw.inputs) {
       add_edge(id2vertex.at(inp), out, circuit);
     }
 
     circuit[out].type = parseTruthTableString(gateRaw.truthTable);
   }
-  
+
   return circuit;
 }
 
-void UpdateCircuitWithClearInputs(Circuit& circuit, const unordered_map<string, bool>& clearInps) {
-  if (clearInps.size() == 0) return;
+void UpdateCircuitWithClearInputs(
+    Circuit &circuit, const unordered_map<string, bool> &clearInps) {
+  if (clearInps.size() == 0)
+    return;
 
   Circuit::vertex_iterator vi, vi_end;
 

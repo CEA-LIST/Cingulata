@@ -22,8 +22,8 @@
 #include "uniform.hxx"
 
 #include <assert.h>
-#include <stdlib.h>
 #include <gmp.h>
+#include <stdlib.h>
 
 /** @brief See header for description.
  */
@@ -40,8 +40,8 @@ void NormalRng::init() {
 
   mpz_t seed1;
   mpz_init(seed1);
-  fmpz_get_mpz(seed1, seed);  
-  
+  fmpz_get_mpz(seed1, seed);
+
   gmp_randseed(randstate, seed1);
 
   fmpz_clear(seed);
@@ -50,9 +50,7 @@ void NormalRng::init() {
 
 /** @brief See header for description.
  */
-NormalRng::_init::_init() {
-  NormalRng::init();
-}
+NormalRng::_init::_init() { NormalRng::init(); }
 
 /** @brief See header for description.
  */
@@ -65,15 +63,13 @@ NormalRng::_init::~_init() {
  */
 NormalRng::_init NormalRng::_initializer;
 
-
 /** @brief See header for description.
  */
 void NormalRng::sample(mpfr_t mpfr_num, mpfr_t mpfr_sigma) {
   mpfr_grandom(mpfr_num, NULL, randstate, MPFR_RNDNA);
 
-  mpfr_mul(mpfr_num, mpfr_num, mpfr_sigma, MPFR_RNDNA);  
+  mpfr_mul(mpfr_num, mpfr_num, mpfr_sigma, MPFR_RNDNA);
 }
-
 
 /** @brief See header for description.
  */
@@ -84,15 +80,15 @@ void NormalRng::sample(fmpz_t num_p, const fmpz_t sigma_p, const fmpz_t B) {
   fmpz_get_mpz(sigma, sigma_p);
 
   mpz_init(num);
-  
-  int prec = fmpz_sizeinbase(B, 2) + 2; 
+
+  int prec = fmpz_sizeinbase(B, 2) + 2;
 
   mpfr_t mpfr_num;
   mpfr_init2(mpfr_num, prec);
 
   mpfr_t mpfr_sigma;
   mpfr_init(mpfr_sigma);
-  mpfr_set_z(mpfr_sigma, sigma, MPFR_RNDNA);  
+  mpfr_set_z(mpfr_sigma, sigma, MPFR_RNDNA);
 
   NormalRng::sample(mpfr_num, mpfr_sigma);
 
@@ -106,5 +102,3 @@ void NormalRng::sample(fmpz_t num_p, const fmpz_t sigma_p, const fmpz_t B) {
   mpz_clear(sigma);
   mpz_clear(num);
 }
-
-

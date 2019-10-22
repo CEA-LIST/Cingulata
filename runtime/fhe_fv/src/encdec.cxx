@@ -21,58 +21,65 @@
 #include "encdec.hxx"
 #include "rand_polynom.hxx"
 
-#include "flint/fmpz_poly.h"
 #include "flint/fmpz_mod_poly.h"
-#include <math.h>
+#include "flint/fmpz_poly.h"
+
+thread_local PolyRing EncDec::tmp_poly;
+thread_local CipherText EncDec::tmp_ctxt(2);
 
 /** @brief See header for description
  */
-CipherText EncDec::EncryptPoly(const PolyRing& plainTxt_p, const CipherText& publicKey)
-{
-  PolyRing plainTxt = ScalePlainTextPoly(plainTxt_p);
+CipherText EncDec::EncryptPoly(const PolyRing &plainTxt_p,
+                               const CipherText &publicKey) {
+  CipherText ctxt;
+  EncryptPoly(ctxt, plainTxt_p, publicKey);
+  return ctxt;
+}
 
-  CipherText ct(publicKey);
-
-  fmpz_poly_t tmp;
-  fmpz_poly_init(tmp);
+void EncDec::EncryptPoly(CipherText &ct, const PolyRing &plainTxt_p,
+                         const CipherText &publicKey) {
+  ct = publicKey;
 
   /* Sample uniform binary and normal distributed polynomials  */
-  RandPolynom::sampleUniformBinary(tmp, FheParams::D);
-  PolyRing u(tmp);
+  PolyRing &u = tmp_poly;
+  RandPolynom::sampleUniformBinary(u.poly());
 
-  RandPolynom::sampleNormal(tmp, FheParams::D, FheParams::SIGMA, FheParams::B);
-  PolyRing e1(tmp);
+  CipherText &noise = tmp_ctxt;
+  RandPolynom::sampleNormal(noise[0].poly(), FheParams::SIGMA, FheParams::B);
+  RandPolynom::sampleNormal(noise[1].poly(), FheParams::SIGMA, FheParams::B);
 
-  RandPolynom::sampleNormal(tmp, FheParams::D, FheParams::SIGMA, FheParams::B);
-  PolyRing e2(tmp);
-
-  fmpz_poly_clear(tmp);
-
-  CipherText::multiply_comp(ct, CipherText(&u, &u));
-  CipherText::add(ct, CipherText(&e1, &e2));
+  CipherText::multiply_comp(ct, {u, u});
+  CipherText::add(ct, noise);
 
   /* Add to first cipher-text polynom the plaintext message */
-  PolyRing::add(ct[0], plainTxt);
+  ScalePlainTextPoly(tmp_poly, plainTxt_p);
+  PolyRing::add(ct[0], tmp_poly);
 
   CipherText::modulo(ct, FheParams::Q);
-
-  return ct;
 }
 
 /** @brief See header for description
  */
-CipherText EncDec::EncryptPoly(const PolyRing& plainTxt)
-{
-  PolyRing poly0 = ScalePlainTextPoly(plainTxt);
-
-  return CipherText(poly0);
+CipherText EncDec::EncryptPoly(const PolyRing &plainTxt) {
+  CipherText ctxt(1);
+  EncryptPoly(ctxt, plainTxt);
+  return ctxt;
 }
 
 /** @brief See header for description
  */
-PolyRing EncDec::DecryptPolyAndNoise(const CipherText& cTxt, const PolyRing& secretKey, PolyRing& pNoise)
-{
-  PolyRing sk(secretKey);
+void EncDec::EncryptPoly(CipherText &ctxt, const PolyRing &plainTxt) {
+  ScalePlainTextPoly(ctxt[0], plainTxt);
+  ctxt.resize(1);
+}
+
+/** @brief See header for description
+ */
+PolyRing EncDec::DecryptPolyAndNoise(const CipherText &cTxt,
+                                     const PolyRing &secretKey,
+                                     PolyRing &pNoise) {
+  PolyRing &sk = tmp_poly;
+  PolyRing::copy(sk, secretKey);
 
   pNoise = PolyRing(cTxt[0]);
   for (unsigned int i = 1; i < cTxt.size(); ++i) {
@@ -81,7 +88,7 @@ PolyRing EncDec::DecryptPolyAndNoise(const CipherText& cTxt, const PolyRing& sec
     PolyRing::add(pNoise, tmp);
     PolyRing::modulo(pNoise, FheParams::Q);
 
-    if (i < cTxt.size()-1) {
+    if (i < cTxt.size() - 1) {
       PolyRing::multiply(sk, secretKey);
     }
   }
@@ -99,80 +106,77 @@ PolyRing EncDec::DecryptPolyAndNoise(const CipherText& cTxt, const PolyRing& sec
 
 /** @brief See header for description
  */
-PolyRing EncDec::DecryptPoly(const CipherText& cipherTxt, const PolyRing& secretKey)
-{
-  PolyRing pNoise;
-  return EncDec::DecryptPolyAndNoise(cipherTxt, secretKey, pNoise);
+PolyRing EncDec::DecryptPoly(const CipherText &cipherTxt,
+                             const PolyRing &secretKey) {
+  PolyRing noisePoly;
+  return EncDec::DecryptPolyAndNoise(cipherTxt, secretKey, noisePoly);
 }
 
 /** @brief See header for description
  */
-PolyRing EncDec::ScalePlainTextPoly(const PolyRing& plainTxt)
-{
-  PolyRing poly(plainTxt);
-
+void EncDec::ScalePlainTextPoly(PolyRing &poly, const PolyRing &plainTxt) {
+  PolyRing::copy(poly, plainTxt);
   PolyRing::modulo(poly, FheParams::T);
   PolyRing::multiply(poly, FheParams::Delta);
-
-  return poly;
 }
 
 /** @brief See header for description
  */
-CipherText EncDec::Encrypt(const unsigned int pTxt, const CipherText& publicKey)
-{
+CipherText EncDec::Encrypt(const unsigned int pTxt,
+                           const CipherText &publicKey) {
+  CipherText ctxt;
+  Encrypt(ctxt, pTxt, publicKey);
+  return ctxt;
+}
+
+void EncDec::Encrypt(CipherText &ctxt, const unsigned int pTxt,
+                     const CipherText &publicKey) {
   PolyRing poly;
   poly.setCoeffUi(0, pTxt);
-
-  return EncryptPoly(poly, publicKey);
+  EncryptPoly(ctxt, poly, publicKey);
 }
 
 /** @brief See header for description
  */
-CipherText EncDec::Encrypt(const unsigned int pTxt)
-{
-  PolyRing poly0;
-  poly0.setCoeffUi(0, pTxt);
+CipherText EncDec::Encrypt(const unsigned int pTxt) {
+  CipherText ctxt;
+  Encrypt(ctxt, pTxt);
+  return ctxt;
+}
 
-  return EncryptPoly(poly0);
+void EncDec::Encrypt(CipherText &ctxt, const unsigned int pTxt) {
+  PolyRing poly;
+  poly.setCoeffUi(0, pTxt);
+  EncryptPoly(ctxt, poly);
 }
 
 /** @brief See header for description
  */
-unsigned int EncDec::Decrypt(const CipherText& cTxt, const PolyRing& secretKey)
-{
+unsigned int EncDec::Decrypt(const CipherText &cTxt,
+                             const PolyRing &secretKey) {
   PolyRing poly = EncDec::DecryptPoly(cTxt, secretKey);
   return poly.getCoeffUi(0);
 }
 
 /** @brief See header for description
  */
-unsigned int EncDec::Noise(const CipherText& cTxt, const PolyRing& secretKey)
-{
-  return (unsigned int)ceil(EncDec::NoiseDbl(cTxt, secretKey));
+double EncDec::Noise(const CipherText &cTxt, const PolyRing &secretKey) {
+  PolyRing noisePoly;
+  EncDec::DecryptPolyAndNoise(cTxt, secretKey, noisePoly);
+  return EncDec::Noise(noisePoly);
 }
 
 /** @brief See header for description
  */
-double EncDec::NoiseDbl(const CipherText& cTxt, const PolyRing& secretKey)
-{
-  PolyRing pNoise;
-  EncDec::DecryptPolyAndNoise(cTxt, secretKey, pNoise);
-  return EncDec::NoiseDbl(pNoise);
-}
-
-/** @brief See header for description
- */
-double EncDec::NoiseDbl(const PolyRing& pNoise)
-{
+double EncDec::Noise(const PolyRing &pNoise) {
   double noise = 0.0;
   for (unsigned int i = 0; i < pNoise.length(); ++i) {
-    fmpz* coeff = pNoise.getCoeff(i);
+    fmpz *coeff = pNoise.getCoeff(i);
 
     if (fmpz_cmp(coeff, FheParams::Delta) >= 0)
       fmpz_sub(coeff, coeff, FheParams::Q);
 
-    fmpz_abs(coeff, coeff); //really need this?
+    fmpz_abs(coeff, coeff); // really need this?
 
     double noiseCoeff = fmpz_dlog(coeff) / log(2);
     noise = (noiseCoeff > noise) ? noiseCoeff : noise;

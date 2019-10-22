@@ -18,39 +18,38 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-
 /**
  * @file blif_circuit.hxx
  * @brief Blif format circuit reader
  */
 
-#ifndef __BLIF_CIRCUIT_HXX__
-#define __BLIF_CIRCUIT_HXX__
+#ifndef BLIF_CIRCUIT_HXX
+#define BLIF_CIRCUIT_HXX
 
-#include <string>
-#include <vector>
-#include <unordered_map>
 #include <boost/graph/adjacency_list.hpp>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 /**
  * @brief Gate types
  */
 enum class GateType {
-  UNDEF     = 0,
+  UNDEF = 0,
 
-  INPUT     = 1,
-  CONST_0   = 2,
-  CONST_1   = 3,
-  AND       = 4,
-  XOR       = 5,
-  OR        = 6,
-  NOT       = 7,
-  BUFF      = 8
+  INPUT = 1,
+  CONST_0 = 2,
+  CONST_1 = 3,
+  AND = 4,
+  XOR = 5,
+  OR = 6,
+  NOT = 7,
+  BUFF = 8
 };
 
 /**
  * @brief Gate properties structure
- * @details Structure for storing gate properties: id string, type and 
+ * @details Structure for storing gate properties: id string, type and
  *  whether is it output
  */
 struct GateProperties {
@@ -58,33 +57,34 @@ struct GateProperties {
   GateType type;
   bool isOutput;
 
-  GateProperties(const std::string& id_p = "", 
-                  const GateType type_p = GateType::UNDEF, 
-                  const bool isOutput_p = false): 
-    id(id_p), type(type_p), isOutput(isOutput_p) {}
+  GateProperties(const std::string &id_p = "",
+                 const GateType type_p = GateType::UNDEF,
+                 const bool isOutput_p = false)
+      : id(id_p), type(type_p), isOutput(isOutput_p) {}
 };
 
 /**
  * Boost graph based on adjacency list for representing circuits
  */
-typedef boost::adjacency_list<
-   boost::vecS, boost::vecS, boost::bidirectionalS,
-   GateProperties> Circuit;
+typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS,
+                              GateProperties>
+    Circuit;
 
 /**
  * @brief Read blif file into boost graph
- * 
+ *
  * @param[in] fn input file name
  * @return boost graph
  */
-Circuit ReadBlifFile(const std::string& fn);
+Circuit ReadBlifFile(const std::string &fn);
 
 /**
  * @brief Updates circuit with plain-text inputs
- * 
+ *
  * @param circuit to update
  * @param clearInps mapping between input name and constant value
  */
-void UpdateCircuitWithClearInputs(Circuit& circuit, const std::unordered_map<std::string, bool>& clearInps);
+void UpdateCircuitWithClearInputs(
+    Circuit &circuit, const std::unordered_map<std::string, bool> &clearInps);
 
 #endif

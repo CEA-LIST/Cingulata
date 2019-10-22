@@ -18,41 +18,48 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-#ifndef ALLOCATOR
-#define ALLOCATOR
+#ifndef PUBLIC_KEY
+#define PUBLIC_KEY
 
-namespace cingulata {
-namespace obj_man {
+#include "ciphertext.hxx"
+#include "secret_key.hxx"
 
-/**
- * @brief      Generic allocator class for type @c ObjT objects
- *
- * @tparam     ObjT  type of objects to allocate
- */
-template <typename ObjT> class Allocator {
+#include <string>
+
+class PublicKey {
 public:
-  /**
-   * @brief      Create a new object
-   *
-   * @param[in]  args  The arguments to pass to object constructor
-   *
-   * @tparam     Args  parameter pack
-   *
-   * @return     pointer to new object
-   */
-  template <typename... Args> void *new_obj(Args&& ... args) const {
-    return new ObjT(std::forward<Args>(args)...);
-  }
+  const CipherText &get() const { return m_pk; }
+  const CipherText &get_evk() const { return m_evk; }
 
   /**
-   * @brief      Delete an object
+   * @brief      Read public key
    *
-   * @param      ptr   pointer to object to delete
+   * @param      fileName  file name
+   * @param[in]  binary    binary or text mode
    */
-  void del_obj(void *ptr) const { delete static_cast<ObjT *>(ptr); }
+  void read(const std::string &fileName, const bool binary = true);
+
+  /**
+   * @brief      Write public key
+   *
+   * @param      fileName  file name
+   * @param[in]  binary    binary or text mode
+   */
+  void write(const std::string &fileName, const bool binary = true) const;
+
+  /**
+   * @brief      Generate public key
+   *
+   * @param[in]  p_sk  secret key
+   */
+  void generate(const SecretKey &p_sk);
+
+protected:
+  CipherText m_pk;
+  CipherText m_evk;
+
+  void generate_pk(const SecretKey &p_sk);
+  void generate_evk_v2(const SecretKey &p_sk);
 };
-
-} // namespace obj_man
-} // namespace cingulata
 
 #endif
