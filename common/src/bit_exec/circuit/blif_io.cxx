@@ -349,7 +349,9 @@ Node::GateType get_logic_gate_type(const string &tt) {
       {"10 0", Node::GateType::ORNY},
       {"01 0", Node::GateType::ORYN},
       {"01 1\n10 1", Node::GateType::XOR},
+      {"10 1\n01 1", Node::GateType::XOR},
       {"00 1\n11 1", Node::GateType::XNOR},
+      {"11 1\n00 1", Node::GateType::XNOR},
       {"010 1\n011 1\n101 1\n111 1", Node::GateType::MUX}};
 
   if (tt_to_gate_type.find(tt) != tt_to_gate_type.end()) {
