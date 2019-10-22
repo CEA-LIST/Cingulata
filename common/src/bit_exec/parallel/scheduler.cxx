@@ -41,8 +41,7 @@ Scheduler::~Scheduler() {
     delete ptr;
 }
 
-void Scheduler::run(const Circuit &p_circuit,
-                    unordered_map<string, ObjHandle> &outputs,
+unordered_map<string, ObjHandle> Scheduler::run(const Circuit &p_circuit,
                     const unordered_map<string, ObjHandle> &inputs) {
   CINGU_LOG_DEBUG("{} Scheduler::run - start", this_thread::get_id());
 
@@ -60,6 +59,8 @@ void Scheduler::run(const Circuit &p_circuit,
     th.join();
 
   CINGU_LOG_DEBUG("{} Scheduler::run - done", this_thread::get_id());
+
+  return m_outputs;
 }
 
 void Scheduler::set_circuit(const Circuit &p_circuit) {

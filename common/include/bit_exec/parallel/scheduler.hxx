@@ -43,17 +43,13 @@ public:
 
   ~Scheduler();
 
-  void run(const Circuit &p_circuit,
-           std::unordered_map<std::string, ObjHandle> &outputs,
-           const std::unordered_map<std::string, ObjHandle> &inputs);
+  std::unordered_map<std::string, ObjHandle>
+  run(const Circuit &p_circuit,
+      const std::unordered_map<std::string, ObjHandle> &inputs);
 
 private:
   void set_circuit(const Circuit &p_circuit);
-  void
-  set_inputs(const std::unordered_map<std::string, ObjHandle> &inputs);
-  const std::unordered_map<std::string, ObjHandle> &get_outputs() const {
-    return m_outputs;
-  }
+  void set_inputs(const std::unordered_map<std::string, ObjHandle> &inputs);
   void schedule_no_input_gates();
 
   bool is_finished() { return m_nb_outputs_done == 0; }
