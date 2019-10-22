@@ -42,7 +42,6 @@ public:
   /* clang-format off */
 
   IBitExecFHE()          = default;
-  virtual ~IBitExecFHE() = default;
 
   /* clang-format on */
 };

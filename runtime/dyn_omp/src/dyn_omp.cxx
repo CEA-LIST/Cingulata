@@ -231,8 +231,11 @@ int main(int argc, char **argv) {
   Options options = parseArgs(argc, argv);
 
   /* Read FHE scheme parameters */
-  cingu::BfvBitExec bfv_exec(options.FheParamsFile, options.PublicKeyFile,
-                             cingu::BfvBitExec::Public);
+  auto context = make_shared<cingu::BfvBitExec::Context>(
+      options.FheParamsFile, options.PublicKeyFile, cingu::BfvBitExec::Public);
+
+  /* Create executor */
+  cingu::BfvBitExec bfv_exec(context.get());
 
   if (options.verbose) {
     cout << "Reading circuit file " << options.BlifFile << endl;
@@ -324,13 +327,13 @@ int main(int argc, char **argv) {
 
   duration<double> execTime =
       duration_cast<duration<double>>(steady_clock::now() - start);
-  cout << "Total execution real time " << execTime.count() << " seconds" << endl;
+  cout << "Total execution real time " << execTime.count() << " seconds"
+       << endl;
   homExec->printExecTime();
 
   delete sched;
   delete priority;
   delete homExec;
-  flint_cleanup();
 
   return 0;
 }

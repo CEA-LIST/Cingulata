@@ -40,7 +40,6 @@ public:
   /* clang-format off */
 
   IBitExecSHE()          = default;
-  virtual ~IBitExecSHE() = default;
 
   /* Only AND and XOR gates are mandatory in SHE schemes */
   virtual ObjHandle   op_not      (const ObjHandle& in1)                        override;

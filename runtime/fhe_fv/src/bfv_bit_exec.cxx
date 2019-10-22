@@ -23,51 +23,50 @@
 using namespace std;
 using namespace cingulata;
 
-class BfvBitExec::Context {
-public:
-  Context(const string &p_param, const string &p_key_filename,
-          const KeyType p_keytype) {
-    /* read BFV scheme parameters */
-    FheParams::readXml(p_param.c_str());
+BfvBitExec::Context::Context(const string &p_param,
+                             const string &p_key_filename,
+                             const KeyType p_keytype) {
+  /* read BFV scheme parameters */
+  FheParams::readXml(p_param.c_str());
 
-    if (p_keytype == Secret) {
-      m_sk = new SecretKey();
-      m_sk->read(p_key_filename);
-      m_pk = nullptr;
-    } else {
-      m_sk = nullptr;
-      m_pk = new PublicKey();
-      m_pk->read(p_key_filename);
-    }
+  if (p_keytype == Secret) {
+    m_sk = new SecretKey();
+    m_sk->read(p_key_filename);
+    m_pk = nullptr;
+  } else {
+    m_sk = nullptr;
+    m_pk = new PublicKey();
+    m_pk->read(p_key_filename);
   }
+}
 
-  ~Context() {
-    if (m_sk != nullptr) {
-      delete m_sk;
-    }
-    if (m_pk != nullptr) {
-      delete m_pk;
-    }
+BfvBitExec::Context::~Context() {
+  if (m_sk != nullptr) {
+    delete m_sk;
   }
-
-  const PolyRing &sk() const {
-    assert(m_sk != nullptr && "secret key was not set");
-    return m_sk->get();
+  if (m_pk != nullptr) {
+    delete m_pk;
   }
+  flint_cleanup();
+}
 
-  const CipherText &pk() const { return (m_pk->get()); }
+const PolyRing &BfvBitExec::Context::sk() const {
+  assert(m_sk != nullptr && "secret key was not set");
+  return m_sk->get();
+}
 
-  const CipherText &evk() const { return m_pk->get_evk(); }
+const CipherText &BfvBitExec::Context::pk() const { return (m_pk->get()); }
 
-private:
-  SecretKey *m_sk = nullptr;
-  PublicKey *m_pk = nullptr;
-};
+const CipherText &BfvBitExec::Context::evk() const { return m_pk->get_evk(); }
+
+BfvBitExec::BfvBitExec(Context *p_context)
+    : context(p_context), mm(new ObjMan()) {}
 
 BfvBitExec::BfvBitExec(const string &p_param, const string &p_key_filename,
                        const KeyType p_keytype)
-    : context(new Context(p_param, p_key_filename, p_keytype)),
-      mm(new ObjMan()) {}
+    : BfvBitExec(new Context(p_param, p_key_filename, p_keytype)) {}
+
+BfvBitExec::~BfvBitExec() { flint_cleanup(); }
 
 ObjHandle BfvBitExec::encode(const bit_plain_t pt_val) {
   ObjHandleT<CipherText> hdl = mm->new_handle();
@@ -107,16 +106,16 @@ ObjHandle BfvBitExec::op_xor(const ObjHandle &in1, const ObjHandle &in2) {
   return hdl;
 }
 
-ObjHandle BfvBitExec::read(const std::string& name, bool binary) {
+ObjHandle BfvBitExec::read(const std::string &name, bool binary) {
   ObjHandleT<CipherText> hdl = mm->new_handle();
   hdl->read(name, binary);
   return hdl;
 }
 
-void BfvBitExec::write(const ObjHandle& in, const std::string& name, bool binary) {
+void BfvBitExec::write(const ObjHandle &in, const std::string &name,
+                       bool binary) {
   in.get<CipherText>()->write(name, binary);
 }
-
 
 ObjHandle BfvBitExec::encode(const vector<bit_plain_t> &vals) {
   ObjHandleT<CipherText> hdl = mm->new_handle();

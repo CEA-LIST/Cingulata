@@ -25,7 +25,7 @@
 
 #include <fv.hxx>
 
-#include <bit_exec/interface.hxx>
+#include <bit_exec/interface_she.hxx>
 #include <bit_exec/obj_man/allocator.hxx>
 
 #ifdef USE_OBJ_POOL
@@ -39,12 +39,15 @@ namespace cingulata {
 /**
  * @brief      Bit executor implemenation for TFHE library.
  */
-class BfvBitExec : public IBitExec {
+class BfvBitExec : public IBitExecSHE {
 public:
   enum KeyType { Secret, Public };
+  class Context;
 
+  BfvBitExec(Context *p_context);
   BfvBitExec(const std::string &p_param, const std::string &p_key_filename,
              const KeyType p_keytype);
+  ~BfvBitExec();
 
   /* clang-format off */
 
@@ -72,7 +75,6 @@ public:
   /* clang-format on */
 
 protected:
-  class Context;
   const Context *context;
 
 #ifdef USE_OBJ_POOL
@@ -82,6 +84,22 @@ protected:
 #endif
 
   ObjMan *mm;
+};
+
+class BfvBitExec::Context {
+public:
+  Context(const std::string &p_param, const std::string &p_key_filename,
+          const KeyType p_keytype);
+
+  ~Context();
+
+  const PolyRing &sk() const;
+  const CipherText &pk() const;
+  const CipherText &evk() const;
+
+private:
+  SecretKey *m_sk = nullptr;
+  PublicKey *m_pk = nullptr;
 };
 
 }; // namespace cingulata
