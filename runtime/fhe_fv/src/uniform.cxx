@@ -65,7 +65,8 @@ void UniformRng::sample(char *buff, const unsigned size) {
     exit(-1);
   }
 
-  assert(read(randDev, buff, size) == size);
+  unsigned int r = read(randDev, buff, size);
+  assert(r == size);
   close(randDev);
 }
 
