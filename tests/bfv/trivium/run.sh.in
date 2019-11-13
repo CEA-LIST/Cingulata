@@ -50,7 +50,7 @@ TMP=`$APPS_DIR/helper --bit-cnt 1 --prefix "input/iv_" --msb-first $IV_BIN`
 $APPS_DIR/encrypt --public-key fhe_key.pk -v --threads $NR_THREADS --clear $TMP
 
 echo "FHE execution"
-time $APPS_DIR/dyn_omp $CIRCUIT --threads $NR_THREADS #-v > out.log
+time $APPS_DIR/blif_exec $CIRCUIT --threads $NR_THREADS #-v > out.log
 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`

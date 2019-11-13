@@ -61,7 +61,7 @@ do
 done < reduce_list
 
 echo "Homomorphic execution..."
-time $APPS_DIR/dyn_omp $CIRCUIT --threads $NR_THREADS
+time $APPS_DIR/blif_exec $CIRCUIT --threads $NR_THREADS
 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`

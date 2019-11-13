@@ -46,7 +46,7 @@ TMP=`$APPS_DIR/helper --bit-cnt 8 --prefix input/b_ 3`
 $APPS_DIR/encrypt -v --threads $NR_THREADS $TMP
 
 echo "Homomorphic execution..."
-time $APPS_DIR/dyn_omp $CIRCUIT --threads $NR_THREADS # -v
+time $APPS_DIR/blif_exec $CIRCUIT --threads $NR_THREADS # -v
 
 echo "Output decryption"
 OUT_FILES=`ls -v output/*`

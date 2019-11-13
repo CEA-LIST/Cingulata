@@ -24,11 +24,9 @@
 #include <bit_exec/parallel/scheduler.hxx>
 
 #include <bfv_bit_exec.hxx>
-// #include <fv.hxx>
 
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
 #include <chrono>
 #include <fstream>
 #include <iostream>
@@ -100,28 +98,26 @@ Options parseArgs(int argc, char** argv) {
               vm);
 
     if (vm.count("help")) {
-      cout << "Mutli-thread execution environment for BLIF circuits" << endl;
-      cout << "Usage: " << argv[0] <<
-        " [options] <blif file>" << endl;
-      cout << config << endl;
+      fmt::print(
+        "Parallel execution of BLIF circuits using homomorphic libraries\n"
+        "Usage: {} [options] <blif file>\n{}\n", argv[0], config);
       exit(0);
     }
 
     po::notify(vm);
 
     if (options.blif_file.size() == 0) {
-      cerr << "Please specify an input BLIF file!" << endl;
-      cerr << config << endl;
+      fmt::print(stderr,
+        "Please specify an input BLIF file!\n"
+        "{}\n", config);
       exit(-1);
     }
 
   } catch (po::error& e) {
-    cerr << "ERROR: " << e.what() << endl;
-    cerr << config << endl;
+    fmt::print(stderr, "ERROR: {}\n{}\n", e.what(), config);
     exit(-1);
   } catch (...) {
-    cerr << "Something went wrong during argument parsing !!!" << endl;
-    cerr << config << endl;
+    fmt::print(stderr, "Something went wrong during argument parsing !!!\n{}\n", config);
     exit(-1);
   }
 
@@ -145,22 +141,20 @@ unordered_map<string, bool> read_clear_file(const string& p_filename) {
       ba::split(spLine, line, ba::is_space(), ba::token_compress_on);
 
       if (spLine.size() < 2) {
-        cerr << "Line with only one token found when parsing clear inputs file!!!" << endl;
+        fmt::print(stderr, "Line with only one token found when parsing clear inputs file!!!\n");
         exit(-1);
       }
 
       try {
         clear_inps[spLine[0]] = boost::lexical_cast<bool>(spLine[1]);
       } catch (boost::bad_lexical_cast const&) {
-        cerr << "Integer conversion error when parsing clear inputs file!!!" << endl;
+        fmt::print(stderr, "Integer conversion error when parsing clear inputs file!!!\n");
         exit(-1);
       }
     }
 
     file.close();
-  } else {
-
-  }
+  } else {}
 
   return clear_inps;
 }
@@ -173,7 +167,7 @@ int main(int argc, char **argv)
   /* Read blif file */
   auto circuit = BlifInput().read(options.blif_file);
   if (options.verbose) {
-    cout << "Read BLIF file " << options.blif_file << endl;
+    fmt::print("Read BLIF file {}\n", options.blif_file);
   }
 
   /* Read clear inputs from file */
@@ -181,12 +175,16 @@ int main(int argc, char **argv)
   if (options.clear_inps_file.size() > 0) {
     clear_inps = read_clear_file(options.clear_inps_file);
     if (options.verbose) {
-      cout << "Read " << clear_inps.size() << " clear inputs from file '" << options.clear_inps_file << "'" << endl;
+      fmt::print("Read {} clear inputs from file {}\n", clear_inps.size(), options.clear_inps_file);
     }
   }
 
   if (options.verbose) {
-    cout << "Creating homomorphic execution environement" << endl;
+    fmt::print("Creating homomorphic execution environement\n");
+  }
+
+  if (options.verbose) {
+    fmt::print("Creating workers and scheduler\n");
   }
 
   /* Read FHE scheme parameters */
@@ -199,14 +197,10 @@ int main(int argc, char **argv)
     bit_execs.push_back(make_shared<BfvBitExec>(context.get()));
   }
 
-  if (options.verbose) {
-    cout << "Creating scheduler" << endl;
-  }
-
   Scheduler sched = Scheduler(bit_execs);
 
   if (options.verbose) {
-    cout << "Start circuit execution" << endl;
+    fmt::print("Start circuit execution\n");
   }
 
   steady_clock::time_point start = steady_clock::now();
@@ -215,7 +209,7 @@ int main(int argc, char **argv)
 
   /* Read encrypted inputs */
   if (options.verbose) {
-    cout << "Read encrypted inputs..." << endl;
+    fmt::print("Read encrypted inputs...\n");
   }
   unordered_map<string, ObjHandle> inputs;
   for (const Node::id_t id : circuit.get_inputs()) {
@@ -228,14 +222,14 @@ int main(int argc, char **argv)
   }
 
   if (options.verbose) {
-    cout << "Execute..." << endl;
+    fmt::print("Execute...\n");
   }
   unordered_map<string, ObjHandle> outputs =
     sched.run(circuit, inputs);
 
   /* Write outputs */
   if (options.verbose) {
-    cout << "Write encrypted inputs..." << endl;
+    fmt::print("Write encrypted inputs...\n");
   }
 
   for (const Node::id_t id : circuit.get_outputs()) {
@@ -244,9 +238,11 @@ int main(int argc, char **argv)
     io_bit_exec->write(outputs.at(name), fmt::format("{}/{}.ct", options.output_path, name), not options.str_out);
   }
 
-  duration<double> execTime =
-      duration_cast<duration<double>>(steady_clock::now() - start);
-  cout << "Total execution real time " << execTime.count() << " seconds" << endl;
+  if (options.verbose) {
+    duration<double> execTime =
+        duration_cast<duration<double>>(steady_clock::now() - start);
+    fmt::print("Total execution real time {} seconds\n", execTime.count());
+  }
 
   return 0;
 }
