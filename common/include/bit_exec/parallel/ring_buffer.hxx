@@ -127,7 +127,7 @@ private:
     return tmp;
   }
 
-  Slot *find_slot(const typename Slot::State state, Slot *start_slot) {
+  Slot *find_slot(const typename Slot::State state, Slot *&start_slot) {
     assert(start_slot != nullptr);
     Slot *slot = start_slot;
 
@@ -142,7 +142,7 @@ private:
       tmp = state;
     }
 
-    start_slot = slot;
+    start_slot = slot->next;
     return slot;
   }
 
