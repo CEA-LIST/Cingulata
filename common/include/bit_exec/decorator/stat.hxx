@@ -32,98 +32,49 @@ class IBitExecSHE;
 
 namespace decorator {
 
-namespace {
-template <typename bit_exec_interface_t> class Stat_impl;
-};
-
 /**
  * @brief      Bit executor statistics decorator
  * @details    This class counts the number of times each abstract method of @c
- *             bit_exec_t is called. The actual implementation depends on the
- *             parent class of template parameter. Thus for classes inheriting
- *             from IBitExecSHE only XOR and AND gates will be counted.
+ *             bit_exec_interface_t is called. The actual implementation depends
+ *             on the parent class of template parameter. Thus for classes
+ *             inheriting from IBitExecSHE only XOR and AND gates will be
+ *             counted.
  *
- * @tparam     bit_exec_t  Bit executor implementation to log
- * @tparam     <unnamed>   verify if given @c bit_exec_t class inherits from @c
- *                         IBitExec
+ * @tparam     bit_exec_interface_t  Bit executor implementation to log
  */
-template <typename bit_exec_t>
-class Stat : public Stat_impl<typename bit_exec_t::interface_type> {};
-
-namespace {
-
-template <> class Stat_impl<IBitExecFHE> : public IDecorator {
+template <typename bit_exec_interface_t> class Stat : public IDecorator {
 public:
-  Stat_impl() { post_reset(); }
+  Stat() { post_reset(); }
 
-  void print() {
-    printf("Number of executions:\n");
-    printf(" %-8s: %6d\n", "encode", m_cnt_encode);
-    printf(" %-8s: %6d\n", "encrypt", m_cnt_encrypt);
-    printf(" %-8s: %6d\n", "decrypt", m_cnt_decrypt);
-    printf(" %-8s: %6d\n", "read", m_cnt_read);
-    printf(" %-8s: %6d\n", "write", m_cnt_write);
-    printf(" %-16s\n", "------------------");
+  void print() {}
 
-    printf(" %-8s: %6d\n", "not", m_not_cnt);
-    printf(" %-16s\n", "------------------");
+  unsigned encode_cnt();
+  unsigned encrypt_cnt();
+  unsigned decrypt_cnt();
+  unsigned read_cnt();
+  unsigned write_cnt();
 
-    printf(" %-8s: %6d\n", "and", m_and_cnt);
-    printf(" %-8s: %6d\n", "xor", m_xor_cnt);
-    printf(" %-8s: %6d\n", "nand", m_nand_cnt);
-    printf(" %-8s: %6d\n", "andyn", m_andyn_cnt);
-    printf(" %-8s: %6d\n", "andny", m_andny_cnt);
-    printf(" %-8s: %6d\n", "or", m_or_cnt);
-    printf(" %-8s: %6d\n", "nor", m_nor_cnt);
-    printf(" %-8s: %6d\n", "oryn", m_oryn_cnt);
-    printf(" %-8s: %6d\n", "orny", m_orny_cnt);
-    printf(" %-8s: %6d\n", "xnor", m_xnor_cnt);
-    printf(" %-8s\n", "and");
-    printf(" %-8s\n", " + xor");
-    printf(" %-8s\n", " + nand");
-    printf(" %-8s\n", " + andyn");
-    printf(" %-8s\n", " + andny");
-    printf(" %-8s\n", " + or");
-    printf(" %-8s\n", " + nor");
-    printf(" %-8s\n", " + oryn");
-    printf(" %-8s\n", " + orny");
-    printf(" %-8s= %6d\n", " + xnor", total_bin_op_cnt());
-    printf(" %-16s\n", "------------------");
+  unsigned not_cnt();
+  unsigned and_cnt();
+  unsigned xor_cnt();
+  unsigned nand_cnt();
+  unsigned andyn_cnt();
+  unsigned andny_cnt();
+  unsigned or_cnt();
+  unsigned nor_cnt();
+  unsigned oryn_cnt();
+  unsigned orny_cnt();
+  unsigned xnor_cnt();
+  unsigned mux_cnt();
 
-    printf(" %-8s: %6d\n", "mux", m_mux_cnt);
-    printf(" %-16s\n", "------------------");
-  }
-
-  unsigned encode_cnt()   { return m_cnt_encode;  }
-  unsigned encrypt_cnt()  { return m_cnt_encrypt; }
-  unsigned decrypt_cnt()  { return m_cnt_decrypt; }
-  unsigned read_cnt()     { return m_cnt_read;    }
-  unsigned write_cnt()    { return m_cnt_write;   }
-  unsigned not_cnt()      { return m_not_cnt;     }
-  unsigned and_cnt()      { return m_and_cnt;     }
-  unsigned xor_cnt()      { return m_xor_cnt;     }
-  unsigned nand_cnt()     { return m_nand_cnt;    }
-  unsigned andyn_cnt()    { return m_andyn_cnt;   }
-  unsigned andny_cnt()    { return m_andny_cnt;   }
-  unsigned or_cnt()       { return m_or_cnt;      }
-  unsigned nor_cnt()      { return m_nor_cnt;     }
-  unsigned oryn_cnt()     { return m_oryn_cnt;    }
-  unsigned orny_cnt()     { return m_orny_cnt;    }
-  unsigned xnor_cnt()     { return m_xnor_cnt;    }
-  unsigned mux_cnt()      { return m_mux_cnt;     }
-
-  unsigned total_bin_op_cnt() {
-    return m_and_cnt + m_xor_cnt + m_nand_cnt + m_andyn_cnt +
-           m_andny_cnt + m_or_cnt + m_nor_cnt + m_oryn_cnt +
-           m_orny_cnt + m_xnor_cnt;
-  }
+  unsigned total_bin_op_cnt();
 
   void post_reset() override {
-    m_cnt_encode = 0;
-    m_cnt_encrypt = 0;
-    m_cnt_decrypt = 0;
-    m_cnt_read = 0;
-    m_cnt_write = 0;
+    m_encode_cnt = 0;
+    m_encrypt_cnt = 0;
+    m_decrypt_cnt = 0;
+    m_read_cnt = 0;
+    m_write_cnt = 0;
     m_not_cnt = 0;
     m_and_cnt = 0;
     m_xor_cnt = 0;
@@ -138,91 +89,57 @@ public:
     m_mux_cnt = 0;
   }
 
-  void post_encode(const ObjHandle &, const bit_plain_t) override {
-    m_cnt_encode++;
-  }
+  void post_encode(const ObjHandle &, const bit_plain_t) override;
 
-  void post_encrypt(const ObjHandle &, const bit_plain_t) override {
-    m_cnt_encrypt++;
-  }
+  void post_encrypt(const ObjHandle &, const bit_plain_t) override;
 
-  void post_decrypt(const bit_plain_t, const ObjHandle &) override {
-    m_cnt_decrypt++;
-  }
+  void post_decrypt(const bit_plain_t, const ObjHandle &) override;
 
-  void post_read(const ObjHandle &, const std::string &) override {
-    m_cnt_read++;
-  }
+  void post_read(const ObjHandle &, const std::string &) override;
 
-  void post_write(const ObjHandle &, const std::string &) override {
-    m_cnt_write++;
-  }
+  void post_write(const ObjHandle &, const std::string &) override;
 
-  void post_op_not(const ObjHandle &, const ObjHandle &) override {
-    m_not_cnt++;
-  }
+  void post_op_not(const ObjHandle &, const ObjHandle &) override {}
 
   void post_op_and(const ObjHandle &, const ObjHandle &,
-                   const ObjHandle &) override {
-    m_and_cnt++;
-  }
+                   const ObjHandle &) override;
 
   void post_op_xor(const ObjHandle &, const ObjHandle &,
-                   const ObjHandle &) override {
-    m_xor_cnt++;
-  }
+                   const ObjHandle &) override;
 
   void post_op_nand(const ObjHandle &, const ObjHandle &,
-                    const ObjHandle &) override {
-    m_nand_cnt++;
-  }
+                    const ObjHandle &) override {}
 
   void post_op_andyn(const ObjHandle &, const ObjHandle &,
-                     const ObjHandle &) override {
-    m_andyn_cnt++;
-  }
+                     const ObjHandle &) override {}
 
   void post_op_andny(const ObjHandle &, const ObjHandle &,
-                     const ObjHandle &) override {
-    m_andny_cnt++;
-  }
+                     const ObjHandle &) override {}
 
   void post_op_or(const ObjHandle &, const ObjHandle &,
-                  const ObjHandle &) override {
-    m_or_cnt++;
-  }
+                  const ObjHandle &) override {}
 
   void post_op_nor(const ObjHandle &, const ObjHandle &,
-                   const ObjHandle &) override {
-    m_nor_cnt++;
-  }
+                   const ObjHandle &) override {}
 
   void post_op_oryn(const ObjHandle &, const ObjHandle &,
-                    const ObjHandle &) override {
-    m_oryn_cnt++;
-  }
+                    const ObjHandle &) override {}
 
   void post_op_orny(const ObjHandle &, const ObjHandle &,
-                    const ObjHandle &) override {
-    m_orny_cnt++;
-  }
+                    const ObjHandle &) override {}
 
   void post_op_xnor(const ObjHandle &, const ObjHandle &,
-                    const ObjHandle &) override {
-    m_xnor_cnt++;
-  }
+                    const ObjHandle &) override {}
 
   void post_op_mux(const ObjHandle &, const ObjHandle &cond, const ObjHandle &,
-                   const ObjHandle &) override {
-    m_mux_cnt++;
-  }
+                   const ObjHandle &) override {}
 
-protected:
-  unsigned m_cnt_encode;
-  unsigned m_cnt_encrypt;
-  unsigned m_cnt_decrypt;
-  unsigned m_cnt_read;
-  unsigned m_cnt_write;
+private:
+  unsigned m_encode_cnt;
+  unsigned m_encrypt_cnt;
+  unsigned m_decrypt_cnt;
+  unsigned m_read_cnt;
+  unsigned m_write_cnt;
   unsigned m_not_cnt;
   unsigned m_and_cnt;
   unsigned m_xor_cnt;
@@ -237,82 +154,205 @@ protected:
   unsigned m_mux_cnt;
 };
 
-template <> class Stat_impl<IBitExecSHE> : public IDecorator {
-public:
-  Stat_impl() { post_reset(); }
+template <> void Stat<IBitExecFHE>::print() {
+  printf("Number of executions:\n");
+  printf(" %-8s: %6d\n", "encode", m_encode_cnt);
+  printf(" %-8s: %6d\n", "encrypt", m_encrypt_cnt);
+  printf(" %-8s: %6d\n", "decrypt", m_decrypt_cnt);
+  printf(" %-8s: %6d\n", "read", m_read_cnt);
+  printf(" %-8s: %6d\n", "write", m_write_cnt);
+  printf(" %-16s\n", "------------------");
 
-  void print() {
-    printf("Number of executions:\n");
-    printf(" %-8s: %6d\n", "encode", m_cnt_encode);
-    printf(" %-8s: %6d\n", "encrypt", m_cnt_encrypt);
-    printf(" %-8s: %6d\n", "decrypt", m_cnt_decrypt);
-    printf(" %-8s: %6d\n", "read", m_cnt_read);
-    printf(" %-8s: %6d\n", "write", m_cnt_write);
-    printf(" %-16s\n", "------------------");
+  printf(" %-8s: %6d\n", "not", m_not_cnt);
+  printf(" %-16s\n", "------------------");
 
-    printf(" %-8s: %6d\n", "and", m_and_cnt);
-    printf(" %-8s: %6d\n", "xor", m_xor_cnt);
-    printf(" %-16s\n", "------------------");
-  }
+  printf(" %-8s: %6d\n", "and", m_and_cnt);
+  printf(" %-8s: %6d\n", "xor", m_xor_cnt);
+  printf(" %-8s: %6d\n", "nand", m_nand_cnt);
+  printf(" %-8s: %6d\n", "andyn", m_andyn_cnt);
+  printf(" %-8s: %6d\n", "andny", m_andny_cnt);
+  printf(" %-8s: %6d\n", "or", m_or_cnt);
+  printf(" %-8s: %6d\n", "nor", m_nor_cnt);
+  printf(" %-8s: %6d\n", "oryn", m_oryn_cnt);
+  printf(" %-8s: %6d\n", "orny", m_orny_cnt);
+  printf(" %-8s: %6d\n", "xnor", m_xnor_cnt);
+  printf(" %-8s\n", "and");
+  printf(" %-8s\n", " + xor");
+  printf(" %-8s\n", " + nand");
+  printf(" %-8s\n", " + andyn");
+  printf(" %-8s\n", " + andny");
+  printf(" %-8s\n", " + or");
+  printf(" %-8s\n", " + nor");
+  printf(" %-8s\n", " + oryn");
+  printf(" %-8s\n", " + orny");
+  unsigned total_bin_op_cnt = m_and_cnt + m_xor_cnt + m_nand_cnt + m_andyn_cnt +
+                              m_andny_cnt + m_or_cnt + m_nor_cnt + m_oryn_cnt +
+                              m_orny_cnt + m_xnor_cnt;
+  printf(" %-8s= %6d\n", " + xnor", total_bin_op_cnt);
+  printf(" %-16s\n", "------------------");
 
-  unsigned encode_cnt()   { return m_cnt_encode;  }
-  unsigned encrypt_cnt()  { return m_cnt_encrypt; }
-  unsigned decrypt_cnt()  { return m_cnt_decrypt; }
-  unsigned read_cnt()     { return m_cnt_read;    }
-  unsigned write_cnt()    { return m_cnt_write;   }
-  unsigned and_cnt()      { return m_and_cnt;     }
-  unsigned xor_cnt()      { return m_xor_cnt;     }
+  printf(" %-8s: %6d\n", "mux", m_mux_cnt);
+  printf(" %-16s\n", "------------------");
+}
 
-  void post_reset() override {
-    m_cnt_encode = 0;
-    m_cnt_encrypt = 0;
-    m_cnt_decrypt = 0;
-    m_cnt_read = 0;
-    m_cnt_write = 0;
-    m_and_cnt = 0;
-    m_xor_cnt = 0;
-  }
+template <> void Stat<IBitExecSHE>::print() {
+  // StatGroup<IBitExecSHE>(make_shared<Stat<IBitExecSHE>>(*this)).print();
 
-  void post_encode(const ObjHandle &, const bit_plain_t) override {
-    m_cnt_encode++;
-  }
+  printf("Number of executions:\n");
+  printf(" %-8s: %6d\n", "encode", m_encode_cnt);
+  printf(" %-8s: %6d\n", "encrypt", m_encrypt_cnt);
+  printf(" %-8s: %6d\n", "decrypt", m_decrypt_cnt);
+  printf(" %-8s: %6d\n", "read", m_read_cnt);
+  printf(" %-8s: %6d\n", "write", m_write_cnt);
+  printf(" %-16s\n", "------------------");
 
-  void post_encrypt(const ObjHandle &, const bit_plain_t) override {
-    m_cnt_encrypt++;
-  }
+  printf(" %-8s: %6d\n", "and", m_and_cnt);
+  printf(" %-8s: %6d\n", "xor", m_xor_cnt);
+  printf(" %-16s\n", "------------------");
+}
 
-  void post_decrypt(const bit_plain_t, const ObjHandle &) override {
-    m_cnt_decrypt++;
-  }
+template <typename bit_exec_interface_t>
+unsigned Stat<bit_exec_interface_t>::encode_cnt() {
+  return m_encode_cnt;
+}
+template <typename bit_exec_interface_t>
+unsigned Stat<bit_exec_interface_t>::encrypt_cnt() {
+  return m_encrypt_cnt;
+}
+template <typename bit_exec_interface_t>
+unsigned Stat<bit_exec_interface_t>::decrypt_cnt() {
+  return m_decrypt_cnt;
+}
+template <typename bit_exec_interface_t>
+unsigned Stat<bit_exec_interface_t>::read_cnt() {
+  return m_read_cnt;
+}
+template <typename bit_exec_interface_t>
+unsigned Stat<bit_exec_interface_t>::write_cnt() {
+  return m_write_cnt;
+}
+template <typename bit_exec_interface_t>
+unsigned Stat<bit_exec_interface_t>::and_cnt() {
+  return m_and_cnt;
+}
+template <typename bit_exec_interface_t>
+unsigned Stat<bit_exec_interface_t>::xor_cnt() {
+  return m_xor_cnt;
+}
 
-  void post_read(const ObjHandle &, const std::string &) override {
-    m_cnt_read++;
-  }
+template <> unsigned Stat<IBitExecFHE>::not_cnt() { return m_not_cnt; }
+template <> unsigned Stat<IBitExecFHE>::nand_cnt() { return m_nand_cnt; }
+template <> unsigned Stat<IBitExecFHE>::andyn_cnt() { return m_andyn_cnt; }
+template <> unsigned Stat<IBitExecFHE>::andny_cnt() { return m_andny_cnt; }
+template <> unsigned Stat<IBitExecFHE>::or_cnt() { return m_or_cnt; }
+template <> unsigned Stat<IBitExecFHE>::nor_cnt() { return m_nor_cnt; }
+template <> unsigned Stat<IBitExecFHE>::oryn_cnt() { return m_oryn_cnt; }
+template <> unsigned Stat<IBitExecFHE>::orny_cnt() { return m_orny_cnt; }
+template <> unsigned Stat<IBitExecFHE>::xnor_cnt() { return m_xnor_cnt; }
+template <> unsigned Stat<IBitExecFHE>::mux_cnt() { return m_mux_cnt; }
 
-  void post_write(const ObjHandle &, const std::string &) override {
-    m_cnt_write++;
-  }
+template <> unsigned Stat<IBitExecFHE>::total_bin_op_cnt() {
+  return m_and_cnt + m_xor_cnt + m_nand_cnt + m_andyn_cnt + m_andny_cnt +
+         m_or_cnt + m_nor_cnt + m_oryn_cnt + m_orny_cnt + m_xnor_cnt;
+}
 
-  void post_op_and(const ObjHandle &, const ObjHandle &,
-                   const ObjHandle &) override {
-    m_and_cnt++;
-  }
+template <typename bit_exec_interface_t>
+void Stat<bit_exec_interface_t>::post_encode(const ObjHandle &,
+                                             const bit_plain_t) {
+  m_encode_cnt++;
+}
 
-  void post_op_xor(const ObjHandle &, const ObjHandle &,
-                   const ObjHandle &) override {
-    m_xor_cnt++;
-  }
+template <typename bit_exec_interface_t>
+void Stat<bit_exec_interface_t>::post_encrypt(const ObjHandle &,
+                                              const bit_plain_t) {
+  m_encrypt_cnt++;
+}
 
-protected:
-  unsigned m_cnt_encode;
-  unsigned m_cnt_encrypt;
-  unsigned m_cnt_decrypt;
-  unsigned m_cnt_read;
-  unsigned m_cnt_write;
-  unsigned m_and_cnt;
-  unsigned m_xor_cnt;
-};
-} // namespace
+template <typename bit_exec_interface_t>
+void Stat<bit_exec_interface_t>::post_decrypt(const bit_plain_t,
+                                              const ObjHandle &) {
+  m_decrypt_cnt++;
+}
+
+template <typename bit_exec_interface_t>
+void Stat<bit_exec_interface_t>::post_read(const ObjHandle &,
+                                           const std::string &) {
+  m_read_cnt++;
+}
+
+template <typename bit_exec_interface_t>
+void Stat<bit_exec_interface_t>::post_write(const ObjHandle &,
+                                            const std::string &) {
+  m_write_cnt++;
+}
+
+template <typename bit_exec_interface_t>
+void Stat<bit_exec_interface_t>::post_op_and(const ObjHandle &,
+                                             const ObjHandle &,
+                                             const ObjHandle &) {
+  m_and_cnt++;
+}
+
+template <typename bit_exec_interface_t>
+void Stat<bit_exec_interface_t>::post_op_xor(const ObjHandle &,
+                                             const ObjHandle &,
+                                             const ObjHandle &) {
+  m_xor_cnt++;
+}
+
+template <>
+void Stat<IBitExecFHE>::post_op_nand(const ObjHandle &, const ObjHandle &,
+                                     const ObjHandle &) {
+  m_nand_cnt++;
+}
+
+template <>
+void Stat<IBitExecFHE>::post_op_andyn(const ObjHandle &, const ObjHandle &,
+                                      const ObjHandle &) {
+  m_andyn_cnt++;
+}
+
+template <>
+void Stat<IBitExecFHE>::post_op_andny(const ObjHandle &, const ObjHandle &,
+                                      const ObjHandle &) {
+  m_andny_cnt++;
+}
+
+template <>
+void Stat<IBitExecFHE>::post_op_or(const ObjHandle &, const ObjHandle &,
+                                   const ObjHandle &) {
+  m_or_cnt++;
+}
+
+template <>
+void Stat<IBitExecFHE>::post_op_nor(const ObjHandle &, const ObjHandle &,
+                                    const ObjHandle &) {
+  m_nor_cnt++;
+}
+
+template <>
+void Stat<IBitExecFHE>::post_op_oryn(const ObjHandle &, const ObjHandle &,
+                                     const ObjHandle &) {
+  m_oryn_cnt++;
+}
+
+template <>
+void Stat<IBitExecFHE>::post_op_orny(const ObjHandle &, const ObjHandle &,
+                                     const ObjHandle &) {
+  m_orny_cnt++;
+}
+
+template <>
+void Stat<IBitExecFHE>::post_op_xnor(const ObjHandle &, const ObjHandle &,
+                                     const ObjHandle &) {
+  m_xnor_cnt++;
+}
+
+template <>
+void Stat<IBitExecFHE>::post_op_mux(const ObjHandle &, const ObjHandle &cond,
+                                    const ObjHandle &, const ObjHandle &) {
+  m_mux_cnt++;
+}
 
 } // namespace decorator
 } // namespace cingulata

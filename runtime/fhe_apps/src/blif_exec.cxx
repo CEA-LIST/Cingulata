@@ -17,16 +17,17 @@
     knowledge of the CeCILL-C license and that you accept its terms.
 */
 
-
-
 #include <bit_exec/circuit/blif_io.hxx>
 #include <bit_exec/circuit/circuit.hxx>
+#include <bit_exec/decorator/attach.hxx>
+#include <bit_exec/decorator/stat.hxx>
+#include <bit_exec/decorator/stat_group.hxx>
 #include <bit_exec/parallel/scheduler.hxx>
 
 #include <bfv_bit_exec.hxx>
 
-#include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/program_options.hpp>
 #include <chrono>
 #include <fstream>
 #include <iostream>
@@ -38,7 +39,6 @@ namespace ba = boost::algorithm;
 
 using namespace cingulata;
 using namespace cingulata::parallel;
-
 
 /* Command line options structure */
 struct Options {
@@ -56,32 +56,41 @@ struct Options {
   string blif_file;
 };
 
-Options parseArgs(int argc, char** argv) {
+Options parseArgs(int argc, char **argv) {
   Options options;
   vector<string> outputFileMessagePairs;
 
   po::options_description config("Options");
-  config.add_options()
-      ("input-path", po::value<string>(&options.input_path)->default_value("input"), "input ciphertexts path")
-      ("output-path", po::value<string>(&options.output_path)->default_value("output"), "output ciphertexts path")
-      ("clear-inps", po::value<string>(&options.clear_inps_file)->default_value(""), "clear inputs file")
-      ("threads", po::value<int>(&options.nb_threads)->default_value(1), "number of parallel execution threads")
-      ("help,h", "produce help message")
-      ("verbose,v", po::bool_switch(&options.verbose)->default_value(false), "enable verbosity")
-  ;
+  config.add_options()(
+      "input-path",
+      po::value<string>(&options.input_path)->default_value("input"),
+      "input ciphertexts path")(
+      "output-path",
+      po::value<string>(&options.output_path)->default_value("output"),
+      "output ciphertexts path")(
+      "clear-inps",
+      po::value<string>(&options.clear_inps_file)->default_value(""),
+      "clear inputs file")(
+      "threads", po::value<int>(&options.nb_threads)->default_value(1),
+      "number of parallel execution threads")("help,h", "produce help message")(
+      "verbose,v", po::bool_switch(&options.verbose)->default_value(false),
+      "enable verbosity");
 
   po::options_description config_fhe("BFV homomorphic scheme options");
-  config.add_options()
-      ("fhe-params", po::value<string>(&options.fhe_params_file)->default_value("fhe_params.xml"), "BFV scheme parameters")
-      ("public-key", po::value<string>(&options.public_key_file)->default_value("fhe_key.pk"), "public key")
-      ("strinp", po::bool_switch(&options.str_inp)->default_value(false), "read ciphertexts in string format")
-      ("strout", po::bool_switch(&options.str_out)->default_value(false), "write ciphertexts in string format")
-  ;
+  config.add_options()("fhe-params",
+                       po::value<string>(&options.fhe_params_file)
+                           ->default_value("fhe_params.xml"),
+                       "BFV scheme parameters")(
+      "public-key",
+      po::value<string>(&options.public_key_file)->default_value("fhe_key.pk"),
+      "public key")("strinp",
+                    po::bool_switch(&options.str_inp)->default_value(false),
+                    "read ciphertexts in string format")(
+      "strout", po::bool_switch(&options.str_out)->default_value(false),
+      "write ciphertexts in string format");
 
   po::options_description hidden("Hidden");
-  hidden.add_options()
-      ("blif-file", po::value<string>(&options.blif_file), "")
-  ;
+  hidden.add_options()("blif-file", po::value<string>(&options.blif_file), "");
 
   po::options_description all("All");
   all.add(config).add(config_fhe).add(hidden);
@@ -91,16 +100,15 @@ Options parseArgs(int argc, char** argv) {
 
   try {
     po::variables_map vm;
-    po::store(po::command_line_parser(argc, argv)
-                  .options(all)
-                  .positional(p)
-                  .run(),
-              vm);
+    po::store(
+        po::command_line_parser(argc, argv).options(all).positional(p).run(),
+        vm);
 
     if (vm.count("help")) {
       fmt::print(
-        "Parallel execution of BLIF circuits using homomorphic libraries\n"
-        "Usage: {} [options] <blif file>\n{}\n", argv[0], config);
+          "Parallel execution of BLIF circuits using homomorphic libraries\n"
+          "Usage: {} [options] <blif file>\n{}\n",
+          argv[0], config);
       exit(0);
     }
 
@@ -108,23 +116,25 @@ Options parseArgs(int argc, char** argv) {
 
     if (options.blif_file.size() == 0) {
       fmt::print(stderr,
-        "Please specify an input BLIF file!\n"
-        "{}\n", config);
+                 "Please specify an input BLIF file!\n"
+                 "{}\n",
+                 config);
       exit(-1);
     }
 
-  } catch (po::error& e) {
+  } catch (po::error &e) {
     fmt::print(stderr, "ERROR: {}\n{}\n", e.what(), config);
     exit(-1);
   } catch (...) {
-    fmt::print(stderr, "Something went wrong during argument parsing !!!\n{}\n", config);
+    fmt::print(stderr, "Something went wrong during argument parsing !!!\n{}\n",
+               config);
     exit(-1);
   }
 
   return options;
 }
 
-unordered_map<string, bool> read_clear_file(const string& p_filename) {
+unordered_map<string, bool> read_clear_file(const string &p_filename) {
   unordered_map<string, bool> clear_inps;
 
   ifstream file(p_filename.c_str());
@@ -135,32 +145,36 @@ unordered_map<string, bool> read_clear_file(const string& p_filename) {
     while (getline(file, line)) {
       ba::trim(line);
 
-      if (line.size() == 0) continue;
+      if (line.size() == 0)
+        continue;
 
       vector<string> spLine;
       ba::split(spLine, line, ba::is_space(), ba::token_compress_on);
 
       if (spLine.size() < 2) {
-        fmt::print(stderr, "Line with only one token found when parsing clear inputs file!!!\n");
+        fmt::print(stderr, "Line with only one token found when parsing clear "
+                           "inputs file!!!\n");
         exit(-1);
       }
 
       try {
         clear_inps[spLine[0]] = boost::lexical_cast<bool>(spLine[1]);
-      } catch (boost::bad_lexical_cast const&) {
-        fmt::print(stderr, "Integer conversion error when parsing clear inputs file!!!\n");
+      } catch (boost::bad_lexical_cast const &) {
+        fmt::print(
+            stderr,
+            "Integer conversion error when parsing clear inputs file!!!\n");
         exit(-1);
       }
     }
 
     file.close();
-  } else {}
+  } else {
+  }
 
   return clear_inps;
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   /* Parse command line options */
   Options options = parseArgs(argc, argv);
 
@@ -175,12 +189,9 @@ int main(int argc, char **argv)
   if (options.clear_inps_file.size() > 0) {
     clear_inps = read_clear_file(options.clear_inps_file);
     if (options.verbose) {
-      fmt::print("Read {} clear inputs from file {}\n", clear_inps.size(), options.clear_inps_file);
+      fmt::print("Read {} clear inputs from file {}\n", clear_inps.size(),
+                 options.clear_inps_file);
     }
-  }
-
-  if (options.verbose) {
-    fmt::print("Creating homomorphic execution environement\n");
   }
 
   if (options.verbose) {
@@ -194,7 +205,14 @@ int main(int argc, char **argv)
   /* create bit executors */
   vector<shared_ptr<IBitExec>> bit_execs;
   for (int i = 0; i < options.nb_threads; ++i) {
-    bit_execs.push_back(make_shared<BfvBitExec>(context.get()));
+    if (options.verbose) {
+      bit_execs.push_back(
+          make_shared<
+              decorator::Attach<BfvBitExec, decorator::Stat<IBitExecSHE>>>(
+              context.get()));
+    } else {
+      bit_execs.push_back(make_shared<BfvBitExec>(context.get()));
+    }
   }
 
   Scheduler sched = Scheduler(bit_execs);
@@ -205,17 +223,22 @@ int main(int argc, char **argv)
 
   steady_clock::time_point start = steady_clock::now();
 
-  BfvBitExec *io_bit_exec = static_cast<BfvBitExec*>(bit_execs.front().get());
+  IBitExec *io_bit_exec = bit_execs.front().get();
+
+  static_cast<BfvBitExec *>(io_bit_exec)->binary_input = not options.str_inp;
+  static_cast<BfvBitExec *>(io_bit_exec)->binary_output = not options.str_out;
 
   /* Read encrypted inputs */
   if (options.verbose) {
     fmt::print("Read encrypted inputs...\n");
   }
+
   unordered_map<string, ObjHandle> inputs;
   for (const Node::id_t id : circuit.get_inputs()) {
-    const string& name = circuit.get_name(id);
+    const string &name = circuit.get_name(id);
     if (clear_inps.find(name) == clear_inps.end()) {
-      inputs[name] = io_bit_exec->read(fmt::format("{}/{}.ct", options.input_path, name), not options.str_inp);
+      inputs[name] =
+          io_bit_exec->read(fmt::format("{}/{}.ct", options.input_path, name));
     } else {
       inputs[name] = io_bit_exec->encode(clear_inps.at(name));
     }
@@ -224,8 +247,7 @@ int main(int argc, char **argv)
   if (options.verbose) {
     fmt::print("Execute...\n");
   }
-  unordered_map<string, ObjHandle> outputs =
-    sched.run(circuit, inputs);
+  unordered_map<string, ObjHandle> outputs = sched.run(circuit, inputs);
 
   /* Write outputs */
   if (options.verbose) {
@@ -233,15 +255,18 @@ int main(int argc, char **argv)
   }
 
   for (const Node::id_t id : circuit.get_outputs()) {
-    const string& name = circuit.get_name(id);
+    const string &name = circuit.get_name(id);
     assert(outputs.find(name) != outputs.end());
-    io_bit_exec->write(outputs.at(name), fmt::format("{}/{}.ct", options.output_path, name), not options.str_out);
+    io_bit_exec->write(outputs.at(name),
+                       fmt::format("{}/{}.ct", options.output_path, name));
   }
 
   if (options.verbose) {
     duration<double> execTime =
         duration_cast<duration<double>>(steady_clock::now() - start);
     fmt::print("Total execution real time {} seconds\n", execTime.count());
+
+    decorator::StatGroup<IBitExecSHE>(bit_execs).print();
   }
 
   return 0;

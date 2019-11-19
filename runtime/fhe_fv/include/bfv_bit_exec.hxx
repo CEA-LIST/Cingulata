@@ -55,10 +55,10 @@ public:
   ObjHandle   encrypt     (const bit_plain_t pt_val)                      override;
   bit_plain_t decrypt     (const ObjHandle& in)                           override;
   ObjHandle   read        (const std::string& name)                       override {
-    return read(name, true);
+    return read(name, binary_input);
   }
   void        write       (const ObjHandle& in, const std::string& name)  override {
-    write(in, name, true);
+    write(in, name, binary_output);
   }
 
   ObjHandle   op_and      (const ObjHandle& in1, const ObjHandle& in2)    override;
@@ -73,6 +73,9 @@ public:
   double      noise       (const ObjHandle& in);
 
   /* clang-format on */
+
+  bool binary_input = true;
+  bool binary_output = true;
 
 protected:
   const Context *context;
