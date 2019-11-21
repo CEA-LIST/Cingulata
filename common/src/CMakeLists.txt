@@ -44,5 +44,5 @@ target_link_libraries(common PUBLIC fmt::fmt)
 # uncomment desired logging level line - in release mode warning is default and in debug mode trace is default
 # target_compile_definitions(common PRIVATE -DCINGU_LOG_LEVEL=CINGU_LOG_LEVEL_TRACE)
 # target_compile_definitions(common PRIVATE -DCINGU_LOG_LEVEL=CINGU_LOG_LEVEL_DEBUG)
-# target_compile_definitions(common PRIVATE -DCINGU_LOG_LEVEL=CINGU_LOG_LEVEL_WARN)
+target_compile_definitions(common PRIVATE -DCINGU_LOG_LEVEL=CINGU_LOG_LEVEL_WARN)
 # target_compile_definitions(common PRIVATE -DCINGU_LOG_LEVEL=CINGU_LOG_LEVEL_ERROR)
