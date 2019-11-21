@@ -36,7 +36,7 @@ ENV build_dir=build_bfv
 # compilation command
 CMD mkdir -p /cingu/$build_dir \
  && cd /cingu/$build_dir \
- && cmake -DUSE_BFV=ON .. \
+ && cmake -DCMAKE_BUILD_TYPE=Release -DUSE_BFV=ON .. \
  && make
 
 WORKDIR /cingu/
