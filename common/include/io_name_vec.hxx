@@ -161,11 +161,12 @@ namespace cingulata
     /**
      * @brief      Decrypt all elements
      */
-    void decrypt() {
+    T& decrypt() {
       T& ref = *static_cast<T*>(this);
       for (unsigned i = 0; i < ref.size(); ++i) {
         ref[i].decrypt();
       }
+      return ref;
     }
 
     /**

@@ -93,8 +93,8 @@ TEST_P(CiBitBinaryOper, two_input_single) {
 
       op_func(a, b);
 
-      int a_val_out = a.decrypt();
-      int b_val_out = encrypt_2nd ? b.decrypt() : b.get_val();
+      int a_val_out = a.decrypt().get_val();
+      int b_val_out = encrypt_2nd ? b.decrypt().get_val() : b.get_val();
 
       // operator result is good
       ASSERT_EQ(op_tt[v], a_val_out)
@@ -136,7 +136,7 @@ TEST_P(CiBitBinaryOper, two_input_pt_single) {
 
       op_func(a, b_val_out);
 
-      op_tt_computed.push_back(a.decrypt());
+      op_tt_computed.push_back(a.decrypt().get_val());
 
       // value of b does not change
       ASSERT_EQ(b_val_inp, b_val_out) << " operator '" << op_name << "'";
@@ -216,9 +216,9 @@ TEST_P(CiBitBinaryOper, two_input_ext_single) {
 
       CiBit c = op_func(a, b);
 
-      int a_val_out = encrypt_1st ? a.decrypt() : a.get_val();
-      int b_val_out = encrypt_2nd ? b.decrypt() : b.get_val();
-      op_tt_computed.push_back(c.decrypt());
+      int a_val_out = encrypt_1st ? a.decrypt().get_val() : a.get_val();
+      int b_val_out = encrypt_2nd ? b.decrypt().get_val() : b.get_val();
+      op_tt_computed.push_back(c.decrypt().get_val());
 
       // value of b does not change
       ASSERT_EQ(a_val_inp, a_val_out) << " operator '" << op_name << "'";
@@ -432,10 +432,10 @@ TEST_P(CiBitTernaryOper, three_input) {
 
       CiBit d = op_func(a, b, c);
 
-      int a_val_out = encrypt_1st ? a.decrypt() : a.get_val();
-      int b_val_out = encrypt_2nd ? b.decrypt() : b.get_val();
-      int c_val_out = encrypt_3rd ? c.decrypt() : c.get_val();
-      op_tt_computed.push_back(d.decrypt());
+      int a_val_out = encrypt_1st ? a.decrypt().get_val() : a.get_val();
+      int b_val_out = encrypt_2nd ? b.decrypt().get_val() : b.get_val();
+      int c_val_out = encrypt_3rd ? c.decrypt().get_val() : c.get_val();
+      op_tt_computed.push_back(d.decrypt().get_val());
 
       // input values do not change
       ASSERT_EQ(a_val_inp, a_val_out) << " operator '" << op_name << "'";

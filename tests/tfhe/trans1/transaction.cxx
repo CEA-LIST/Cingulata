@@ -41,20 +41,23 @@ int main() {
           "tfhe.pk", TfheBitExec::Public),
       make_shared<IntOpGenSize>());
 
-  CiInt t1{CiInt::s32}, t2{CiInt::s32}, m{CiInt::s32};
-  t1.read("t1");
-  t2.read("t2");
-  m.read("m");
+  CiInt mc{CiInt::s32}, ms{CiInt::s32}, t{CiInt::s32};
+  mc.read("mc");
+  ms.read("ms");
+  t.read("t");
 
-  CiInt t1_new = t1.resize(33) - m; // additional 1 bit for the overflow
-  CiInt t2_new = t2 + m;
-  CiBit cn = t1_new.msb();
+  CiInt mc_new = mc - t;
+  CiInt ms_new = ms + t;
 
-  t1 = select(cn, t1, t1_new.resize(32));
-  t2 = select(cn, t2, t2_new);
+  /* if sign bit is set then overflow occurred  */
+  CiBit s = mc_new.sign();
 
-  t1.write("t1");
-  t2.write("t2");
+  mc = select(s, mc, mc_new);
+  ms = select(s, ms, ms_new);
+
+  s.write("s");
+  mc.write("mc");
+  ms.write("ms");
 
   CiContext::get_bit_exec_t<decorator::Stat<TfheBitExec>>()->print();
 }

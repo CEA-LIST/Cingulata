@@ -26,28 +26,39 @@ using namespace std;
 using namespace cingulata;
 using namespace cingulata::int_ops;
 
-CiBitVector UnaryOper::operator()(const CiBitVector& rhs) const {
+CiBitVector UnaryOper::operator()(const CiBitVector &rhs) const {
   assert(rhs.size() > 0);
 
   return oper(rhs);
 }
 
-CiBitVector BinaryOper::operator()(const CiBitVector& lhs, const CiBitVector& rhs) const {
+CiBitVector BinaryOper::operator()(const CiBitVector &lhs,
+                                   const CiBitVector &rhs) const {
   assert(lhs.size() == rhs.size());
   assert(lhs.size() > 0);
 
   return oper(lhs, rhs);
 }
 
-CiBitVector NaryOper::operator()(const vector<CiBitVector>& inps) const {
+CiBitVector AdderOper::operator()(const CiBitVector &lhs,
+                                  const CiBitVector &rhs,
+                                  const CiBit &carry_in) const {
+  assert(lhs.size() == rhs.size());
+  assert(lhs.size() > 0);
+
+  return oper(lhs, rhs, carry_in);
+}
+
+CiBitVector NaryOper::operator()(const vector<CiBitVector> &inps) const {
   if (inps.size() == 0) {
     return CiBitVector();
   } else if (inps.size() == 1) {
     return inps[0];
   } else {
     vector<CiBitVector> m_inps;
-    for (const CiBitVector& inp: inps)
-      if (inp.size() > 0) m_inps.push_back(inp);
+    for (const CiBitVector &inp : inps)
+      if (inp.size() > 0)
+        m_inps.push_back(inp);
     if (m_inps.empty())
       return CiBitVector();
     else
@@ -55,32 +66,34 @@ CiBitVector NaryOper::operator()(const vector<CiBitVector>& inps) const {
   }
 }
 
-CiBit CompOper::operator()(const CiBitVector& lhs, const CiBitVector& rhs) const {
+CiBit CompOper::operator()(const CiBitVector &lhs,
+                           const CiBitVector &rhs) const {
   assert(lhs.size() == rhs.size());
   assert(lhs.size() > 0);
 
   return oper(lhs, rhs);
 }
 
-CiBitVector MuxOper::operator()(const CiBitVector& cond, const vector<CiBitVector>& p_inps) const {
+CiBitVector MuxOper::operator()(const CiBitVector &cond,
+                                const vector<CiBitVector> &p_inps) const {
   /* resize inputs to same bit-size */
   vector<CiBitVector> inps = p_inps;
 
   int max_size = 0;
-  for (const auto& inp: inps)
+  for (const auto &inp : inps)
     if (max_size < (int)inp.size())
       max_size = inp.size();
 
   if (max_size == 0)
     return CiBitVector();
 
-  for (auto& inp: inps)
+  for (auto &inp : inps)
     inp.resize(max_size);
 
-  assert((1U<<cond.size()) == inps.size());
+  assert((1U << cond.size()) == inps.size());
 
   if (cond.size() == 1) {
-    const CiBit& c = cond[0];
+    const CiBit &c = cond[0];
     for (int i = 0; i < max_size; ++i)
       inps[0][i] = op_mux(c, inps[0][i], inps[1][i]);
     return inps[0];

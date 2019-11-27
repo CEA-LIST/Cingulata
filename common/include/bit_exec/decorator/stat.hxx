@@ -65,23 +65,19 @@ public:
     printf(" %-8s: %6d\n", "write", m_cnt_write);
     printf(" %-16s\n", "------------------");
 
-    printf(" %-8s: %6d\n", "not", m_cnt_op_not);
+    printf(" %-8s: %6d\n", "not", m_not_cnt);
     printf(" %-16s\n", "------------------");
 
-    printf(" %-8s: %6d\n", "and", m_cnt_op_and);
-    printf(" %-8s: %6d\n", "xor", m_cnt_op_xor);
-    printf(" %-8s: %6d\n", "nand", m_cnt_op_nand);
-    printf(" %-8s: %6d\n", "andyn", m_cnt_op_andyn);
-    printf(" %-8s: %6d\n", "andny", m_cnt_op_andny);
-    printf(" %-8s: %6d\n", "or", m_cnt_op_or);
-    printf(" %-8s: %6d\n", "nor", m_cnt_op_nor);
-    printf(" %-8s: %6d\n", "oryn", m_cnt_op_oryn);
-    printf(" %-8s: %6d\n", "orny", m_cnt_op_orny);
-    printf(" %-8s: %6d\n", "xnor", m_cnt_op_xnor);
-    unsigned total = m_cnt_op_and + m_cnt_op_xor + m_cnt_op_nand +
-                     m_cnt_op_andyn + m_cnt_op_andny + m_cnt_op_or +
-                     m_cnt_op_nor + m_cnt_op_oryn + m_cnt_op_orny +
-                     m_cnt_op_xnor;
+    printf(" %-8s: %6d\n", "and", m_and_cnt);
+    printf(" %-8s: %6d\n", "xor", m_xor_cnt);
+    printf(" %-8s: %6d\n", "nand", m_nand_cnt);
+    printf(" %-8s: %6d\n", "andyn", m_andyn_cnt);
+    printf(" %-8s: %6d\n", "andny", m_andny_cnt);
+    printf(" %-8s: %6d\n", "or", m_or_cnt);
+    printf(" %-8s: %6d\n", "nor", m_nor_cnt);
+    printf(" %-8s: %6d\n", "oryn", m_oryn_cnt);
+    printf(" %-8s: %6d\n", "orny", m_orny_cnt);
+    printf(" %-8s: %6d\n", "xnor", m_xnor_cnt);
     printf(" %-8s\n", "and");
     printf(" %-8s\n", " + xor");
     printf(" %-8s\n", " + nand");
@@ -91,11 +87,35 @@ public:
     printf(" %-8s\n", " + nor");
     printf(" %-8s\n", " + oryn");
     printf(" %-8s\n", " + orny");
-    printf(" %-8s= %6d\n", " + xnor", total);
+    printf(" %-8s= %6d\n", " + xnor", total_bin_op_cnt());
     printf(" %-16s\n", "------------------");
 
-    printf(" %-8s: %6d\n", "mux", m_cnt_op_mux);
+    printf(" %-8s: %6d\n", "mux", m_mux_cnt);
     printf(" %-16s\n", "------------------");
+  }
+
+  unsigned encode_cnt()   { return m_cnt_encode;  }
+  unsigned encrypt_cnt()  { return m_cnt_encrypt; }
+  unsigned decrypt_cnt()  { return m_cnt_decrypt; }
+  unsigned read_cnt()     { return m_cnt_read;    }
+  unsigned write_cnt()    { return m_cnt_write;   }
+  unsigned not_cnt()      { return m_not_cnt;     }
+  unsigned and_cnt()      { return m_and_cnt;     }
+  unsigned xor_cnt()      { return m_xor_cnt;     }
+  unsigned nand_cnt()     { return m_nand_cnt;    }
+  unsigned andyn_cnt()    { return m_andyn_cnt;   }
+  unsigned andny_cnt()    { return m_andny_cnt;   }
+  unsigned or_cnt()       { return m_or_cnt;      }
+  unsigned nor_cnt()      { return m_nor_cnt;     }
+  unsigned oryn_cnt()     { return m_oryn_cnt;    }
+  unsigned orny_cnt()     { return m_orny_cnt;    }
+  unsigned xnor_cnt()     { return m_xnor_cnt;    }
+  unsigned mux_cnt()      { return m_mux_cnt;     }
+
+  unsigned total_bin_op_cnt() {
+    return m_and_cnt + m_xor_cnt + m_nand_cnt + m_andyn_cnt +
+           m_andny_cnt + m_or_cnt + m_nor_cnt + m_oryn_cnt +
+           m_orny_cnt + m_xnor_cnt;
   }
 
   void post_reset() override {
@@ -104,18 +124,18 @@ public:
     m_cnt_decrypt = 0;
     m_cnt_read = 0;
     m_cnt_write = 0;
-    m_cnt_op_not = 0;
-    m_cnt_op_and = 0;
-    m_cnt_op_xor = 0;
-    m_cnt_op_nand = 0;
-    m_cnt_op_andyn = 0;
-    m_cnt_op_andny = 0;
-    m_cnt_op_or = 0;
-    m_cnt_op_nor = 0;
-    m_cnt_op_oryn = 0;
-    m_cnt_op_orny = 0;
-    m_cnt_op_xnor = 0;
-    m_cnt_op_mux = 0;
+    m_not_cnt = 0;
+    m_and_cnt = 0;
+    m_xor_cnt = 0;
+    m_nand_cnt = 0;
+    m_andyn_cnt = 0;
+    m_andny_cnt = 0;
+    m_or_cnt = 0;
+    m_nor_cnt = 0;
+    m_oryn_cnt = 0;
+    m_orny_cnt = 0;
+    m_xnor_cnt = 0;
+    m_mux_cnt = 0;
   }
 
   void post_encode(const ObjHandle &, const bit_plain_t) override {
@@ -139,62 +159,62 @@ public:
   }
 
   void post_op_not(const ObjHandle &, const ObjHandle &) override {
-    m_cnt_op_not++;
+    m_not_cnt++;
   }
 
   void post_op_and(const ObjHandle &, const ObjHandle &,
                    const ObjHandle &) override {
-    m_cnt_op_and++;
+    m_and_cnt++;
   }
 
   void post_op_xor(const ObjHandle &, const ObjHandle &,
                    const ObjHandle &) override {
-    m_cnt_op_xor++;
+    m_xor_cnt++;
   }
 
   void post_op_nand(const ObjHandle &, const ObjHandle &,
                     const ObjHandle &) override {
-    m_cnt_op_nand++;
+    m_nand_cnt++;
   }
 
   void post_op_andyn(const ObjHandle &, const ObjHandle &,
                      const ObjHandle &) override {
-    m_cnt_op_andyn++;
+    m_andyn_cnt++;
   }
 
   void post_op_andny(const ObjHandle &, const ObjHandle &,
                      const ObjHandle &) override {
-    m_cnt_op_andny++;
+    m_andny_cnt++;
   }
 
   void post_op_or(const ObjHandle &, const ObjHandle &,
                   const ObjHandle &) override {
-    m_cnt_op_or++;
+    m_or_cnt++;
   }
 
   void post_op_nor(const ObjHandle &, const ObjHandle &,
                    const ObjHandle &) override {
-    m_cnt_op_nor++;
+    m_nor_cnt++;
   }
 
   void post_op_oryn(const ObjHandle &, const ObjHandle &,
                     const ObjHandle &) override {
-    m_cnt_op_oryn++;
+    m_oryn_cnt++;
   }
 
   void post_op_orny(const ObjHandle &, const ObjHandle &,
                     const ObjHandle &) override {
-    m_cnt_op_orny++;
+    m_orny_cnt++;
   }
 
   void post_op_xnor(const ObjHandle &, const ObjHandle &,
                     const ObjHandle &) override {
-    m_cnt_op_xnor++;
+    m_xnor_cnt++;
   }
 
   void post_op_mux(const ObjHandle &, const ObjHandle &cond, const ObjHandle &,
                    const ObjHandle &) override {
-    m_cnt_op_mux++;
+    m_mux_cnt++;
   }
 
 protected:
@@ -203,18 +223,18 @@ protected:
   unsigned m_cnt_decrypt;
   unsigned m_cnt_read;
   unsigned m_cnt_write;
-  unsigned m_cnt_op_not;
-  unsigned m_cnt_op_and;
-  unsigned m_cnt_op_xor;
-  unsigned m_cnt_op_nand;
-  unsigned m_cnt_op_andyn;
-  unsigned m_cnt_op_andny;
-  unsigned m_cnt_op_or;
-  unsigned m_cnt_op_nor;
-  unsigned m_cnt_op_oryn;
-  unsigned m_cnt_op_orny;
-  unsigned m_cnt_op_xnor;
-  unsigned m_cnt_op_mux;
+  unsigned m_not_cnt;
+  unsigned m_and_cnt;
+  unsigned m_xor_cnt;
+  unsigned m_nand_cnt;
+  unsigned m_andyn_cnt;
+  unsigned m_andny_cnt;
+  unsigned m_or_cnt;
+  unsigned m_nor_cnt;
+  unsigned m_oryn_cnt;
+  unsigned m_orny_cnt;
+  unsigned m_xnor_cnt;
+  unsigned m_mux_cnt;
 };
 
 template <> class Stat_impl<IBitExecSHE> : public IDecorator {
@@ -230,10 +250,18 @@ public:
     printf(" %-8s: %6d\n", "write", m_cnt_write);
     printf(" %-16s\n", "------------------");
 
-    printf(" %-8s: %6d\n", "and", m_cnt_op_and);
-    printf(" %-8s: %6d\n", "xor", m_cnt_op_xor);
+    printf(" %-8s: %6d\n", "and", m_and_cnt);
+    printf(" %-8s: %6d\n", "xor", m_xor_cnt);
     printf(" %-16s\n", "------------------");
   }
+
+  unsigned encode_cnt()   { return m_cnt_encode;  }
+  unsigned encrypt_cnt()  { return m_cnt_encrypt; }
+  unsigned decrypt_cnt()  { return m_cnt_decrypt; }
+  unsigned read_cnt()     { return m_cnt_read;    }
+  unsigned write_cnt()    { return m_cnt_write;   }
+  unsigned and_cnt()      { return m_and_cnt;     }
+  unsigned xor_cnt()      { return m_xor_cnt;     }
 
   void post_reset() override {
     m_cnt_encode = 0;
@@ -241,8 +269,8 @@ public:
     m_cnt_decrypt = 0;
     m_cnt_read = 0;
     m_cnt_write = 0;
-    m_cnt_op_and = 0;
-    m_cnt_op_xor = 0;
+    m_and_cnt = 0;
+    m_xor_cnt = 0;
   }
 
   void post_encode(const ObjHandle &, const bit_plain_t) override {
@@ -267,12 +295,12 @@ public:
 
   void post_op_and(const ObjHandle &, const ObjHandle &,
                    const ObjHandle &) override {
-    m_cnt_op_and++;
+    m_and_cnt++;
   }
 
   void post_op_xor(const ObjHandle &, const ObjHandle &,
                    const ObjHandle &) override {
-    m_cnt_op_xor++;
+    m_xor_cnt++;
   }
 
 protected:
@@ -281,8 +309,8 @@ protected:
   unsigned m_cnt_decrypt;
   unsigned m_cnt_read;
   unsigned m_cnt_write;
-  unsigned m_cnt_op_and;
-  unsigned m_cnt_op_xor;
+  unsigned m_and_cnt;
+  unsigned m_xor_cnt;
 };
 } // namespace
 

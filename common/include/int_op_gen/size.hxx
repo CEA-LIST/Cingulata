@@ -33,6 +33,9 @@ namespace cingulata
     virtual CiBitVector add     ( const CiBitVector& lhs,
                                   const CiBitVector& rhs) const override;
 
+    virtual CiBitVector sub     ( const CiBitVector& lhs,
+                                  const CiBitVector& rhs) const override;
+
     virtual CiBitVector neg     ( const CiBitVector& lhs) const override;
 
     virtual CiBitVector mul     ( const CiBitVector& lhs,

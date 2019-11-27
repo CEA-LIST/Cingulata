@@ -56,7 +56,8 @@ namespace
 
 
 CiInt select(const CiBit &cond, const CiInt &a, const CiInt &b) {
-  return CiContext::get_int_op_gen()->mux(cond, b.cast(), a.cast());
+  const auto& bv = CiContext::get_int_op_gen()->mux(cond, b.cast(), a.cast());
+  return CiInt(bv, result_is_signed(a, b));
 }
 
 CiInt sum(const vector<CiInt> &vals) {
