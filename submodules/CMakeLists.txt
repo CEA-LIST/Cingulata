@@ -41,6 +41,7 @@ if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
 
   endif(INIT_ABC_MODULE)
 
+
   # update CinguParam
   if(INIT_CINGU_PARAM_MODULE)
     message(STATUS "Submodule CinguParam update")

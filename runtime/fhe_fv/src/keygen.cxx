@@ -50,7 +50,16 @@ void KeyGen::generatePublicKey() {
   RandPolynom::sampleUniform(tmp, FheParams::D, FheParams::Q);
   PolyRing *a = new PolyRing(tmp);
 
-  RandPolynom::sampleNormal(tmp, FheParams::D, FheParams::SIGMA, FheParams::B);
+  //RandPolynom::sampleNormal(tmp, FheParams::D, FheParams::SIGMA, FheParams::B);
+  if (FheParams::SK_H == -1)
+  {
+        RandPolynom::sampleUniformBinary(tmp, FheParams::D);
+  }
+  else
+  {
+          RandPolynom::sampleUniformBinary(tmp, FheParams::D, FheParams::SK_H);
+  }
+
   PolyRing e(tmp);
 
   /* Compute ct1 = -(a . sk + e) mod q */

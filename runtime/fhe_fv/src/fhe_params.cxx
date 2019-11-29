@@ -187,10 +187,24 @@ void parseParamsCt(xml_node node) {
 
   node = node.child("normal_distribution");
   
-  r = fmpz_set_str(FheParams::SIGMA, node.child_value("sigma"), 10);
+  //r = fmpz_set_str(FheParams::SIGMA, node.child_value("sigma"), 10);
+  // sigma, bound are integers in Cingulata
+  string sigma(node.child_value("sigma"));
+  string bound(node.child_value("bound"));
+  size_t int_len= sigma.rfind('.');
+  if (int_len != string::npos) sigma.erase (int_len);
+  int_len= bound.rfind('.');
+  if (int_len != string::npos) bound.erase (int_len);
+  const char* int_sigma=sigma.c_str();
+  const char* int_bound=bound.c_str(); 
+  
+  
+  
+  r = fmpz_set_str(FheParams::SIGMA, int_sigma, 10);
   assert(r == 0);
 
-  r = fmpz_set_str(FheParams::B, node.child_value("bound"), 10);
+  //r = fmpz_set_str(FheParams::B, node.child_value("bound"), 10);
+  r = fmpz_set_str(FheParams::B, int_bound, 10);
   assert(r == 0);
 }
 
@@ -210,17 +224,22 @@ void parseParamsLi(xml_node node) {
 
   node = node.child("normal_distribution");
 
-  r = fmpz_set_str(FheParams::SIGMA_K, node.child_value("sigma"), 10);
+  //r = fmpz_set_str(FheParams::SIGMA_K, node.child_value("sigma"), 10);
+  r = fmpz_set_str(FheParams::SIGMA_K, node.child_value("sigma_k"), 10);
+
   assert(r == 0);
 
-  r = fmpz_set_str(FheParams::B_K, node.child_value("bound"), 10);
+  //r = fmpz_set_str(FheParams::B_K, node.child_value("bound"), 10);
+  r = fmpz_set_str(FheParams::B_K, node.child_value("bound_k"), 10);
   assert(r == 0);
 }
 
 /** @brief Helper functions for XML parsing
  */
 void parseParamsSk(xml_node node) {
-  FheParams::SK_H = node.child("hamming_weight").text().as_uint();
+  //FheParams::SK_H = node.child("hamming_weight").text().as_uint();
+  FheParams::SK_H = node.child("hamming_weight").text().as_int();
+
 }
 
 /** @brief See header for description
