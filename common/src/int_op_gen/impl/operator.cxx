@@ -113,11 +113,13 @@ vector<CiBitVector> SortOper::operator()(const vector<CiBitVector> &v_cbv,
   if (v_cbv.size() == 1)
     return i_cbv;
 
+#if 0 // Abusive assertions (arrays need not to be homogeneous in size)
   auto s = v_cbv[0].size();
   for (const auto &cbv : v_cbv)
     assert(cbv.size() == s);
   for (const auto &cbv : i_cbv)
     assert(cbv.size() == s);
+#endif
   return oper(v_cbv, i_cbv, reverse);
 }
 
