@@ -4,7 +4,8 @@ Cingulata (pronounced "tchingulata") is a compiler toolchain and RTE for running
 
 Currently, an in-house implementation of the B/FV scheme and the [TFHE library](https://github.com/tfhe/tfhe) are supported.
 
-The toolchain is formerly known as the Armadillo toolchain.
+The toolchain is formerly known as the Armadillo toolchain and was introduced in [this
+paper](https://doi.org/10.1145/2732516.2732520).
 
 For more details, installation guide and tutorials, please check out the [project's Wiki](https://github.com/CEA-LIST/Cingulata/wiki).
 
