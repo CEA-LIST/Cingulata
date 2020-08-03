@@ -65,9 +65,9 @@ def parseBlif(lines):
       G.add_nodes_from(var)
       edges = [(v, out) for v in var[:-1]]
       G.add_edges_from(edges)
-      G.node[out]['gate'] = True
-      G.node[out]['truth_table_var'] = var
-      G.node[out]['truth_table'] = "\n".join(cmd[1:]).strip()
+      G.nodes()[out]['gate'] = True
+      G.nodes()[out]['truth_table_var'] = var
+      G.nodes()[out]['truth_table'] = "\n".join(cmd[1:]).strip()
     elif cmd.startswith('inputs'):
       cmd = cmd.replace('\\','').split()
       nodes = cmd[1:]
@@ -90,14 +90,14 @@ def getMultiplicativeDepths(G):
     if G.in_degree(v) == 0:
       depth[v] = 0
     else:
-      depth[v] = max([depth[u] for u in G.predecessors(v)]) + is_mult(G.node[v].get('truth_table'))
+      depth[v] = max([depth[u] for u in G.predecessors(v)]) + is_mult(G.nodes()[v].get('truth_table'))
   return depth
 
 def getInputNodes(G):
-  return list(filter(lambda n: 'input' in G.node[n], G.nodes()))
+  return list(filter(lambda n: 'input' in G.nodes()[n], G.nodes()))
 
 def getOutputNodes(G):
-  return list(filter(lambda n: 'output' in G.node[n], G.nodes()))
+  return list(filter(lambda n: 'output' in G.nodes()[n], G.nodes()))
 
 truthTable2GateType = {
   '0' : 'const_0',
@@ -120,9 +120,9 @@ truthTable2GateType = {
 
 
 def getNodeCountPerType(G):
-  nodes = list(filter(lambda n: 'truth_table' in G.node[n], G.nodes()))
+  nodes = list(filter(lambda n: 'truth_table' in G.nodes()[n], G.nodes()))
 
-  nodeTypes = list(map(lambda n: truthTable2GateType[G.node[n]['truth_table']], nodes))
+  nodeTypes = list(map(lambda n: truthTable2GateType[G.nodes()[n]['truth_table']], nodes))
 
   nodeCount = dict()
   for nodeType in set(nodeTypes):
@@ -131,10 +131,10 @@ def getNodeCountPerType(G):
   return nodeCount
 
 def getMultiplicativeNodes(G):
-  return list(filter(lambda n: is_mult(G.node[n].get('truth_table')), G.nodes()))
+  return list(filter(lambda n: is_mult(G.nodes()[n].get('truth_table')), G.nodes()))
 
 def getAdditiveNodes(G):
-  return list(filter(lambda n: is_add(G.node[n].get('truth_table')), G.nodes()))
+  return list(filter(lambda n: is_add(G.nodes()[n].get('truth_table')), G.nodes()))
 
 def getMultiplicativeNodeCnt(G):
   return len(getMultiplicativeNodes(G))
