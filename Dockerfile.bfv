@@ -23,11 +23,16 @@ RUN apt-get update -qq \
     libpugixml-dev \
     make \
     python3 \
-    python3-networkx \
-    python3-numpy \
+    python3-pip \
     tzdata \
     xxd \ 
     yad
+
+# install python packages
+RUN pip3 install \
+    networkx \
+    numpy
+
 
 # add user
 ARG uid=1000
