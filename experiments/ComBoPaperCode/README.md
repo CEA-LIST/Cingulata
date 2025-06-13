@@ -8,7 +8,7 @@ TIME :
 
 In the CMakeLists in Time/src change the path to tfhe library (tfhelib path in TFHE_PREFIX).
 
-Place yourself in folder Time.
+Place yourself in folder ComBoPaperTime.
 
 In command line write :
 cmake -S . -B ./build
