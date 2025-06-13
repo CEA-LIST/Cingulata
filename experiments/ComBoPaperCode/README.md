@@ -11,6 +11,8 @@ In the CMakeLists in Time/src change the path to tfhe library (tfhelib path in T
 Place yourself in folder ComBoPaperTime.
 
 In command line write :
+mkdir build
+mkdir bin
 cmake -S . -B ./build
 cd build
 make
