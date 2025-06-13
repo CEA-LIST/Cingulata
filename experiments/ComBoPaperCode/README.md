@@ -1,8 +1,8 @@
 NOISE :
 
 In Python3 :
->> from noise import noise
-use test_parameter_set to get the resulting log2 of the noise for each method in the paper.
+from noise import noise
+then use test_parameter_set to get the resulting log2 of the noise for each method in the paper.
 
 TIME :
 
